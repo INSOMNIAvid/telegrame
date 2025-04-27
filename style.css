@@ -25,8 +25,9 @@ body {
     height: 100%;
     background: linear-gradient(45deg, #3498db, #9b59b6, #e74c3c, #f1c40f);
     background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
     z-index: -1;
+    animation: gradientBG 15s ease infinite;
+    filter: blur(10px);
     opacity: 0.7;
     transition: all 0.5s ease;
 }
@@ -65,7 +66,7 @@ body {
 }
 
 .auth-box h1 {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     color: #2c3e50;
     font-size: 2rem;
     font-weight: 600;
@@ -77,9 +78,17 @@ body {
     margin-bottom: 1.5rem;
 }
 
+.input-group label {
+    display: block;
+    text-align: left;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
 .input-group input {
     width: 100%;
-    padding: 1rem;
+    padding: 0.8rem 1rem;
     border: 2px solid #ddd;
     border-radius: 5px;
     font-size: 1rem;
@@ -93,36 +102,38 @@ body {
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
 }
 
-.input-group label {
-    position: absolute;
-    left: 1rem;
-    top: 1rem;
-    color: #7f8c8d;
-    transition: all 0.3s ease;
-    pointer-events: none;
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 0 0.5rem;
+/* Password Dots */
+.password-dots {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 0.5rem;
 }
 
-.input-group input:focus + label,
-.input-group input:not(:placeholder-shown) + label {
-    top: -0.6rem;
-    left: 0.8rem;
-    font-size: 0.8rem;
-    color: #3498db;
-    background-color: white;
+.password-dots span {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ddd;
+    transition: all 0.2s ease;
 }
 
 /* Buttons */
+.btn-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
 .btn {
-    display: inline-block;
     padding: 0.8rem 1.5rem;
     border: none;
     border-radius: 5px;
     font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
-    text-decoration: none;
 }
 
 .btn-primary {
@@ -145,13 +156,6 @@ body {
     text-decoration: underline;
 }
 
-.btn-group {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1.5rem;
-}
-
 /* Links */
 .auth-links {
     margin-top: 1.5rem;
@@ -170,14 +174,20 @@ body {
     color: #3498db;
 }
 
-/* Animation for active state */
-.auth-container:active {
-    transform: scale(0.98);
-}
-
-.input-group input:focus ~ .ribbon {
+/* Focus Effects */
+input:focus ~ .ribbon {
     animation: gradientBG 5s ease infinite;
     opacity: 0.9;
+}
+
+.btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.5);
+}
+
+/* Active State for Buttons */
+.btn:active {
+    transform: translateY(1px);
 }
 
 /* Responsive Design */
@@ -192,9 +202,7 @@ body {
         gap: 0.5rem;
     }
     
-    .auth-links {
-        flex-direction: column;
-        gap: 0.5rem;
-        align-items: center;
+    .btn {
+        width: 100%;
     }
 }
