@@ -82,12 +82,13 @@ body {
 }
 
 .sidebar {
-    width: 300px;
+    width: 350px;
     background-color: #2c3e50;
     color: white;
     display: flex;
     flex-direction: column;
     height: 100%;
+    border-right: 1px solid #3d5166;
 }
 
 .main-content {
@@ -111,19 +112,61 @@ body {
     height: 40px;
     border-radius: 50%;
     margin-right: 1rem;
+    object-fit: cover;
 }
 
 .user-profile span {
     flex: 1;
     font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.user-profile button {
+.profile-actions {
+    display: flex;
+}
+
+.profile-actions button {
     background: none;
     border: none;
     color: white;
     cursor: pointer;
     font-size: 1.2rem;
+    margin-left: 0.5rem;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #3d5166;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 1rem;
+    background: none;
+    border: none;
+    color: #bdc3c7;
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-align: center;
+    border-bottom: 3px solid transparent;
+}
+
+.tab-btn.active {
+    color: white;
+    border-bottom: 3px solid #3498db;
+}
+
+.content-tab {
+    display: none;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.content-tab.active {
+    display: block;
 }
 
 /* Search Box */
@@ -152,39 +195,6 @@ body {
 }
 
 /* Chat List */
-.chat-list {
-    flex: 1;
-    overflow-y: auto;
-}
-
-.chat-list-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid #3d5166;
-}
-
-.chat-list-header h3 {
-    font-size: 1rem;
-    text-transform: uppercase;
-    color: #bdc3c7;
-}
-
-.chat-list-header button {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 0.3rem 0.6rem;
-    border-radius: 5px;
-    font-size: 0.8rem;
-    cursor: pointer;
-}
-
-.chat-list-header button:hover {
-    background-color: #2980b9;
-}
-
 #chat-list-items {
     list-style: none;
 }
@@ -210,15 +220,20 @@ body {
     height: 40px;
     border-radius: 50%;
     margin-right: 1rem;
+    object-fit: cover;
 }
 
 .chat-item-info {
     flex: 1;
+    min-width: 0;
 }
 
 .chat-item-info h4 {
     font-size: 1rem;
     margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .chat-item-info p {
@@ -227,6 +242,103 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.chat-item-time {
+    font-size: 0.7rem;
+    color: #bdc3c7;
+}
+
+/* Friends List */
+.friends-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #3d5166;
+}
+
+.friends-header h3 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    color: #bdc3c7;
+}
+
+.friends-header button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 0.3rem 0.6rem;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.friends-header button:hover {
+    background-color: #2980b9;
+}
+
+#friends-list, #friend-requests-list, #groups-list {
+    list-style: none;
+}
+
+#friends-list li, #friend-requests-list li, #groups-list li {
+    padding: 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #3d5166;
+    display: flex;
+    align-items: center;
+}
+
+#friends-list li:hover, #friend-requests-list li:hover, #groups-list li:hover {
+    background-color: #34495e;
+}
+
+#friends-list li img, #friend-requests-list li img, #groups-list li img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 1rem;
+    object-fit: cover;
+}
+
+.friend-item-info, .group-item-info {
+    flex: 1;
+}
+
+.friend-item-info h4, .group-item-info h4 {
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+}
+
+.friend-item-info p, .group-item-info p {
+    font-size: 0.8rem;
+    color: #bdc3c7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.friend-status {
+    font-size: 0.7rem;
+    color: #2ecc71;
+}
+
+.friend-status.offline {
+    color: #95a5a6;
+}
+
+.friend-actions {
+    display: flex;
+}
+
+.friend-actions button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-left: 0.5rem;
 }
 
 /* No Chat Selected */
@@ -263,8 +375,30 @@ body {
     align-items: center;
 }
 
-.chat-header h3 {
+.chat-info {
+    display: flex;
+    align-items: center;
+}
+
+.chat-info img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 1rem;
+    object-fit: cover;
+}
+
+.chat-info h3 {
     font-size: 1.2rem;
+}
+
+.chat-info p {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+}
+
+.chat-status.online {
+    color: #2ecc71;
 }
 
 .chat-actions button {
@@ -315,6 +449,12 @@ body {
     font-size: 0.8rem;
     color: #7f8c8d;
     margin-bottom: 0.3rem;
+}
+
+.message-time {
+    font-size: 0.7rem;
+    color: #7f8c8d;
+    margin-top: 0.3rem;
 }
 
 .message-input {
@@ -385,13 +525,18 @@ body {
     color: #2c3e50;
 }
 
-.modal-content input {
+.modal-content input, .modal-content textarea {
     width: 100%;
     padding: 0.8rem;
     margin-bottom: 1rem;
     border: 1px solid #ddd;
     border-radius: 5px;
     font-size: 1rem;
+}
+
+.modal-content textarea {
+    min-height: 100px;
+    resize: vertical;
 }
 
 .modal-content button {
@@ -444,10 +589,192 @@ body {
     height: 30px;
     border-radius: 50%;
     margin-right: 0.5rem;
+    object-fit: cover;
 }
 
 #user-list-for-group li.selected {
     background-color: #e6f2ff;
+}
+
+/* Profile Modal */
+.profile-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.profile-header img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1rem;
+}
+
+#change-avatar-btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+#change-avatar-btn:hover {
+    background-color: #2980b9;
+}
+
+.profile-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.profile-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+/* User Profile Modal */
+.user-profile-content {
+    text-align: center;
+}
+
+.user-profile-content img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1rem;
+}
+
+.user-profile-content h3 {
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.user-profile-content p {
+    margin-bottom: 0.5rem;
+    color: #7f8c8d;
+}
+
+.user-profile-content .user-bio {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: #f5f5f5;
+    border-radius: 5px;
+    text-align: left;
+}
+
+.user-profile-actions {
+    margin-top: 1.5rem;
+}
+
+.user-profile-actions button {
+    padding: 0.5rem 1rem;
+    margin: 0 0.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.user-profile-actions .btn-primary {
+    background-color: #3498db;
+    color: white;
+}
+
+.user-profile-actions .btn-danger {
+    background-color: #e74c3c;
+    color: white;
+}
+
+/* Group Info Modal */
+.group-info-content img {
+    width: 100px;
+    height: 100px;
+    border-radius: 5px;
+    object-fit: cover;
+    margin-bottom: 1rem;
+}
+
+.group-info-content h3 {
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.group-info-content p {
+    margin-bottom: 1rem;
+    color: #7f8c8d;
+}
+
+.group-members {
+    margin: 1rem 0;
+}
+
+.group-members h4 {
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.group-members-list {
+    list-style: none;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.group-members-list li {
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #eee;
+}
+
+.group-members-list li:last-child {
+    border-bottom: none;
+}
+
+.group-members-list li img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    object-fit: cover;
+}
+
+.member-info {
+    flex: 1;
+}
+
+.member-info h5 {
+    font-size: 0.9rem;
+}
+
+.member-info p {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    margin: 0;
+}
+
+.member-role {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    background-color: #3498db;
+    color: white;
+}
+
+.member-actions button {
+    background: none;
+    border: none;
+    color: #3498db;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
 }
 
 /* Responsive Design */
