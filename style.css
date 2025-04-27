@@ -11,198 +11,87 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    overflow: hidden;
-    position: relative;
-}
-
-/* Animated Background Ribbon */
-.ribbon {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(45deg, #3498db, #9b59b6, #e74c3c, #f1c40f);
-    background-size: 400% 400%;
-    z-index: -1;
-    animation: gradientBG 15s ease infinite;
-    filter: blur(10px);
-    opacity: 0.7;
-    transition: all 0.5s ease;
-}
-
-@keyframes gradientBG {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
+    height: 100vh;
 }
 
 /* Auth Container */
-.auth-container {
+.auth-box {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 400px;
-    padding: 2rem;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 10px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(5px);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.auth-container:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-}
-
-.auth-box {
     text-align: center;
 }
 
 .auth-box h1 {
-    margin-bottom: 2rem;
-    color: #2c3e50;
-    font-size: 2rem;
-    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-size: 1.8rem;
+    font-weight: normal;
 }
 
 /* Input Fields */
-.input-group {
-    position: relative;
-    margin-bottom: 1.5rem;
-}
-
-.input-group label {
-    display: block;
-    text-align: left;
-    margin-bottom: 0.5rem;
-    color: #2c3e50;
-    font-weight: 500;
-}
-
-.input-group input {
+.auth-box input {
     width: 100%;
-    padding: 0.8rem 1rem;
-    border: 2px solid #ddd;
-    border-radius: 5px;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
     font-size: 1rem;
-    transition: all 0.3s ease;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: #f9f9f9;
 }
 
-.input-group input:focus {
-    border-color: #3498db;
+.auth-box input:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-}
-
-/* Password Dots */
-.password-dots {
-    display: flex;
-    justify-content: center;
-    gap: 5px;
-    margin-top: 0.5rem;
-}
-
-.password-dots span {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: #ddd;
-    transition: all 0.2s ease;
+    border-color: #3498db;
 }
 
 /* Buttons */
-.btn-group {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 2rem;
-}
-
-.btn {
-    padding: 0.8rem 1.5rem;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-primary {
+.auth-btn {
+    width: 100%;
+    padding: 0.8rem;
     background-color: #3498db;
     color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    transition: background-color 0.3s;
 }
 
-.btn-primary:hover {
+.auth-btn:hover {
     background-color: #2980b9;
-    transform: translateY(-2px);
-}
-
-.btn-secondary {
-    background-color: transparent;
-    color: #3498db;
-}
-
-.btn-secondary:hover {
-    color: #2980b9;
-    text-decoration: underline;
 }
 
 /* Links */
 .auth-links {
-    margin-top: 1.5rem;
     display: flex;
     justify-content: space-between;
+    margin-top: 1rem;
 }
 
-.auth-links a {
-    color: #7f8c8d;
+.auth-link {
+    color: #3498db;
     text-decoration: none;
     font-size: 0.9rem;
-    transition: color 0.3s ease;
 }
 
-.auth-links a:hover {
-    color: #3498db;
-}
-
-/* Focus Effects */
-input:focus ~ .ribbon {
-    animation: gradientBG 5s ease infinite;
-    opacity: 0.9;
-}
-
-.btn:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.5);
-}
-
-/* Active State for Buttons */
-.btn:active {
-    transform: translateY(1px);
+.auth-link:hover {
+    text-decoration: underline;
 }
 
 /* Responsive Design */
 @media (max-width: 480px) {
-    .auth-container {
+    .auth-box {
         padding: 1.5rem;
         margin: 0 1rem;
     }
     
-    .btn-group {
+    .auth-links {
         flex-direction: column;
         gap: 0.5rem;
-    }
-    
-    .btn {
-        width: 100%;
     }
 }
