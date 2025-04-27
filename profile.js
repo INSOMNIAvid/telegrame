@@ -12,6 +12,9 @@ function showProfileModal() {
                 profileBio.value = userData.bio || '';
                 profileAvatar.src = userData.avatar || 'https://via.placeholder.com/100';
             }
+        })
+        .catch(error => {
+            console.error("Error loading profile:", error);
         });
 }
 
@@ -26,7 +29,14 @@ function saveProfile() {
         return;
     }
     
-    // Check if username was changed
+    // Create update object
+    const updates = {
+        statusText: statusText,
+        bio: bio,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    // Only update username if it was changed
     db.collection('users').doc(currentUser.uid).get()
         .then(doc => {
             if (doc.exists) {
@@ -39,6 +49,7 @@ function saveProfile() {
                             if (!snapshot.empty) {
                                 throw new Error('Этот никнейм уже занят');
                             }
+                            updates.username = username;
                             return true;
                         });
                 }
@@ -46,18 +57,34 @@ function saveProfile() {
             }
         })
         .then(() => {
-            // Update profile
-            return db.collection('users').doc(currentUser.uid).update({
-                username: username,
-                statusText: statusText,
-                bio: bio
-            });
+            // Update profile in Firestore
+            return db.collection('users').doc(currentUser.uid).update(updates);
         })
         .then(() => {
             // Update UI
             usernameDisplay.textContent = username;
             profileModal.style.display = 'none';
             alert('Профиль успешно обновлен');
+            
+            // Update username in all chats where user participates
+            return db.collection('chats')
+                .where('participants', 'array-contains', currentUser.uid)
+                .get();
+        })
+        .then(snapshot => {
+            const batch = db.batch();
+            
+            snapshot.forEach(doc => {
+                const chatData = doc.data();
+                if (chatData.isGroup) return;
+                
+                const otherUserId = chatData.participants.find(id => id !== currentUser.uid);
+                batch.update(doc.ref, {
+                    [`userNames.${currentUser.uid}`]: username
+                });
+            });
+            
+            return batch.commit();
         })
         .catch(error => {
             console.error("Error saving profile:", error);
@@ -101,7 +128,8 @@ function uploadAvatar() {
                 .then(downloadURL => {
                     // Update user profile with new avatar URL
                     return db.collection('users').doc(currentUser.uid).update({
-                        avatar: downloadURL
+                        avatar: downloadURL,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 })
                 .then(() => {
@@ -118,11 +146,12 @@ function uploadAvatar() {
                     const batch = db.batch();
                     
                     snapshot.forEach(doc => {
-                        if (!doc.data().isGroup) {
-                            batch.update(doc.ref, {
-                                [`avatar_${currentUser.uid}`]: downloadURL
-                            });
-                        }
+                        const chatData = doc.data();
+                        if (chatData.isGroup) return;
+                        
+                        batch.update(doc.ref, {
+                            [`avatars.${currentUser.uid}`]: downloadURL
+                        });
                     });
                     
                     return batch.commit();
