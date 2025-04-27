@@ -34,13 +34,18 @@ function loginUser() {
 
 // Register new user
 function registerUser() {
-    const username = document.getElementById('register-username').value;
-    const email = document.getElementById('register-email').value;
+    const username = document.getElementById('register-username').value.trim();
+    const email = document.getElementById('register-email').value.trim();
     const password = document.getElementById('register-password').value;
     const confirmPassword = document.getElementById('register-confirm').value;
     
     if (!username || !email || !password || !confirmPassword) {
         alert('Пожалуйста, заполните все поля');
+        return;
+    }
+    
+    if (!username.startsWith('@')) {
+        alert('Никнейм должен начинаться с @');
         return;
     }
     
@@ -54,15 +59,26 @@ function registerUser() {
         return;
     }
     
-    auth.createUserWithEmailAndPassword(email, password)
+    // Check if username is available
+    db.collection('users').where('username', '==', username).get()
+        .then(snapshot => {
+            if (!snapshot.empty) {
+                throw new Error('Этот никнейм уже занят');
+            }
+            
+            return auth.createUserWithEmailAndPassword(email, password);
+        })
         .then(userCredential => {
             // Create user document in Firestore
             return db.collection('users').doc(userCredential.user.uid).set({
                 uid: userCredential.user.uid,
                 username: username,
                 email: email,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random`
+                status: 'offline',
+                lastSeen: null,
+                bio: '',
+                avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(username.substring(1))}&background=random`,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
         })
         .then(() => {
@@ -78,11 +94,17 @@ function registerUser() {
 
 // Logout user
 function logoutUser() {
+    // Set user offline before logging out
+    setUserOnlineStatus(false);
+    
     auth.signOut()
         .then(() => {
             currentChat = null;
             chats = [];
             users = [];
+            friends = [];
+            friendRequests = [];
+            groups = [];
         })
         .catch(error => {
             console.error("Logout error:", error);
