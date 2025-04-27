@@ -206,3 +206,76 @@
     <script src="app.js"></script>
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="ribbon"></div>
+    
+    <div class="auth-container">
+        <div class="auth-box">
+            <h1>Login</h1>
+            
+            <form id="login-form">
+                <div class="input-group">
+                    <input type="text" id="login-username" placeholder=" " required>
+                    <label for="login-username">Username</label>
+                </div>
+                
+                <div class="input-group">
+                    <input type="password" id="login-password" placeholder=" " required>
+                    <label for="login-password">Password</label>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">Sign in</button>
+                </div>
+                
+                <div class="auth-links">
+                    <a href="#" class="btn-secondary">Forget Password</a>
+                    <a href="#" class="btn-secondary">Sign up</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Добавьте этот скрипт для анимации при взаимодействии
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input');
+            const ribbon = document.querySelector('.ribbon');
+            
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    ribbon.style.animationDuration = '5s';
+                    ribbon.style.opacity = '0.9';
+                });
+                
+                input.addEventListener('blur', () => {
+                    ribbon.style.animationDuration = '15s';
+                    ribbon.style.opacity = '0.7';
+                });
+            });
+            
+            const buttons = document.querySelectorAll('button, a');
+            buttons.forEach(button => {
+                button.addEventListener('mousedown', () => {
+                    ribbon.style.animationDuration = '3s';
+                    ribbon.style.opacity = '1';
+                });
+                
+                button.addEventListener('mouseup', () => {
+                    ribbon.style.animationDuration = '15s';
+                    ribbon.style.opacity = '0.7';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
