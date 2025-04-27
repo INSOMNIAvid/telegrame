@@ -1,74 +1,237 @@
-// Generate RSA key pair for a user
-async function generateKeyPair(userId) {
-    // In a real app, you would use Web Crypto API or a library like Stanford JS Crypto
-    // For simplicity, we'll simulate key generation
+// Render friends list
+function renderFriendsList() {
+    friendsList.innerHTML = '';
     
-    // This is a simplified version - in production, use proper crypto libraries
-    return {
-        publicKey: `public_key_${userId}`,
-        privateKey: `private_key_${userId}`,
-        userId: userId
-    };
-}
-
-// Encrypt message for a specific user
-function encryptMessage(message, userId) {
-    // In a real app, you would use the recipient's public key to encrypt
-    // This is a simplified version using a mock encryption
+    if (friends.length === 0) {
+        friendsList.innerHTML = '<li class="no-friends">У вас пока нет друзей</li>';
+        return;
+    }
     
-    // Simulate encryption by combining message with user ID
-    return `encrypted_${userId}_${btoa(message)}`;
-}
-
-// Decrypt message for the current user
-function decryptMessage(encryptedMessage, userId) {
-    // In a real app, you would use the user's private key to decrypt
-    // This is a simplified version that extracts the mock encrypted message
-    
-    // Check if this is a message encrypted for this user
-    if (typeof encryptedMessage === 'object') {
-        // This is a message with different encryptions for different users
-        if (encryptedMessage[userId]) {
-            const msg = encryptedMessage[userId];
-            if (msg.startsWith(`encrypted_${userId}_`)) {
-                return atob(msg.replace(`encrypted_${userId}_`, ''));
-            }
+    friends.forEach(friend => {
+        const friendData = users.find(u => u.uid === friend.friendId);
+        if (friendData) {
+            const li = document.createElement('li');
+            li.className = 'friend-item';
+            li.dataset.userId = friendData.uid;
+            
+            li.innerHTML = `
+                <img src="${friendData.avatar || 'https://via.placeholder.com/40'}" alt="${friendData.username}">
+                <div class="friend-item-info">
+                    <h4>${friendData.username}</h4>
+                    <p class="friend-status ${friendData.status === 'online' ? 'online' : 'offline'}">
+                        ${friendData.status === 'online' ? 'online' : 
+                          friendData.lastSeen ? `был(а) в сети ${formatLastSeen(friendData.lastSeen.toDate())}` : 'offline'}
+                    </p>
+                </div>
+                <div class="friend-actions">
+                    <button onclick="startChatWithUser('${friendData.uid}')"><i class="fas fa-comment"></i></button>
+                    <button onclick="removeFriend('${friend.friendId}')"><i class="fas fa-user-times"></i></button>
+                </div>
+            `;
+            
+            li.addEventListener('click', () => showUserProfile(friendData.uid));
+            friendsList.appendChild(li);
         }
-        return "Не удалось расшифровать сообщение";
-    }
-    
-    // For single encrypted messages (simplified)
-    if (encryptedMessage.startsWith(`encrypted_${userId}_`)) {
-        return atob(encryptedMessage.replace(`encrypted_${userId}_`, ''));
-    }
-    
-    return "Не удалось расшифровать сообщение";
-}
-
-// Store user's private key securely (simulated)
-function storePrivateKey(userId, privateKey) {
-    // In a real app, you would use secure storage like IndexedDB with encryption
-    localStorage.setItem(`privateKey_${userId}`, privateKey);
-}
-
-// Get user's private key (simulated)
-function getPrivateKey(userId) {
-    // In a real app, you would retrieve from secure storage
-    return localStorage.getItem(`privateKey_${userId}`);
-}
-
-// Initialize encryption for a new user
-async function initializeUserEncryption(userId) {
-    // Check if keys already exist
-    const existingPrivateKey = getPrivateKey(userId);
-    if (existingPrivateKey) return;
-    
-    // Generate new keys
-    const keyPair = await generateKeyPair(userId);
-    storePrivateKey(userId, keyPair.privateKey);
-    
-    // Store public key in database
-    await db.collection('users').doc(userId).update({
-        publicKey: keyPair.publicKey
     });
+}
+
+// Render friend requests list
+function renderFriendRequestsList() {
+    friendRequestsList.innerHTML = '';
+    
+    if (friendRequests.length === 0) {
+        friendRequestsList.innerHTML = '<li class="no-requests">Нет новых запросов</li>';
+        return;
+    }
+    
+    friendRequests.forEach(request => {
+        const senderData = users.find(u => u.uid === request.senderId);
+        if (senderData) {
+            const li = document.createElement('li');
+            li.className = 'friend-request-item';
+            li.dataset.requestId = request.id;
+            
+            li.innerHTML = `
+                <img src="${senderData.avatar || 'https://via.placeholder.com/40'}" alt="${senderData.username}">
+                <div class="friend-item-info">
+                    <h4>${senderData.username}</h4>
+                    <p>Хочет добавить вас в друзья</p>
+                </div>
+                <div class="friend-actions">
+                    <button onclick="acceptFriendRequest('${request.id}')"><i class="fas fa-check"></i></button>
+                    <button onclick="declineFriendRequest('${request.id}')"><i class="fas fa-times"></i></button>
+                </div>
+            `;
+            
+            li.addEventListener('click', () => showUserProfile(senderData.uid));
+            friendRequestsList.appendChild(li);
+        }
+    });
+}
+
+// Show add friend modal
+function showAddFriendModal() {
+    addFriendModal.style.display = 'flex';
+    friendUsername.value = '';
+}
+
+// Send friend request
+function sendFriendRequest() {
+    const username = friendUsername.value.trim();
+    
+    if (!username.startsWith('@')) {
+        alert('Никнейм должен начинаться с @');
+        return;
+    }
+    
+    if (username === currentUser.username) {
+        alert('Вы не можете добавить себя в друзья');
+        return;
+    }
+    
+    // Find user by username
+    db.collection('users').where('username', '==', username).get()
+        .then(snapshot => {
+            if (snapshot.empty) {
+                throw new Error('Пользователь с таким никнеймом не найден');
+            }
+            
+            const userDoc = snapshot.docs[0];
+            const receiverId = userDoc.id;
+            
+            // Check if friendship already exists
+            return db.collection('friendships')
+                .where('users', 'array-contains', currentUser.uid)
+                .where('users', 'array-contains', receiverId)
+                .get();
+        })
+        .then(snapshot => {
+            if (!snapshot.empty) {
+                throw new Error('Этот пользователь уже у вас в друзьях');
+            }
+            
+            // Check if request already exists
+            return db.collection('friendships')
+                .where('sender', '==', currentUser.uid)
+                .where('receiver', '==', receiverId)
+                .where('status', '==', 'pending')
+                .get();
+        })
+        .then(snapshot => {
+            if (!snapshot.empty) {
+                throw new Error('Вы уже отправили запрос этому пользователю');
+            }
+            
+            // Create friend request
+            return db.collection('friendships').add({
+                users: [currentUser.uid, receiverId],
+                sender: currentUser.uid,
+                receiver: receiverId,
+                status: 'pending',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        })
+        .then(() => {
+            addFriendModal.style.display = 'none';
+            alert('Запрос на добавление в друзья отправлен');
+        })
+        .catch(error => {
+            console.error("Error sending friend request:", error);
+            alert(`Ошибка: ${error.message}`);
+        });
+}
+
+// Send friend request from profile modal
+function sendFriendRequestFromProfile(userId) {
+    // Check if friendship already exists
+    db.collection('friendships')
+        .where('users', 'array-contains', currentUser.uid)
+        .where('users', 'array-contains', userId)
+        .get()
+        .then(snapshot => {
+            if (!snapshot.empty) {
+                throw new Error('Этот пользователь уже у вас в друзьях');
+            }
+            
+            // Check if request already exists
+            return db.collection('friendships')
+                .where('sender', '==', currentUser.uid)
+                .where('receiver', '==', userId)
+                .where('status', '==', 'pending')
+                .get();
+        })
+        .then(snapshot => {
+            if (!snapshot.empty) {
+                throw new Error('Вы уже отправили запрос этому пользователю');
+            }
+            
+            // Create friend request
+            return db.collection('friendships').add({
+                users: [currentUser.uid, userId],
+                sender: currentUser.uid,
+                receiver: userId,
+                status: 'pending',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        })
+        .then(() => {
+            userProfileModal.style.display = 'none';
+            alert('Запрос на добавление в друзья отправлен');
+        })
+        .catch(error => {
+            console.error("Error sending friend request:", error);
+            alert(`Ошибка: ${error.message}`);
+        });
+}
+
+// Accept friend request
+function acceptFriendRequest(requestId) {
+    db.collection('friendships').doc(requestId).update({
+        status: 'accepted'
+    })
+    .then(() => {
+        alert('Запрос в друзья принят');
+    })
+    .catch(error => {
+        console.error("Error accepting friend request:", error);
+        alert('Ошибка при принятии запроса');
+    });
+}
+
+// Decline friend request
+function declineFriendRequest(requestId) {
+    db.collection('friendships').doc(requestId).delete()
+    .then(() => {
+        alert('Запрос в друзья отклонен');
+    })
+    .catch(error => {
+        console.error("Error declining friend request:", error);
+        alert('Ошибка при отклонении запроса');
+    });
+}
+
+// Remove friend
+function removeFriend(friendId) {
+    // Find friendship document
+    db.collection('friendships')
+        .where('users', 'array-contains', currentUser.uid)
+        .where('users', 'array-contains', friendId)
+        .get()
+        .then(snapshot => {
+            if (snapshot.empty) {
+                throw new Error('Дружба не найдена');
+            }
+            
+            // Delete friendship
+            const docId = snapshot.docs[0].id;
+            return db.collection('friendships').doc(docId).delete();
+        })
+        .then(() => {
+            userProfileModal.style.display = 'none';
+            alert('Пользователь удален из друзей');
+        })
+        .catch(error => {
+            console.error("Error removing friend:", error);
+            alert(`Ошибка: ${error.message}`);
+        });
 }
