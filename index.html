@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Chat Manager</title>
+    <title>Telegram-like Messenger</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -11,7 +11,7 @@
     <!-- Auth Container -->
     <div id="auth-container" class="container">
         <div class="auth-box">
-            <h1>Secure Chat</h1>
+            <h1>Telegram-like Messenger</h1>
             
             <div id="login-form">
                 <input type="text" id="login-email" placeholder="Email" required>
@@ -21,7 +21,7 @@
             </div>
             
             <div id="register-form" style="display: none;">
-                <input type="text" id="register-username" placeholder="Никнейм" required>
+                <input type="text" id="register-username" placeholder="@username" required>
                 <input type="email" id="register-email" placeholder="Email" required>
                 <input type="password" id="register-password" placeholder="Пароль" required>
                 <input type="password" id="register-confirm" placeholder="Подтвердите пароль" required>
@@ -31,13 +31,22 @@
         </div>
     </div>
 
-    <!-- Main App Container (hidden by default) -->
+    <!-- Main App Container -->
     <div id="app-container" class="container" style="display: none;">
         <div class="sidebar">
             <div class="user-profile">
                 <img id="user-avatar" src="https://via.placeholder.com/50" alt="Аватар">
                 <span id="username-display"></span>
-                <button id="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
+                <div class="profile-actions">
+                    <button id="profile-btn"><i class="fas fa-user"></i></button>
+                    <button id="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="chats">Чаты</button>
+                <button class="tab-btn" data-tab="friends">Друзья</button>
+                <button class="tab-btn" data-tab="groups">Группы</button>
             </div>
             
             <div class="search-box">
@@ -45,13 +54,36 @@
                 <button id="new-chat-btn"><i class="fas fa-plus"></i></button>
             </div>
             
-            <div class="chat-list">
-                <div class="chat-list-header">
-                    <h3>Чаты</h3>
-                    <button id="new-group-btn">Создать группу</button>
-                </div>
+            <div class="content-tab active" id="chats-tab">
                 <ul id="chat-list-items">
                     <!-- Chats will be loaded here -->
+                </ul>
+            </div>
+            
+            <div class="content-tab" id="friends-tab">
+                <div class="friends-header">
+                    <h3>Мои друзья</h3>
+                    <button id="add-friend-btn">Добавить</button>
+                </div>
+                <ul id="friends-list">
+                    <!-- Friends will be loaded here -->
+                </ul>
+                
+                <div class="friends-header">
+                    <h3>Запросы</h3>
+                </div>
+                <ul id="friend-requests-list">
+                    <!-- Friend requests will be loaded here -->
+                </ul>
+            </div>
+            
+            <div class="content-tab" id="groups-tab">
+                <div class="groups-header">
+                    <h3>Мои группы</h3>
+                    <button id="new-group-btn">Создать</button>
+                </div>
+                <ul id="groups-list">
+                    <!-- Groups will be loaded here -->
                 </ul>
             </div>
         </div>
@@ -64,7 +96,13 @@
             
             <div id="chat-area" style="display: none;">
                 <div class="chat-header">
-                    <h3 id="chat-title"></h3>
+                    <div class="chat-info">
+                        <img id="chat-avatar" src="https://via.placeholder.com/40" alt="Аватар чата">
+                        <div>
+                            <h3 id="chat-title"></h3>
+                            <p id="chat-status"></p>
+                        </div>
+                    </div>
                     <div class="chat-actions">
                         <button id="chat-info-btn"><i class="fas fa-info-circle"></i></button>
                         <button id="leave-chat-btn" style="display: none;"><i class="fas fa-sign-out-alt"></i></button>
@@ -80,30 +118,75 @@
                     <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
-            
-            <div id="group-creation-modal" class="modal" style="display: none;">
-                <div class="modal-content">
-                    <span class="close-modal">&times;</span>
-                    <h3>Создать новую группу</h3>
-                    <input type="text" id="group-name" placeholder="Название группы">
-                    <div class="user-selection">
-                        <h4>Выберите участников:</h4>
-                        <ul id="user-list-for-group">
-                            <!-- Users will be loaded here -->
-                        </ul>
-                    </div>
-                    <button id="create-group-btn">Создать группу</button>
-                </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="group-creation-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Создать новую группу</h3>
+            <input type="text" id="group-name" placeholder="Название группы">
+            <textarea id="group-description" placeholder="Описание группы"></textarea>
+            <div class="user-selection">
+                <h4>Выберите участников:</h4>
+                <ul id="user-list-for-group">
+                    <!-- Users will be loaded here -->
+                </ul>
             </div>
-            
-            <div id="chat-info-modal" class="modal" style="display: none;">
-                <div class="modal-content">
-                    <span class="close-modal">&times;</span>
-                    <h3 id="info-modal-title">Информация о чате</h3>
-                    <div id="chat-info-content">
-                        <!-- Chat info will be loaded here -->
-                    </div>
+            <button id="create-group-btn">Создать группу</button>
+        </div>
+    </div>
+    
+    <div id="chat-info-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="chat-info-content">
+                <!-- Chat info will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <div id="profile-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="profile-header">
+                <img id="profile-avatar" src="https://via.placeholder.com/100" alt="Аватар">
+                <button id="change-avatar-btn">Изменить аватар</button>
+                <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+            </div>
+            <div class="profile-form">
+                <div class="form-group">
+                    <label for="profile-username">Никнейм</label>
+                    <input type="text" id="profile-username" placeholder="@username">
                 </div>
+                <div class="form-group">
+                    <label for="profile-status">Статус</label>
+                    <input type="text" id="profile-status" placeholder="Ваш статус">
+                </div>
+                <div class="form-group">
+                    <label for="profile-bio">О себе</label>
+                    <textarea id="profile-bio" placeholder="Расскажите о себе"></textarea>
+                </div>
+                <button id="save-profile-btn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="add-friend-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Добавить друга</h3>
+            <input type="text" id="friend-username" placeholder="@username">
+            <button id="send-friend-request-btn">Отправить запрос</button>
+        </div>
+    </div>
+    
+    <div id="user-profile-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="user-profile-content">
+                <!-- User profile will be loaded here -->
             </div>
         </div>
     </div>
@@ -112,10 +195,13 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
     
     <!-- App Scripts -->
     <script src="auth.js"></script>
-    <script src="encryption.js"></script>
+    <script src="profile.js"></script>
+    <script src="friends.js"></script>
+    <script src="groups.js"></script>
     <script src="chat.js"></script>
     <script src="app.js"></script>
 </body>
