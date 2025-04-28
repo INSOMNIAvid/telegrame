@@ -23,6 +23,12 @@ auth.onAuthStateChanged(user => {
         appContainer.style.display = 'flex';
         loadUserData(user.uid);
         setupRealTimeListeners(user.uid);
+        
+        // Update user status to online
+        database.ref('users/' + user.uid).update({
+            status: 'online',
+            lastLogin: firebase.database.ServerValue.TIMESTAMP
+        });
     } else {
         // No user is signed in
         authModal.style.display = 'flex';
@@ -53,15 +59,27 @@ closeAuth.addEventListener('click', () => {
 // Login Form Submission
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const email = document.getElementById('loginEmail').value;
+    const loginInput = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
     
-    auth.signInWithEmailAndPassword(email, password)
+    // Determine if input is email or phone
+    let authPromise;
+    if (loginInput.includes('@')) {
+        // Email login
+        authPromise = auth.signInWithEmailAndPassword(loginInput, password);
+    } else {
+        // Phone login (would need Firebase phone auth setup)
+        alert("Phone login not implemented in this example");
+        return;
+    }
+    
+    authPromise
         .then((userCredential) => {
             // Update last login time
             const userId = userCredential.user.uid;
-            database.ref('users/' + userId).update({
-                lastLogin: firebase.database.ServerValue.TIMESTAMP
+            return database.ref('users/' + userId).update({
+                lastLogin: firebase.database.ServerValue.TIMESTAMP,
+                status: 'online'
             });
         })
         .catch((error) => {
@@ -76,6 +94,7 @@ registerForm.addEventListener('submit', (e) => {
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('registerConfirmPassword').value;
     let username = document.getElementById('registerUsername').value;
+    const phone = document.getElementById('registerPhone').value;
     
     // Validate passwords match
     if (password !== confirmPassword) {
@@ -88,12 +107,18 @@ registerForm.addEventListener('submit', (e) => {
         username = '@' + username;
     }
     
+    // Validate username format
+    if (!/^@[a-zA-Z0-9_]{3,20}$/.test(username)) {
+        alert("Username must start with @ and contain 3-20 letters, numbers or underscores");
+        return;
+    }
+    
     // Check if username is available
     database.ref('usernames').child(username).once('value')
         .then(snapshot => {
             if (snapshot.exists()) {
                 alert('Username already taken!');
-                return;
+                return Promise.reject('Username taken');
             }
             
             // Create user
@@ -102,8 +127,8 @@ registerForm.addEventListener('submit', (e) => {
         .then((userCredential) => {
             const user = userCredential.user;
             
-            // Save user data
-            return database.ref('users/' + user.uid).set({
+            // Prepare user data
+            const userData = {
                 username: username,
                 email: email,
                 createdAt: firebase.database.ServerValue.TIMESTAMP,
@@ -111,17 +136,43 @@ registerForm.addEventListener('submit', (e) => {
                 status: 'online',
                 bio: '',
                 avatar: 'https://via.placeholder.com/150'
-            }).then(() => {
-                // Reserve username
-                return database.ref('usernames/' + username).set(user.uid);
-            });
+            };
+            
+            // Add phone if provided
+            if (phone) {
+                if (!/^\+[0-9]{10,15}$/.test(phone)) {
+                    alert("Phone number must be in format +1234567890");
+                    return Promise.reject('Invalid phone');
+                }
+                userData.phone = phone;
+                
+                // Store phone mapping
+                return database.ref('phones').child(phone).set(user.uid)
+                    .then(() => {
+                        // Save user data
+                        return database.ref('users/' + user.uid).set(userData);
+                    })
+                    .then(() => {
+                        // Reserve username
+                        return database.ref('usernames/' + username).set(user.uid);
+                    });
+            } else {
+                // Save user data without phone
+                return database.ref('users/' + user.uid).set(userData)
+                    .then(() => {
+                        // Reserve username
+                        return database.ref('usernames/' + username).set(user.uid);
+                    });
+            }
         })
         .then(() => {
             alert('Registration successful!');
             loginTab.click();
         })
         .catch((error) => {
-            alert(error.message);
+            if (error !== 'Username taken' && error !== 'Invalid phone') {
+                alert(error.message);
+            }
         });
 });
 
@@ -152,6 +203,7 @@ function loadUserData(userId) {
             document.getElementById('profileUsername').textContent = userData.username;
             document.getElementById('userStatus').textContent = userData.status;
             document.getElementById('profileBio').value = userData.bio || '';
+            document.getElementById('profilePhone').value = userData.phone || '';
             
             // Format last seen
             if (userData.lastLogin) {
@@ -177,6 +229,7 @@ function setupRealTimeListeners(userId) {
             document.getElementById('profileUsername').textContent = userData.username;
             document.getElementById('userStatus').textContent = userData.status;
             document.getElementById('profileBio').value = userData.bio || '';
+            document.getElementById('profilePhone').value = userData.phone || '';
             
             if (userData.lastLogin) {
                 const lastSeen = new Date(userData.lastLogin);
@@ -219,6 +272,17 @@ function setupRealTimeListeners(userId) {
             });
         } else {
             friendsList.innerHTML = '<p class="no-friends">No friends yet. Add some!</p>';
+        }
+    });
+    
+    // Listen for friend requests
+    database.ref('friendRequests/' + userId).on('value', snapshot => {
+        // Update UI to show pending requests
+        const requestsBtn = document.getElementById('friendRequestsBtn');
+        if (snapshot.exists() && Object.keys(snapshot.val()).length > 0) {
+            requestsBtn.classList.add('has-requests');
+        } else {
+            requestsBtn.classList.remove('has-requests');
         }
     });
     
@@ -366,12 +430,23 @@ function displayMessage(message, currentUserId) {
                 senderName = userData.username;
                 senderAvatar = userData.avatar || 'https://via.placeholder.com/40';
                 
+                let messageContent = '';
+                
+                if (message.text) {
+                    messageContent = `<div class="message-content">${message.text}</div>`;
+                } else if (message.fileUrl) {
+                    messageContent = `
+                        <div class="message-content">Sent a file</div>
+                        <img src="${message.fileUrl}" class="message-file" alt="File">
+                    `;
+                }
+                
                 messageElement.innerHTML = `
                     <div class="message-info">
                         <span class="message-author">${senderName}</span>
                         <span class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</span>
                     </div>
-                    <div class="message-content">${message.text}</div>
+                    ${messageContent}
                 `;
                 
                 messagesContainer.appendChild(messageElement);
@@ -380,18 +455,40 @@ function displayMessage(message, currentUserId) {
         });
 }
 
-// Add Friend
+// Add Friend Modal
 document.getElementById('addFriendBtn').addEventListener('click', () => {
     const addFriendModal = document.getElementById('addFriendModal');
     addFriendModal.classList.add('active');
     
+    const searchTabs = addFriendModal.querySelectorAll('.search-tab-btn');
     const friendSearch = document.getElementById('friendSearch');
     const searchResults = document.getElementById('friendSearchResults');
+    
+    // Set default search to username
+    let searchType = 'username';
+    friendSearch.placeholder = 'Search by username...';
+    
+    // Handle search tab switching
+    searchTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            searchTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            searchType = tab.getAttribute('data-search-type');
+            friendSearch.placeholder = `Search by ${searchType}...`;
+            friendSearch.value = '';
+            searchResults.innerHTML = '';
+        });
+    });
     
     friendSearch.addEventListener('input', () => {
         const query = friendSearch.value.trim();
         if (query.length >= 3) {
-            searchUsers(query, searchResults);
+            if (searchType === 'username') {
+                searchUsersByUsername(query, searchResults);
+            } else {
+                searchUsersByPhone(query, searchResults);
+            }
         } else {
             searchResults.innerHTML = '';
         }
@@ -403,8 +500,8 @@ document.getElementById('addFriendBtn').addEventListener('click', () => {
     });
 });
 
-// Search Users
-function searchUsers(query, resultsContainer) {
+// Search Users by Username
+function searchUsersByUsername(query, resultsContainer) {
     // Ensure query starts with @
     if (!query.startsWith('@')) {
         query = '@' + query;
@@ -427,27 +524,7 @@ function searchUsers(query, resultsContainer) {
                             .then(userSnapshot => {
                                 const userData = userSnapshot.val();
                                 if (userData) {
-                                    const resultItem = document.createElement('div');
-                                    resultItem.className = 'search-result-item';
-                                    resultItem.innerHTML = `
-                                        <img src="${userData.avatar || 'https://via.placeholder.com/40'}" alt="User">
-                                        <div class="search-result-info">
-                                            <h4>${userData.username}</h4>
-                                            <p>${userData.bio || 'No bio yet'}</p>
-                                        </div>
-                                        <button class="add-friend-btn" data-userid="${userId}">Add Friend</button>
-                                    `;
-                                    
-                                    // Check if already friends
-                                    database.ref('friends/' + currentUserId + '/' + userId).once('value')
-                                        .then(friendSnapshot => {
-                                            if (friendSnapshot.exists()) {
-                                                resultItem.querySelector('.add-friend-btn').textContent = 'Added';
-                                                resultItem.querySelector('.add-friend-btn').disabled = true;
-                                            }
-                                        });
-                                    
-                                    resultsContainer.appendChild(resultItem);
+                                    createSearchResultItem(userData, resultsContainer, currentUserId);
                                 }
                             });
                     }
@@ -458,18 +535,164 @@ function searchUsers(query, resultsContainer) {
         });
 }
 
+// Search Users by Phone
+function searchUsersByPhone(query, resultsContainer) {
+    // Clean phone number (remove non-digit characters except +)
+    const cleanQuery = query.replace(/[^\d+]/g, '');
+    
+    if (cleanQuery.length < 3) {
+        resultsContainer.innerHTML = '';
+        return;
+    }
+    
+    database.ref('phones').orderByKey().startAt(cleanQuery).endAt(cleanQuery + '\uf8ff').once('value')
+        .then(snapshot => {
+            resultsContainer.innerHTML = '';
+            
+            if (snapshot.exists()) {
+                const phones = snapshot.val();
+                const currentUserId = auth.currentUser.uid;
+                
+                Object.keys(phones).forEach(phone => {
+                    const userId = phones[phone];
+                    
+                    // Don't show current user in results
+                    if (userId !== currentUserId) {
+                        database.ref('users/' + userId).once('value')
+                            .then(userSnapshot => {
+                                const userData = userSnapshot.val();
+                                if (userData) {
+                                    createSearchResultItem(userData, resultsContainer, currentUserId);
+                                }
+                            });
+                    }
+                });
+            } else {
+                resultsContainer.innerHTML = '<p class="no-results">No users found with this phone number</p>';
+            }
+        });
+}
+
+// Create Search Result Item
+function createSearchResultItem(userData, container, currentUserId) {
+    const resultItem = document.createElement('div');
+    resultItem.className = 'search-result-item';
+    resultItem.innerHTML = `
+        <img src="${userData.avatar || 'https://via.placeholder.com/40'}" alt="User">
+        <div class="search-result-info">
+            <h4>${userData.username}</h4>
+            <p>${userData.bio || 'No bio yet'}</p>
+            ${userData.phone ? `<p><small>Phone: ${userData.phone}</small></p>` : ''}
+        </div>
+        <button class="add-friend-btn" data-userid="${userData.userId || userData.key}">Add Friend</button>
+    `;
+    
+    // Check if already friends
+    database.ref('friends/' + currentUserId + '/' + (userData.userId || userData.key)).once('value')
+        .then(friendSnapshot => {
+            if (friendSnapshot.exists()) {
+                resultItem.querySelector('.add-friend-btn').textContent = 'Added';
+                resultItem.querySelector('.add-friend-btn').disabled = true;
+            }
+        });
+    
+    container.appendChild(resultItem);
+}
+
+// Friend Requests
+document.getElementById('friendRequestsBtn').addEventListener('click', () => {
+    const requestsModal = document.getElementById('friendRequestsModal');
+    requestsModal.classList.add('active');
+    
+    const currentUserId = auth.currentUser.uid;
+    const requestsList = document.getElementById('friendRequestsList');
+    requestsList.innerHTML = '';
+    
+    // Load pending friend requests
+    database.ref('friendRequests/' + currentUserId).once('value')
+        .then(snapshot => {
+            if (snapshot.exists()) {
+                const requests = snapshot.val();
+                
+                Object.keys(requests).forEach(requestId => {
+                    const requesterId = requests[requestId].from;
+                    const timestamp = requests[requestId].timestamp;
+                    
+                    database.ref('users/' + requesterId).once('value')
+                        .then(userSnapshot => {
+                            const userData = userSnapshot.val();
+                            if (userData) {
+                                const requestItem = document.createElement('div');
+                                requestItem.className = 'request-item';
+                                requestItem.innerHTML = `
+                                    <img src="${userData.avatar || 'https://via.placeholder.com/40'}" alt="User">
+                                    <div class="request-info">
+                                        <h4>${userData.username}</h4>
+                                        <p>Wants to be friends</p>
+                                        <small>${new Date(timestamp).toLocaleString()}</small>
+                                    </div>
+                                    <button class="request-action-btn accept" data-requestid="${requestId}" data-userid="${requesterId}">Accept</button>
+                                    <button class="request-action-btn decline" data-requestid="${requestId}">Decline</button>
+                                `;
+                                requestsList.appendChild(requestItem);
+                            }
+                        });
+                });
+            } else {
+                requestsList.innerHTML = '<p class="no-requests">No pending friend requests</p>';
+            }
+        });
+    
+    // Close modal when clicking X
+    requestsModal.querySelector('.close-btn').addEventListener('click', () => {
+        requestsModal.classList.remove('active');
+    });
+});
+
 // Handle Add Friend
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('add-friend-btn')) {
         const userId = e.target.getAttribute('data-userid');
         const currentUserId = auth.currentUser.uid;
         
-        // Add to both users' friend lists
-        database.ref('friends/' + currentUserId + '/' + userId).set(true);
-        database.ref('friends/' + userId + '/' + currentUserId).set(true);
+        // Create friend request instead of directly adding
+        const requestId = database.ref('friendRequests/' + userId).push().key;
         
-        e.target.textContent = 'Added';
-        e.target.disabled = true;
+        database.ref('friendRequests/' + userId + '/' + requestId).set({
+            from: currentUserId,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+            e.target.textContent = 'Request Sent';
+            e.target.disabled = true;
+            alert('Friend request sent!');
+        });
+    }
+    
+    // Handle friend request actions
+    if (e.target.classList.contains('request-action-btn')) {
+        const requestId = e.target.getAttribute('data-requestid');
+        const currentUserId = auth.currentUser.uid;
+        
+        if (e.target.classList.contains('accept')) {
+            const requesterId = e.target.getAttribute('data-userid');
+            
+            // Add to both users' friend lists
+            database.ref('friends/' + currentUserId + '/' + requesterId).set(true);
+            database.ref('friends/' + requesterId + '/' + currentUserId).set(true);
+            
+            // Remove the request
+            database.ref('friendRequests/' + currentUserId + '/' + requestId).remove()
+                .then(() => {
+                    e.target.closest('.request-item').remove();
+                    alert('Friend added!');
+                });
+        } else if (e.target.classList.contains('decline')) {
+            // Just remove the request
+            database.ref('friendRequests/' + currentUserId + '/' + requestId).remove()
+                .then(() => {
+                    e.target.closest('.request-item').remove();
+                });
+        }
     }
 });
 
@@ -485,12 +708,12 @@ document.getElementById('createGroupBtn').addEventListener('click', () => {
     
     // Add current user as admin
     members[currentUserId] = 'admin';
+    updateSelectedMembersUI(members);
     
     // Search for friends to add
     groupMemberSearch.addEventListener('input', () => {
         const query = groupMemberSearch.value.trim();
         if (query.length >= 3) {
-            searchUsers(query, document.createElement('div')); // Temporary container
             // In a real app, we'd show search results and let user select
         }
     });
@@ -531,6 +754,37 @@ document.getElementById('createGroupBtn').addEventListener('click', () => {
             alert('Group created successfully!');
         });
     });
+    
+    function updateSelectedMembersUI(members) {
+        selectedMembers.innerHTML = '';
+        
+        // Get member details and display them
+        Object.keys(members).forEach(memberId => {
+            database.ref('users/' + memberId).once('value')
+                .then(snapshot => {
+                    const userData = snapshot.val();
+                    if (userData) {
+                        const memberElement = document.createElement('div');
+                        memberElement.className = 'selected-member';
+                        memberElement.innerHTML = `
+                            <img src="${userData.avatar || 'https://via.placeholder.com/20'}" alt="Member">
+                            <span>${userData.username}</span>
+                            ${memberId !== currentUserId ? '<span class="remove-member" data-userid="' + memberId + '">&times;</span>' : ''}
+                        `;
+                        selectedMembers.appendChild(memberElement);
+                        
+                        // Add remove functionality
+                        const removeBtn = memberElement.querySelector('.remove-member');
+                        if (removeBtn) {
+                            removeBtn.addEventListener('click', () => {
+                                delete members[memberId];
+                                updateSelectedMembersUI(members);
+                            });
+                        }
+                    }
+                });
+        });
+    }
 });
 
 // Change Avatar
@@ -559,17 +813,112 @@ document.getElementById('avatarUpload').addEventListener('change', (e) => {
     }
 });
 
-// Save Bio
-document.getElementById('saveBioBtn').addEventListener('click', () => {
+// Save Profile
+document.getElementById('saveProfileBtn').addEventListener('click', () => {
     const userId = auth.currentUser.uid;
     const newBio = document.getElementById('profileBio').value.trim();
+    const newPhone = document.getElementById('profilePhone').value.trim();
     
-    database.ref('users/' + userId).update({
+    const updates = {
         bio: newBio
-    }).then(() => {
-        alert('Bio updated successfully!');
-    });
+    };
+    
+    // Only update phone if it's changed and valid
+    if (newPhone) {
+        if (!/^\+[0-9]{10,15}$/.test(newPhone)) {
+            alert("Phone number must be in format +1234567890");
+            return;
+        }
+        updates.phone = newPhone;
+        
+        // Update phone mapping
+        database.ref('phones').child(newPhone).set(userId);
+    }
+    
+    database.ref('users/' + userId).update(updates)
+        .then(() => {
+            alert('Profile updated successfully!');
+        });
 });
+
+// File Attachment
+document.getElementById('attachFileBtn').addEventListener('click', () => {
+    document.getElementById('fileUpload').click();
+});
+
+document.getElementById('fileUpload').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const filePreviewModal = document.getElementById('filePreviewModal');
+        const filePreview = document.getElementById('filePreview');
+        const fileInfo = document.getElementById('fileInfo');
+        
+        filePreviewModal.classList.add('active');
+        
+        // Display file info
+        fileInfo.innerHTML = `
+            <p><strong>Name:</strong> ${file.name}</p>
+            <p><strong>Size:</strong> ${(file.size / 1024).toFixed(2)} KB</p>
+            <p><strong>Type:</strong> ${file.type}</p>
+        `;
+        
+        // Preview if image
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                filePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            filePreview.innerHTML = `<i class="fas fa-file" style="font-size: 50px;"></i>`;
+        }
+        
+        // Set up send button
+        document.getElementById('sendFileBtn').onclick = () => {
+            sendFile(file);
+            filePreviewModal.classList.remove('active');
+        };
+        
+        // Close modal when clicking X
+        filePreviewModal.querySelector('.close-btn').addEventListener('click', () => {
+            filePreviewModal.classList.remove('active');
+        });
+    }
+});
+
+function sendFile(file) {
+    const userId = auth.currentUser.uid;
+    const storageRef = storage.ref('chat_files/' + userId + '/' + Date.now() + '_' + file.name);
+    
+    storageRef.put(file).then(snapshot => {
+        return snapshot.ref.getDownloadURL();
+    }).then(downloadURL => {
+        // Get current chat info
+        const chatId = getCurrentChatId(); // You'd need to implement this based on your chat state
+        
+        if (chatId) {
+            const newMessage = {
+                senderId: userId,
+                fileUrl: downloadURL,
+                fileName: file.name,
+                fileType: file.type,
+                fileSize: file.size,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            
+            // Save to appropriate chat (private or group)
+            if (chatId.includes('_')) {
+                // Private chat
+                database.ref('privateMessages/' + chatId).push(newMessage);
+            } else {
+                // Group chat
+                database.ref('groupMessages/' + chatId).push(newMessage);
+            }
+        }
+    }).catch(error => {
+        alert('Error uploading file: ' + error.message);
+    });
+}
 
 // Logout
 document.getElementById('logoutBtn').addEventListener('click', () => {
