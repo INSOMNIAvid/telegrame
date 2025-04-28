@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <!-- Auth Section -->
@@ -18,8 +23,8 @@
             <form class="auth-form login-form active" id="login-form">
                 <h2>Login</h2>
                 <div class="input-group">
-                    <input type="text" id="login-username" placeholder="@username" required>
-                    <i class="fas fa-at"></i>
+                    <input type="email" id="login-email" placeholder="Email" required>
+                    <i class="fas fa-envelope"></i>
                 </div>
                 <div class="input-group">
                     <input type="password" id="login-password" placeholder="Password" required>
@@ -40,15 +45,15 @@
             <form class="auth-form signup-form" id="signup-form">
                 <h2>Sign Up</h2>
                 <div class="input-group">
-                    <input type="text" id="signup-username" placeholder="@username" required>
-                    <i class="fas fa-at"></i>
+                    <input type="text" id="signup-username" placeholder="Username (without @)" required>
+                    <i class="fas fa-user"></i>
                 </div>
                 <div class="input-group">
                     <input type="email" id="signup-email" placeholder="Email" required>
                     <i class="fas fa-envelope"></i>
                 </div>
                 <div class="input-group">
-                    <input type="password" id="signup-password" placeholder="Password" required>
+                    <input type="password" id="signup-password" placeholder="Password (min 6 characters)" required>
                     <i class="fas fa-lock"></i>
                     <i class="fas fa-eye-slash toggle-password"></i>
                 </div>
@@ -88,12 +93,14 @@
             </div>
             
             <div class="search-box">
-                <input type="text" placeholder="Search...">
+                <input type="text" placeholder="Search..." id="search-input">
                 <i class="fas fa-search"></i>
+                <div class="search-results" id="search-results"></div>
             </div>
             
             <div class="sidebar-content" id="chats-tab">
                 <!-- Chats will be loaded here -->
+                <div class="chats-list" id="chats-list"></div>
             </div>
             
             <div class="sidebar-content hidden" id="friends-tab">
@@ -169,7 +176,6 @@
                 </div>
                 <div class="chat-actions">
                     <button class="btn-icon" id="chat-info-btn"><i class="fas fa-info-circle"></i></button>
-                    <button class="btn-icon" id="chat-more-btn"><i class="fas fa-ellipsis-v"></i></button>
                 </div>
             </div>
             
@@ -212,7 +218,7 @@
             </div>
             <div class="modal-body">
                 <div class="input-group">
-                    <input type="text" id="friend-username" placeholder="@username">
+                    <input type="text" id="friend-username" placeholder="Username (with or without @)">
                     <i class="fas fa-at"></i>
                 </div>
                 <button class="btn" id="send-friend-request-btn">Send Request</button>
@@ -299,7 +305,6 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="script.js"></script>
     <script src="app.js"></script>
 </body>
