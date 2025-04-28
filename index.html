@@ -12,110 +12,66 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
     <script src="firebase-config.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 </head>
 <body>
-    <!-- Auth Modal -->
-    <div class="auth-modal" id="authModal">
-        <div class="auth-container">
-            <span class="close-btn" id="closeAuth">&times;</span>
-            
-            <div class="auth-tabs">
-                <button class="tab-btn active" id="loginTab">Login</button>
-                <button class="tab-btn" id="registerTab">Register</button>
+    <!-- Auth Page -->
+    <div class="auth-page" id="authPage">
+        <div class="container">
+            <div class="left">
+                <div class="login">SecureChat</div>
+                <div class="eula">By logging in you agree to our terms of service and privacy policy</div>
+                <button class="switch-btn" id="showRegister">Don't have an account? Register</button>
             </div>
-            
-            <div class="auth-content">
-                <!-- Login Form -->
-                <form id="loginForm" class="auth-form active">
-                    <div class="input-group">
-                        <label for="loginEmail">Email or Phone</label>
-                        <input type="text" id="loginEmail" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="loginPassword">Password</label>
-                        <div class="password-wrapper">
-                            <input type="password" id="loginPassword" required>
-                            <i class="fas fa-eye-slash toggle-password"></i>
-                        </div>
-                    </div>
-                    <button type="submit" class="auth-btn">Login</button>
-                    <div class="auth-footer">
-                        <a href="#" id="forgotPassword">Forgot password?</a>
-                    </div>
-                </form>
+            <div class="right">
+                <svg viewBox="0 0 320 300">
+                    <defs>
+                        <linearGradient
+                                        inkscape:collect="always"
+                                        id="linearGradient"
+                                        x1="13"
+                                        y1="193.49992"
+                                        x2="307"
+                                        y2="193.49992"
+                                        gradientUnits="userSpaceOnUse">
+                            <stop
+                                  style="stop-color:#7289da;"
+                                  offset="0"
+                                  id="stop876" />
+                            <stop
+                                  style="stop-color:#4e5d94;"
+                                  offset="1"
+                                  id="stop878" />
+                        </linearGradient>
+                    </defs>
+                    <path d="m 40,120.00016 239.99984,-3.2e-4 c 0,0 24.99263,0.79932 25.00016,35.00016 0.008,34.20084 -25.00016,35 -25.00016,35 h -239.99984 c 0,-0.0205 -25,4.01348 -25,38.5 0,34.48652 25,38.5 25,38.5 h 215 c 0,0 20,-0.99604 20,-25 0,-24.00396 -20,-25 -20,-25 h -190 c 0,0 -20,1.71033 -20,25 0,24.00396 20,25 20,25 h 168.57143" />
+                </svg>
+                <div class="form" id="loginForm">
+                    <label for="email">Email or Phone</label>
+                    <input type="text" id="email" autocomplete="username">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" autocomplete="current-password">
+                    <input type="submit" id="submit" value="Login">
+                    <a href="#" class="forgot-password" id="forgotPassword">Forgot password?</a>
+                </div>
                 
-                <!-- Register Form -->
-                <form id="registerForm" class="auth-form">
-                    <div class="input-group">
-                        <label for="registerUsername">Username</label>
-                        <input type="text" id="registerUsername" placeholder="@username" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="registerPhone">Phone Number (optional)</label>
-                        <input type="tel" id="registerPhone" placeholder="+1234567890">
-                    </div>
-                    <div class="input-group">
-                        <label for="registerEmail">Email</label>
-                        <input type="email" id="registerEmail" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="registerPassword">Password</label>
-                        <div class="password-wrapper">
-                            <input type="password" id="registerPassword" required>
-                            <i class="fas fa-eye-slash toggle-password"></i>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label for="registerConfirmPassword">Confirm Password</label>
-                        <div class="password-wrapper">
-                            <input type="password" id="registerConfirmPassword" required>
-                            <i class="fas fa-eye-slash toggle-password"></i>
-                        </div>
-                    </div>
-                    <button type="submit" class="auth-btn">Register</button>
-                </form>
+                <div class="form" id="registerForm" style="display: none;">
+                    <label for="regUsername">Username</label>
+                    <input type="text" id="regUsername" placeholder="@username" autocomplete="username">
+                    <label for="regEmail">Email</label>
+                    <input type="email" id="regEmail" autocomplete="email">
+                    <label for="regPhone">Phone (optional)</label>
+                    <input type="tel" id="regPhone" placeholder="+1234567890">
+                    <label for="regPassword">Password</label>
+                    <input type="password" id="regPassword" autocomplete="new-password">
+                    <label for="regConfirmPassword">Confirm Password</label>
+                    <input type="password" id="regConfirmPassword" autocomplete="new-password">
+                    <input type="submit" id="regSubmit" value="Register">
+                    <button class="switch-btn" id="showLogin">Already have an account? Login</button>
+                </div>
             </div>
         </div>
     </div>
-<div class="page">
-  <div class="container">
-    <div class="left">
-      <div class="login">Login</div>
-      <div class="eula">By logging in you agree to the ridiculously long terms that you didn't bother to read</div>
-    </div>
-    <div class="right">
-      <svg viewBox="0 0 320 300">
-        <defs>
-          <linearGradient
-                          inkscape:collect="always"
-                          id="linearGradient"
-                          x1="13"
-                          y1="193.49992"
-                          x2="307"
-                          y2="193.49992"
-                          gradientUnits="userSpaceOnUse">
-            <stop
-                  style="stop-color:#ff00ff;"
-                  offset="0"
-                  id="stop876" />
-            <stop
-                  style="stop-color:#ff0000;"
-                  offset="1"
-                  id="stop878" />
-          </linearGradient>
-        </defs>
-        <path d="m 40,120.00016 239.99984,-3.2e-4 c 0,0 24.99263,0.79932 25.00016,35.00016 0.008,34.20084 -25.00016,35 -25.00016,35 h -239.99984 c 0,-0.0205 -25,4.01348 -25,38.5 0,34.48652 25,38.5 25,38.5 h 215 c 0,0 20,-0.99604 20,-25 0,-24.00396 -20,-25 -20,-25 h -190 c 0,0 -20,1.71033 -20,25 0,24.00396 20,25 20,25 h 168.57143" />
-      </svg>
-      <div class="form">
-        <label for="email">Email</label>
-        <input type="email" id="email">
-        <label for="password">Password</label>
-        <input type="password" id="password">
-        <input type="submit" id="submit" value="Submit">
-      </div>
-    </div>
-  </div>
-</div>
 
     <!-- Main App Container -->
     <div class="app-container" id="appContainer">
