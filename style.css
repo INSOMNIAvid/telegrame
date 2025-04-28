@@ -378,6 +378,11 @@ body {
     font-weight: 500;
 }
 
+.friend-actions {
+    display: flex;
+    gap: 10px;
+}
+
 .friends-list, .groups-list {
     padding: 10px 0;
 }
@@ -443,7 +448,6 @@ body {
 /* Profile Tab */
 .profile-view {
     padding: 20px;
-    text-align: center;
 }
 
 .profile-avatar {
@@ -473,9 +477,14 @@ body {
     justify-content: center;
 }
 
+.profile-info {
+    margin-top: 20px;
+}
+
 .profile-info h3 {
     font-size: 20px;
     margin-bottom: 5px;
+    text-align: center;
 }
 
 .last-seen {
@@ -483,6 +492,38 @@ body {
     color: var(--light-color);
     opacity: 0.7;
     margin-bottom: 15px;
+    text-align: center;
+}
+
+.profile-field {
+    margin-bottom: 15px;
+}
+
+.profile-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: var(--light-color);
+}
+
+.profile-field input {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--dark-color);
+    border: 1px solid var(--secondary-color);
+    border-radius: 4px;
+    color: var(--light-color);
+}
+
+.profile-bio {
+    margin-bottom: 20px;
+}
+
+.profile-bio label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: var(--light-color);
 }
 
 .profile-bio textarea {
@@ -494,7 +535,10 @@ body {
     border-radius: 4px;
     color: var(--light-color);
     resize: none;
-    margin-bottom: 10px;
+}
+
+.profile-actions {
+    text-align: center;
 }
 
 .small-btn {
@@ -644,11 +688,23 @@ body {
     opacity: 0.7;
 }
 
+.message-file {
+    max-width: 200px;
+    border-radius: 8px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
 .message-input {
     padding: 15px;
     display: flex;
+    align-items: center;
     background-color: var(--darker-color);
     border-top: 1px solid var(--secondary-color);
+}
+
+.message-actions {
+    margin-right: 10px;
 }
 
 .message-input input {
@@ -749,13 +805,37 @@ body {
     font-weight: 500;
 }
 
-.search-results {
+.search-tabs {
+    display: flex;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--secondary-color);
+}
+
+.search-tab-btn {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    color: var(--light-color);
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+}
+
+.search-tab-btn.active {
+    border-bottom-color: var(--primary-color);
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.search-results, .requests-list {
     margin-top: 15px;
     max-height: 300px;
     overflow-y: auto;
 }
 
-.search-result-item {
+.search-result-item, .request-item {
     display: flex;
     align-items: center;
     padding: 10px;
@@ -763,30 +843,34 @@ body {
     transition: background-color 0.2s;
 }
 
-.search-result-item:hover {
+.search-result-item:hover, .request-item:hover {
     background-color: rgba(255, 255, 255, 0.05);
 }
 
-.search-result-item img {
+.search-result-item img, .request-item img {
     width: 40px;
     height: 40px;
     border-radius: 50%;
     margin-right: 10px;
 }
 
-.search-result-info h4 {
+.search-result-info, .request-info {
+    flex: 1;
+}
+
+.search-result-info h4, .request-info h4 {
     font-size: 14px;
     font-weight: 500;
     margin-bottom: 3px;
 }
 
-.search-result-info p {
+.search-result-info p, .request-info p {
     font-size: 12px;
     color: var(--light-color);
     opacity: 0.7;
 }
 
-.add-friend-btn {
+.add-friend-btn, .request-action-btn {
     margin-left: auto;
     padding: 5px 10px;
     background-color: var(--primary-color);
@@ -798,8 +882,17 @@ body {
     transition: background-color 0.3s;
 }
 
-.add-friend-btn:hover {
+.add-friend-btn:hover, .request-action-btn:hover {
     background-color: #677bc4;
+}
+
+.request-action-btn.decline {
+    background-color: var(--danger-color);
+    margin-left: 5px;
+}
+
+.request-action-btn.decline:hover {
+    background-color: #d83c3c;
 }
 
 .selected-members {
@@ -847,6 +940,22 @@ body {
 
 .modal-btn:hover {
     background-color: #677bc4;
+}
+
+.file-preview {
+    margin: 15px 0;
+    text-align: center;
+}
+
+.file-preview img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+}
+
+.file-info {
+    margin-bottom: 15px;
+    font-size: 14px;
 }
 
 /* Responsive */
