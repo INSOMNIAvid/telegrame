@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecureChat - Encrypted Messaging</title>
+    <title>SecureChat Pro - Encrypted Messaging</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -28,8 +28,8 @@
                 <!-- Login Form -->
                 <form id="loginForm" class="auth-form active">
                     <div class="input-group">
-                        <label for="loginEmail">Email</label>
-                        <input type="email" id="loginEmail" required>
+                        <label for="loginEmail">Email or Phone</label>
+                        <input type="text" id="loginEmail" required>
                     </div>
                     <div class="input-group">
                         <label for="loginPassword">Password</label>
@@ -49,6 +49,10 @@
                     <div class="input-group">
                         <label for="registerUsername">Username</label>
                         <input type="text" id="registerUsername" placeholder="@username" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="registerPhone">Phone Number (optional)</label>
+                        <input type="tel" id="registerPhone" placeholder="+1234567890">
                     </div>
                     <div class="input-group">
                         <label for="registerEmail">Email</label>
@@ -74,7 +78,7 @@
         </div>
     </div>
 
-    <!-- Main App Container (hidden until auth) -->
+    <!-- Main App Container -->
     <div class="app-container" id="appContainer">
         <!-- Sidebar -->
         <div class="sidebar">
@@ -113,7 +117,10 @@
                 <div class="tab-content" id="friendsTab">
                     <div class="friends-header">
                         <h3>Friends</h3>
-                        <button id="addFriendBtn" class="icon-btn"><i class="fas fa-user-plus"></i></button>
+                        <div class="friend-actions">
+                            <button id="addFriendBtn" class="icon-btn"><i class="fas fa-user-plus"></i></button>
+                            <button id="friendRequestsBtn" class="icon-btn"><i class="fas fa-user-clock"></i></button>
+                        </div>
                     </div>
                     <div class="friends-list" id="friendsList">
                         <!-- Friends will be populated here -->
@@ -142,9 +149,16 @@
                         <div class="profile-info">
                             <h3 id="profileUsername"></h3>
                             <p class="last-seen" id="profileLastSeen"></p>
+                            <div class="profile-field">
+                                <label>Phone Number</label>
+                                <input type="tel" id="profilePhone" placeholder="+1234567890">
+                            </div>
                             <div class="profile-bio">
+                                <label>About</label>
                                 <textarea id="profileBio" placeholder="Write something about yourself..."></textarea>
-                                <button id="saveBioBtn" class="small-btn">Save</button>
+                            </div>
+                            <div class="profile-actions">
+                                <button id="saveProfileBtn" class="small-btn">Save Changes</button>
                             </div>
                         </div>
                     </div>
@@ -176,6 +190,10 @@
             </div>
             
             <div class="message-input">
+                <div class="message-actions">
+                    <button class="icon-btn" id="attachFileBtn"><i class="fas fa-paperclip"></i></button>
+                    <input type="file" id="fileUpload" style="display: none;">
+                </div>
                 <input type="text" placeholder="Type a message..." id="messageInput" disabled>
                 <button id="sendMessageBtn" disabled><i class="fas fa-paper-plane"></i></button>
             </div>
@@ -198,12 +216,26 @@
             <div class="modal-content">
                 <span class="close-btn">&times;</span>
                 <h3>Add Friend</h3>
+                <div class="search-tabs">
+                    <button class="search-tab-btn active" data-search-type="username">By Username</button>
+                    <button class="search-tab-btn" data-search-type="phone">By Phone</button>
+                </div>
                 <div class="search-box">
                     <input type="text" placeholder="Search by username..." id="friendSearch">
                     <button class="search-btn"><i class="fas fa-search"></i></button>
                 </div>
                 <div class="search-results" id="friendSearchResults">
                     <!-- Search results will appear here -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal" id="friendRequestsModal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h3>Friend Requests</h3>
+                <div class="requests-list" id="friendRequestsList">
+                    <!-- Friend requests will appear here -->
                 </div>
             </div>
         </div>
@@ -227,6 +259,18 @@
                     </div>
                 </div>
                 <button id="createGroupSubmit" class="modal-btn">Create Group</button>
+            </div>
+        </div>
+        
+        <div class="modal" id="filePreviewModal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h3>Send File</h3>
+                <div class="file-preview" id="filePreview">
+                    <!-- File preview will appear here -->
+                </div>
+                <div class="file-info" id="fileInfo"></div>
+                <button id="sendFileBtn" class="modal-btn">Send File</button>
             </div>
         </div>
     </div>
