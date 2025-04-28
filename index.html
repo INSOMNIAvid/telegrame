@@ -3,194 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Messenger</title>
+    <title>SecureChat - Encrypted Messaging</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+    <script src="firebase-config.js"></script>
 </head>
 <body>
-    <!-- Auth Section -->
-    <div class="auth-container" id="auth-container">
-        <div class="form-container">
-            <div class="form-close"><i class="fas fa-times"></i></div>
+    <!-- Auth Modal -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-container">
+            <span class="close-btn" id="closeAuth">&times;</span>
             
-            <!-- Login Form -->
-            <form class="auth-form login-form active" id="login-form">
-                <div class="logo">
-                    <i class="fas fa-comment-dots"></i>
-                    <span>SecureChat</span>
-                </div>
-                <h2>Welcome back!</h2>
-                <div class="input-group">
-                    <input type="email" id="login-email" placeholder="Email" required>
-                    <i class="fas fa-envelope"></i>
-                </div>
-                <div class="input-group">
-                    <input type="password" id="login-password" placeholder="Password" required>
-                    <i class="fas fa-lock"></i>
-                    <i class="fas fa-eye-slash toggle-password"></i>
-                </div>
-                <div class="options">
-                    <label><input type="checkbox" id="remember-me"> Remember me</label>
-                    <a href="#" id="forgot-password">Forgot password?</a>
-                </div>
-                <button type="submit" class="btn">Login</button>
-                <div class="divider">
-                    <span>or</span>
-                </div>
-                <button type="button" class="btn btn-google">
-                    <i class="fab fa-google"></i> Continue with Google
-                </button>
-                <div class="form-footer">
-                    Don't have an account? <a href="#" id="show-signup">Sign Up</a>
-                </div>
-            </form>
+            <div class="auth-tabs">
+                <button class="tab-btn active" id="loginTab">Login</button>
+                <button class="tab-btn" id="registerTab">Register</button>
+            </div>
             
-            <!-- Signup Form -->
-            <form class="auth-form signup-form" id="signup-form">
-                <div class="logo">
-                    <i class="fas fa-comment-dots"></i>
-                    <span>SecureChat</span>
-                </div>
-                <h2>Create account</h2>
-                <div class="input-group">
-                    <input type="text" id="signup-username" placeholder="Username" required>
-                    <i class="fas fa-at"></i>
-                </div>
-                <div class="input-group">
-                    <input type="email" id="signup-email" placeholder="Email" required>
-                    <i class="fas fa-envelope"></i>
-                </div>
-                <div class="input-group">
-                    <input type="password" id="signup-password" placeholder="Password" required>
-                    <i class="fas fa-lock"></i>
-                    <i class="fas fa-eye-slash toggle-password"></i>
-                </div>
-                <div class="input-group">
-                    <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required>
-                    <i class="fas fa-lock"></i>
-                    <i class="fas fa-eye-slash toggle-password"></i>
-                </div>
-                <button type="submit" class="btn">Sign Up</button>
-                <div class="divider">
-                    <span>or</span>
-                </div>
-                <button type="button" class="btn btn-google">
-                    <i class="fab fa-google"></i> Continue with Google
-                </button>
-                <div class="form-footer">
-                    Already have an account? <a href="#" id="show-login">Login</a>
-                </div>
-            </form>
+            <div class="auth-content">
+                <!-- Login Form -->
+                <form id="loginForm" class="auth-form active">
+                    <div class="input-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="loginPassword">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="loginPassword" required>
+                            <i class="fas fa-eye-slash toggle-password"></i>
+                        </div>
+                    </div>
+                    <button type="submit" class="auth-btn">Login</button>
+                    <div class="auth-footer">
+                        <a href="#" id="forgotPassword">Forgot password?</a>
+                    </div>
+                </form>
+                
+                <!-- Register Form -->
+                <form id="registerForm" class="auth-form">
+                    <div class="input-group">
+                        <label for="registerUsername">Username</label>
+                        <input type="text" id="registerUsername" placeholder="@username" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="registerPassword">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="registerPassword" required>
+                            <i class="fas fa-eye-slash toggle-password"></i>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="registerConfirmPassword">Confirm Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="registerConfirmPassword" required>
+                            <i class="fas fa-eye-slash toggle-password"></i>
+                        </div>
+                    </div>
+                    <button type="submit" class="auth-btn">Register</button>
+                </form>
+            </div>
         </div>
     </div>
 
-    <!-- Main App (hidden until login) -->
-    <div class="app-container" id="app-container">
+    <!-- Main App Container (hidden until auth) -->
+    <div class="app-container" id="appContainer">
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="user-profile">
-                    <img src="assets/images/default-avatar.png" alt="Profile" id="user-avatar">
+                    <img src="https://via.placeholder.com/50" alt="Profile" id="userAvatar">
                     <div class="user-info">
-                        <span id="sidebar-username">@username</span>
-                        <small id="sidebar-status">Online</small>
+                        <span id="usernameDisplay"></span>
+                        <small id="userStatus">Online</small>
                     </div>
                 </div>
-                <button class="btn-icon" id="logout-btn" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+                <button id="logoutBtn" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
             </div>
             
             <div class="sidebar-tabs">
-                <button class="tab-btn active" data-tab="chats" title="Chats">
-                    <i class="fas fa-comment-dots"></i>
-                    <span>Chats</span>
-                </button>
-                <button class="tab-btn" data-tab="friends" title="Friends">
-                    <i class="fas fa-user-friends"></i>
-                    <span>Friends</span>
-                </button>
-                <button class="tab-btn" data-tab="groups" title="Groups">
-                    <i class="fas fa-users"></i>
-                    <span>Groups</span>
-                </button>
-                <button class="tab-btn" data-tab="profile" title="Profile">
-                    <i class="fas fa-user-cog"></i>
-                    <span>Profile</span>
-                </button>
+                <button class="tab-btn active" data-tab="chats"><i class="fas fa-comment-dots"></i> Chats</button>
+                <button class="tab-btn" data-tab="friends"><i class="fas fa-user-friends"></i> Friends</button>
+                <button class="tab-btn" data-tab="groups"><i class="fas fa-users"></i> Groups</button>
+                <button class="tab-btn" data-tab="profile"><i class="fas fa-user-cog"></i> Profile</button>
             </div>
             
             <div class="search-box">
-                <input type="text" id="global-search" placeholder="Search...">
-                <i class="fas fa-search"></i>
-                <div class="search-results" id="search-results"></div>
+                <input type="text" placeholder="Search..." id="globalSearch">
+                <button class="search-btn"><i class="fas fa-search"></i></button>
             </div>
             
-            <div class="sidebar-content" id="chats-tab">
-                <div class="chats-list" id="chats-list">
-                    <!-- Chats will be loaded here -->
+            <div class="sidebar-content">
+                <!-- Chats Tab -->
+                <div class="tab-content active" id="chatsTab">
+                    <div class="chat-list" id="chatList">
+                        <!-- Chats will be populated here -->
+                    </div>
                 </div>
-            </div>
-            
-            <div class="sidebar-content hidden" id="friends-tab">
-                <div class="friends-list">
+                
+                <!-- Friends Tab -->
+                <div class="tab-content" id="friendsTab">
                     <div class="friends-header">
                         <h3>Friends</h3>
-                        <button class="btn-icon" id="add-friend-btn" title="Add friend"><i class="fas fa-user-plus"></i></button>
+                        <button id="addFriendBtn" class="icon-btn"><i class="fas fa-user-plus"></i></button>
                     </div>
-                    <div class="friends-items" id="friends-list">
-                        <!-- Friends will be loaded here -->
+                    <div class="friends-list" id="friendsList">
+                        <!-- Friends will be populated here -->
                     </div>
                 </div>
-            </div>
-            
-            <div class="sidebar-content hidden" id="groups-tab">
-                <div class="groups-list">
+                
+                <!-- Groups Tab -->
+                <div class="tab-content" id="groupsTab">
                     <div class="groups-header">
                         <h3>Groups</h3>
-                        <button class="btn-icon" id="create-group-btn" title="Create group"><i class="fas fa-plus"></i></button>
+                        <button id="createGroupBtn" class="icon-btn"><i class="fas fa-plus-circle"></i></button>
                     </div>
-                    <div class="groups-items" id="groups-list">
-                        <!-- Groups will be loaded here -->
+                    <div class="groups-list" id="groupsList">
+                        <!-- Groups will be populated here -->
                     </div>
                 </div>
-            </div>
-            
-            <div class="sidebar-content hidden" id="profile-tab">
-                <div class="profile-view">
-                    <div class="profile-avatar">
-                        <img src="assets/images/default-avatar.png" alt="Profile" id="profile-view-avatar">
-                        <button class="btn" id="change-avatar-btn">Change Avatar</button>
-                        <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
-                    </div>
-                    <div class="profile-info">
-                        <div class="info-item">
-                            <label>Username:</label>
-                            <span id="profile-username">@username</span>
+                
+                <!-- Profile Tab -->
+                <div class="tab-content" id="profileTab">
+                    <div class="profile-view">
+                        <div class="profile-avatar">
+                            <img src="https://via.placeholder.com/150" alt="Profile" id="profileAvatar">
+                            <button id="changeAvatarBtn" class="icon-btn"><i class="fas fa-camera"></i></button>
+                            <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
                         </div>
-                        <div class="info-item">
-                            <label>Email:</label>
-                            <span id="profile-email">user@example.com</span>
+                        <div class="profile-info">
+                            <h3 id="profileUsername"></h3>
+                            <p class="last-seen" id="profileLastSeen"></p>
+                            <div class="profile-bio">
+                                <textarea id="profileBio" placeholder="Write something about yourself..."></textarea>
+                                <button id="saveBioBtn" class="small-btn">Save</button>
+                            </div>
                         </div>
-                        <div class="info-item">
-                            <label>Status:</label>
-                            <span id="profile-status">Online</span>
-                        </div>
-                        <div class="info-item">
-                            <label>Last Seen:</label>
-                            <span id="profile-last-seen">Now</span>
-                        </div>
-                    </div>
-                    <div class="profile-bio">
-                        <label>Bio:</label>
-                        <textarea id="profile-bio" placeholder="Tell something about yourself..."></textarea>
-                        <button class="btn" id="save-bio-btn">Save Bio</button>
-                    </div>
-                    <div class="profile-actions">
-                        <button class="btn" id="change-password-btn">Change Password</button>
                     </div>
                 </div>
             </div>
@@ -198,147 +154,83 @@
         
         <!-- Chat Area -->
         <div class="chat-area">
-            <div class="chat-header">
+            <div class="chat-header" id="chatHeader">
                 <div class="chat-info">
-                    <img src="assets/images/default-avatar.png" alt="Chat" id="chat-avatar">
+                    <img src="https://via.placeholder.com/40" alt="Chat" id="currentChatAvatar">
                     <div>
-                        <h3 id="chat-title">Select a chat</h3>
-                        <small id="chat-status">Offline</small>
+                        <h3 id="currentChatName">Select a chat</h3>
+                        <small id="currentChatStatus"></small>
                     </div>
                 </div>
                 <div class="chat-actions">
-                    <button class="btn-icon" id="chat-info-btn" title="Chat info"><i class="fas fa-info-circle"></i></button>
-                    <button class="btn-icon" id="chat-more-btn" title="More options"><i class="fas fa-ellipsis-v"></i></button>
+                    <button class="icon-btn" id="chatInfoBtn"><i class="fas fa-info-circle"></i></button>
+                    <button class="icon-btn" id="encryptBtn"><i class="fas fa-lock"></i></button>
                 </div>
             </div>
             
-            <div class="messages-container" id="messages-container">
+            <div class="messages-container" id="messagesContainer">
                 <div class="no-chat-selected">
-                    <i class="fas fa-comment-slash"></i>
+                    <i class="fas fa-comments"></i>
                     <p>Select a chat to start messaging</p>
                 </div>
             </div>
             
             <div class="message-input">
-                <div class="input-actions">
-                    <button class="btn-icon" title="Attach file"><i class="fas fa-paperclip"></i></button>
-                    <button class="btn-icon" title="Emoji"><i class="fas fa-smile"></i></button>
-                </div>
-                <input type="text" placeholder="Type a message..." id="message-input">
-                <button class="btn-icon" id="send-message-btn" title="Send"><i class="fas fa-paper-plane"></i></button>
+                <input type="text" placeholder="Type a message..." id="messageInput" disabled>
+                <button id="sendMessageBtn" disabled><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
         
         <!-- Right Sidebar (Chat Info) -->
-        <div class="right-sidebar hidden" id="right-sidebar">
+        <div class="right-sidebar" id="rightSidebar">
             <div class="sidebar-header">
                 <h3>Chat Info</h3>
-                <button class="btn-icon" id="close-right-sidebar"><i class="fas fa-times"></i></button>
+                <button class="close-btn" id="closeSidebar">&times;</button>
             </div>
             
-            <div class="chat-details" id="chat-details">
-                <!-- Chat details will be loaded here -->
+            <div class="chat-details" id="chatDetails">
+                <!-- Chat details will be populated here -->
             </div>
         </div>
-    </div>
-    
-    <!-- Modals -->
-    <div class="modal hidden" id="add-friend-modal">
-        <div class="modal-content">
-            <div class="modal-header">
+        
+        <!-- Modals -->
+        <div class="modal" id="addFriendModal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
                 <h3>Add Friend</h3>
-                <button class="btn-icon close-modal"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group">
-                    <input type="text" id="friend-username" placeholder="@username">
-                    <i class="fas fa-at"></i>
+                <div class="search-box">
+                    <input type="text" placeholder="Search by username..." id="friendSearch">
+                    <button class="search-btn"><i class="fas fa-search"></i></button>
                 </div>
-                <button class="btn" id="send-friend-request-btn">Send Request</button>
+                <div class="search-results" id="friendSearchResults">
+                    <!-- Search results will appear here -->
+                </div>
             </div>
         </div>
-    </div>
-    
-    <div class="modal hidden" id="create-group-modal">
-        <div class="modal-content">
-            <div class="modal-header">
+        
+        <div class="modal" id="createGroupModal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
                 <h3>Create Group</h3>
-                <button class="btn-icon close-modal"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
                 <div class="input-group">
-                    <input type="text" id="group-name" placeholder="Group name">
+                    <label for="groupName">Group Name</label>
+                    <input type="text" id="groupName" required>
                 </div>
                 <div class="input-group">
-                    <textarea id="group-description" placeholder="Group description"></textarea>
-                </div>
-                <div class="friends-select">
-                    <h4>Add Members</h4>
-                    <div class="friends-checkboxes" id="group-members-select">
-                        <!-- Friends checkboxes will be loaded here -->
+                    <label>Add Members</label>
+                    <div class="search-box">
+                        <input type="text" placeholder="Search friends..." id="groupMemberSearch">
+                        <button class="search-btn"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div class="selected-members" id="selectedMembers">
+                        <!-- Selected members will appear here -->
                     </div>
                 </div>
-                <button class="btn" id="create-group-confirm-btn">Create Group</button>
-            </div>
-        </div>
-    </div>
-    
-    <div class="modal hidden" id="group-info-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Group Info</h3>
-                <button class="btn-icon close-modal"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <div class="group-info-header">
-                    <img src="assets/images/default-group.png" alt="Group" id="group-info-avatar">
-                    <div>
-                        <h4 id="group-info-name">Group Name</h4>
-                        <small id="group-info-members">5 members</small>
-                    </div>
-                </div>
-                <div class="group-info-description">
-                    <p id="group-info-description-text">Group description goes here</p>
-                </div>
-                <div class="group-members">
-                    <h4>Members</h4>
-                    <div class="members-list" id="group-members-list">
-                        <!-- Members will be loaded here -->
-                    </div>
-                </div>
-                <div class="group-actions">
-                    <button class="btn" id="leave-group-btn">Leave Group</button>
-                    <button class="btn danger" id="delete-group-btn">Delete Group</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="modal hidden" id="change-password-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Change Password</h3>
-                <button class="btn-icon close-modal"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group">
-                    <input type="password" id="current-password" placeholder="Current Password">
-                    <i class="fas fa-lock"></i>
-                </div>
-                <div class="input-group">
-                    <input type="password" id="new-password" placeholder="New Password">
-                    <i class="fas fa-lock"></i>
-                </div>
-                <div class="input-group">
-                    <input type="password" id="confirm-new-password" placeholder="Confirm New Password">
-                    <i class="fas fa-lock"></i>
-                </div>
-                <button class="btn" id="change-password-confirm-btn">Change Password</button>
+                <button id="createGroupSubmit" class="modal-btn">Create Group</button>
             </div>
         </div>
     </div>
 
     <script src="script.js"></script>
-    <script src="app.js"></script>
 </body>
 </html>
