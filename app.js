@@ -1,203 +1,618 @@
+// Firebase Configuration (will be in separate file)
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const database = firebase.database();
+const storage = firebase.storage();
+
 // DOM Elements
-const logoutBtn = document.getElementById('logout-btn');
-const tabBtns = document.querySelectorAll('.tab-btn');
-const addFriendBtn = document.getElementById('add-friend-btn');
-const createGroupBtn = document.getElementById('create-group-btn');
-const changeAvatarBtn = document.getElementById('change-avatar-btn');
-const avatarUpload = document.getElementById('avatar-upload');
-const saveBioBtn = document.getElementById('save-bio-btn');
-const changePasswordBtn = document.getElementById('change-password-btn');
-const chatInfoBtn = document.getElementById('chat-info-btn');
-const closeRightSidebar = document.getElementById('close-right-sidebar');
-const rightSidebar = document.getElementById('right-sidebar');
-const sendMessageBtn = document.getElementById('send-message-btn');
-const messageInput = document.getElementById('message-input');
+const authModal = document.getElementById('authModal');
+const closeAuth = document.getElementById('closeAuth');
+const loginTab = document.getElementById('loginTab');
+const registerTab = document.getElementById('registerTab');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+const forgotPassword = document.getElementById('forgotPassword');
+const appContainer = document.getElementById('appContainer');
 
-// Modals
-const addFriendModal = document.getElementById('add-friend-modal');
-const createGroupModal = document.getElementById('create-group-modal');
-const groupInfoModal = document.getElementById('group-info-modal');
-const changePasswordModal = document.getElementById('change-password-modal');
-const modalCloseBtns = document.querySelectorAll('.close-modal');
-
-// Logout
-logoutBtn.addEventListener('click', async () => {
-    try {
-        await auth.signOut();
-    } catch (error) {
-        console.error('Logout error:', error);
+// Auth State Listener
+auth.onAuthStateChanged(user => {
+    if (user) {
+        // User is signed in
+        authModal.style.display = 'none';
+        appContainer.style.display = 'flex';
+        loadUserData(user.uid);
+        setupRealTimeListeners(user.uid);
+    } else {
+        // No user is signed in
+        authModal.style.display = 'flex';
+        appContainer.style.display = 'none';
     }
 });
 
-// Tab switching
-tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        // Remove active class from all tabs
-        tabBtns.forEach(b => b.classList.remove('active'));
-        
-        // Add active class to clicked tab
-        btn.classList.add('active');
-        
-        // Get tab name
-        const tabName = btn.getAttribute('data-tab');
-        
-        // Hide all tab contents
-        document.querySelectorAll('.sidebar-content').forEach(content => {
-            content.classList.add('hidden');
+// Tab Switching
+loginTab.addEventListener('click', () => {
+    loginTab.classList.add('active');
+    registerTab.classList.remove('active');
+    loginForm.classList.add('active');
+    registerForm.classList.remove('active');
+});
+
+registerTab.addEventListener('click', () => {
+    registerTab.classList.add('active');
+    loginTab.classList.remove('active');
+    registerForm.classList.add('active');
+    loginForm.classList.remove('active');
+});
+
+// Close Auth Modal
+closeAuth.addEventListener('click', () => {
+    authModal.style.display = 'none';
+});
+
+// Login Form Submission
+loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            // Update last login time
+            const userId = userCredential.user.uid;
+            database.ref('users/' + userId).update({
+                lastLogin: firebase.database.ServerValue.TIMESTAMP
+            });
+        })
+        .catch((error) => {
+            alert(error.message);
         });
-        
-        // Show selected tab content
-        document.getElementById(`${tabName}-tab`).classList.remove('hidden');
-    });
 });
 
-// Add friend modal
-addFriendBtn.addEventListener('click', () => {
-    addFriendModal.classList.add('active');
-});
-
-// Create group modal
-createGroupBtn.addEventListener('click', async () => {
-    await loadFriendsForGroup();
-    createGroupModal.classList.add('active');
-});
-
-// Change avatar
-changeAvatarBtn.addEventListener('click', () => {
-    avatarUpload.click();
-});
-
-avatarUpload.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (file && currentUser) {
-        try {
-            // In a real app, you would upload to Firebase Storage
-            // For this example, we'll just use a data URL
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                const avatarUrl = event.target.result;
-                
-                // Update user in Firestore
-                await db.collection('users').doc(currentUser.uid).update({
-                    avatar: avatarUrl
-                });
-                
-                // Update local data
-                userData.avatar = avatarUrl;
-                updateUI();
-            };
-            reader.readAsDataURL(file);
-        } catch (error) {
-            console.error('Error updating avatar:', error);
-        }
+// Register Form Submission
+registerForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+    const confirmPassword = document.getElementById('registerConfirmPassword').value;
+    let username = document.getElementById('registerUsername').value;
+    
+    // Validate passwords match
+    if (password !== confirmPassword) {
+        alert("Passwords don't match!");
+        return;
     }
-});
-
-// Save bio
-saveBioBtn.addEventListener('click', async () => {
-    if (!currentUser) return;
     
-    const newBio = document.getElementById('profile-bio').value;
+    // Ensure username starts with @
+    if (!username.startsWith('@')) {
+        username = '@' + username;
+    }
     
-    try {
-        // Update user in Firestore
-        await db.collection('users').doc(currentUser.uid).update({
-            bio: newBio
+    // Check if username is available
+    database.ref('usernames').child(username).once('value')
+        .then(snapshot => {
+            if (snapshot.exists()) {
+                alert('Username already taken!');
+                return;
+            }
+            
+            // Create user
+            return auth.createUserWithEmailAndPassword(email, password);
+        })
+        .then((userCredential) => {
+            const user = userCredential.user;
+            
+            // Save user data
+            return database.ref('users/' + user.uid).set({
+                username: username,
+                email: email,
+                createdAt: firebase.database.ServerValue.TIMESTAMP,
+                lastLogin: firebase.database.ServerValue.TIMESTAMP,
+                status: 'online',
+                bio: '',
+                avatar: 'https://via.placeholder.com/150'
+            }).then(() => {
+                // Reserve username
+                return database.ref('usernames/' + username).set(user.uid);
+            });
+        })
+        .then(() => {
+            alert('Registration successful!');
+            loginTab.click();
+        })
+        .catch((error) => {
+            alert(error.message);
         });
-        
-        // Update local data
-        userData.bio = newBio;
-        alert('Bio updated successfully');
-    } catch (error) {
-        console.error('Error updating bio:', error);
-    }
 });
 
-// Change password modal
-changePasswordBtn.addEventListener('click', () => {
-    changePasswordModal.classList.add('active');
-});
-
-// Chat info
-chatInfoBtn.addEventListener('click', () => {
-    rightSidebar.classList.remove('hidden');
-});
-
-closeRightSidebar.addEventListener('click', () => {
-    rightSidebar.classList.add('hidden');
-});
-
-// Send message
-sendMessageBtn.addEventListener('click', sendMessage);
-messageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        sendMessage();
-    }
-});
-
-async function sendMessage() {
-    const messageText = messageInput.value.trim();
-    if (messageText && currentUser) {
-        // Implement message sending logic
-        // You would need to know the current chat/recipient
-        messageInput.value = '';
-    }
-}
-
-// Close modals
-modalCloseBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        btn.closest('.modal').classList.remove('active');
-    });
-});
-
-// Close modals when clicking outside
-window.addEventListener('click', (e) => {
-    if (e.target.classList.contains('modal')) {
-        e.target.classList.remove('active');
-    }
-});
-
-// Helper functions
-async function loadFriendsForGroup() {
-    const container = document.getElementById('group-members-select');
-    container.innerHTML = '';
+// Forgot Password
+forgotPassword.addEventListener('click', (e) => {
+    e.preventDefault();
+    const email = prompt('Please enter your email address:');
     
-    try {
-        // Get current user's friends
-        const snapshot = await db.collection('friends')
-            .where('userId', '==', currentUser.uid)
-            .where('status', '==', 'accepted')
-            .get();
-        
-        const friendIds = snapshot.docs.map(doc => doc.data().friendId);
-        
-        // Get friend data
-        const friendsPromises = friendIds.map(id => 
-            db.collection('users').doc(id).get()
-        );
-        const friendsSnapshots = await Promise.all(friendsPromises);
-        
-        // Add checkboxes for each friend
-        friendsSnapshots.forEach(doc => {
-            if (doc.exists) {
-                const friend = doc.data();
-                const div = document.createElement('div');
-                div.className = 'friend-checkbox';
-                div.innerHTML = `
-                    <input type="checkbox" id="friend-${doc.id}" value="${doc.id}">
-                    <img src="${friend.avatar}" alt="${friend.username}">
-                    <span>${friend.username}</span>
-                `;
-                container.appendChild(div);
+    if (email) {
+        auth.sendPasswordResetEmail(email)
+            .then(() => {
+                alert('Password reset email sent!');
+            })
+            .catch((error) => {
+                alert(error.message);
+            });
+    }
+});
+
+// Load User Data
+function loadUserData(userId) {
+    database.ref('users/' + userId).once('value')
+        .then(snapshot => {
+            const userData = snapshot.val();
+            
+            // Update UI
+            document.getElementById('usernameDisplay').textContent = userData.username;
+            document.getElementById('profileUsername').textContent = userData.username;
+            document.getElementById('userStatus').textContent = userData.status;
+            document.getElementById('profileBio').value = userData.bio || '';
+            
+            // Format last seen
+            if (userData.lastLogin) {
+                const lastSeen = new Date(userData.lastLogin);
+                document.getElementById('profileLastSeen').textContent = 'Last seen: ' + lastSeen.toLocaleString();
+            }
+            
+            // Set avatar
+            if (userData.avatar) {
+                document.getElementById('userAvatar').src = userData.avatar;
+                document.getElementById('profileAvatar').src = userData.avatar;
             }
         });
-    } catch (error) {
-        console.error('Error loading friends:', error);
-    }
 }
 
-// Initialize app
-if (auth.currentUser) {
-    loadUserData(auth.currentUser.uid);
+// Setup Real-time Listeners
+function setupRealTimeListeners(userId) {
+    // Listen for user data changes
+    database.ref('users/' + userId).on('value', snapshot => {
+        const userData = snapshot.val();
+        if (userData) {
+            document.getElementById('usernameDisplay').textContent = userData.username;
+            document.getElementById('profileUsername').textContent = userData.username;
+            document.getElementById('userStatus').textContent = userData.status;
+            document.getElementById('profileBio').value = userData.bio || '';
+            
+            if (userData.lastLogin) {
+                const lastSeen = new Date(userData.lastLogin);
+                document.getElementById('profileLastSeen').textContent = 'Last seen: ' + lastSeen.toLocaleString();
+            }
+            
+            if (userData.avatar) {
+                document.getElementById('userAvatar').src = userData.avatar;
+                document.getElementById('profileAvatar').src = userData.avatar;
+            }
+        }
+    });
+    
+    // Listen for friends list
+    database.ref('friends/' + userId).on('value', snapshot => {
+        const friendsList = document.getElementById('friendsList');
+        friendsList.innerHTML = '';
+        
+        if (snapshot.exists()) {
+            const friends = snapshot.val();
+            Object.keys(friends).forEach(friendId => {
+                database.ref('users/' + friendId).once('value')
+                    .then(friendSnapshot => {
+                        const friendData = friendSnapshot.val();
+                        if (friendData) {
+                            const friendItem = document.createElement('div');
+                            friendItem.className = 'friend-item';
+                            friendItem.innerHTML = `
+                                <img src="${friendData.avatar || 'https://via.placeholder.com/40'}" alt="Friend">
+                                <div class="friend-info">
+                                    <h4>${friendData.username}</h4>
+                                    <p>${friendData.bio || 'No bio yet'}</p>
+                                </div>
+                                <div class="friend-status status-${friendData.status || 'offline'}"></div>
+                            `;
+                            friendItem.addEventListener('click', () => startPrivateChat(friendId, friendData.username, friendData.avatar));
+                            friendsList.appendChild(friendItem);
+                        }
+                    });
+            });
+        } else {
+            friendsList.innerHTML = '<p class="no-friends">No friends yet. Add some!</p>';
+        }
+    });
+    
+    // Listen for groups
+    database.ref('userGroups/' + userId).on('value', snapshot => {
+        const groupsList = document.getElementById('groupsList');
+        groupsList.innerHTML = '';
+        
+        if (snapshot.exists()) {
+            const groups = snapshot.val();
+            Object.keys(groups).forEach(groupId => {
+                database.ref('groups/' + groupId).once('value')
+                    .then(groupSnapshot => {
+                        const groupData = groupSnapshot.val();
+                        if (groupData) {
+                            const groupItem = document.createElement('div');
+                            groupItem.className = 'group-item';
+                            groupItem.innerHTML = `
+                                <img src="${groupData.avatar || 'https://via.placeholder.com/40'}" alt="Group">
+                                <div class="group-info">
+                                    <h4>${groupData.name}</h4>
+                                    <p>${Object.keys(groupData.members || {}).length} members</p>
+                                </div>
+                            `;
+                            groupItem.addEventListener('click', () => startGroupChat(groupId, groupData.name, groupData.avatar));
+                            groupsList.appendChild(groupItem);
+                        }
+                    });
+            });
+        } else {
+            groupsList.innerHTML = '<p class="no-groups">No groups yet. Create one!</p>';
+        }
+    });
 }
+
+// Start Private Chat
+function startPrivateChat(userId, username, avatar) {
+    const currentUserId = auth.currentUser.uid;
+    const chatId = [currentUserId, userId].sort().join('_');
+    
+    // Update UI
+    document.getElementById('currentChatName').textContent = username;
+    document.getElementById('currentChatAvatar').src = avatar || 'https://via.placeholder.com/40';
+    document.getElementById('currentChatStatus').textContent = 'Online';
+    document.getElementById('messageInput').disabled = false;
+    document.getElementById('sendMessageBtn').disabled = false;
+    
+    // Load messages
+    const messagesContainer = document.getElementById('messagesContainer');
+    messagesContainer.innerHTML = '';
+    
+    database.ref('privateMessages/' + chatId).limitToLast(50).on('child_added', snapshot => {
+        const message = snapshot.val();
+        displayMessage(message, currentUserId);
+    });
+    
+    // Set up message sending
+    const messageInput = document.getElementById('messageInput');
+    const sendMessageBtn = document.getElementById('sendMessageBtn');
+    
+    function sendMessage() {
+        const text = messageInput.value.trim();
+        if (text) {
+            const newMessage = {
+                senderId: currentUserId,
+                text: text,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            
+            database.ref('privateMessages/' + chatId).push(newMessage);
+            messageInput.value = '';
+        }
+    }
+    
+    sendMessageBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+}
+
+// Start Group Chat
+function startGroupChat(groupId, groupName, groupAvatar) {
+    const currentUserId = auth.currentUser.uid;
+    
+    // Update UI
+    document.getElementById('currentChatName').textContent = groupName;
+    document.getElementById('currentChatAvatar').src = groupAvatar || 'https://via.placeholder.com/40';
+    document.getElementById('currentChatStatus').textContent = 'Group';
+    document.getElementById('messageInput').disabled = false;
+    document.getElementById('sendMessageBtn').disabled = false;
+    
+    // Load messages
+    const messagesContainer = document.getElementById('messagesContainer');
+    messagesContainer.innerHTML = '';
+    
+    database.ref('groupMessages/' + groupId).limitToLast(50).on('child_added', snapshot => {
+        const message = snapshot.val();
+        displayMessage(message, currentUserId);
+    });
+    
+    // Set up message sending
+    const messageInput = document.getElementById('messageInput');
+    const sendMessageBtn = document.getElementById('sendMessageBtn');
+    
+    function sendMessage() {
+        const text = messageInput.value.trim();
+        if (text) {
+            const newMessage = {
+                senderId: currentUserId,
+                text: text,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            
+            database.ref('groupMessages/' + groupId).push(newMessage);
+            messageInput.value = '';
+        }
+    }
+    
+    sendMessageBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+}
+
+// Display Message
+function displayMessage(message, currentUserId) {
+    const messagesContainer = document.getElementById('messagesContainer');
+    const isCurrentUser = message.senderId === currentUserId;
+    
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${isCurrentUser ? 'message-sent' : 'message-received'}`;
+    
+    // Get sender info
+    let senderName = 'Unknown';
+    let senderAvatar = 'https://via.placeholder.com/40';
+    
+    database.ref('users/' + message.senderId).once('value')
+        .then(snapshot => {
+            const userData = snapshot.val();
+            if (userData) {
+                senderName = userData.username;
+                senderAvatar = userData.avatar || 'https://via.placeholder.com/40';
+                
+                messageElement.innerHTML = `
+                    <div class="message-info">
+                        <span class="message-author">${senderName}</span>
+                        <span class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                    <div class="message-content">${message.text}</div>
+                `;
+                
+                messagesContainer.appendChild(messageElement);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        });
+}
+
+// Add Friend
+document.getElementById('addFriendBtn').addEventListener('click', () => {
+    const addFriendModal = document.getElementById('addFriendModal');
+    addFriendModal.classList.add('active');
+    
+    const friendSearch = document.getElementById('friendSearch');
+    const searchResults = document.getElementById('friendSearchResults');
+    
+    friendSearch.addEventListener('input', () => {
+        const query = friendSearch.value.trim();
+        if (query.length >= 3) {
+            searchUsers(query, searchResults);
+        } else {
+            searchResults.innerHTML = '';
+        }
+    });
+    
+    // Close modal when clicking X
+    addFriendModal.querySelector('.close-btn').addEventListener('click', () => {
+        addFriendModal.classList.remove('active');
+    });
+});
+
+// Search Users
+function searchUsers(query, resultsContainer) {
+    // Ensure query starts with @
+    if (!query.startsWith('@')) {
+        query = '@' + query;
+    }
+    
+    database.ref('usernames').orderByKey().startAt(query).endAt(query + '\uf8ff').once('value')
+        .then(snapshot => {
+            resultsContainer.innerHTML = '';
+            
+            if (snapshot.exists()) {
+                const usernames = snapshot.val();
+                const currentUserId = auth.currentUser.uid;
+                
+                Object.keys(usernames).forEach(username => {
+                    const userId = usernames[username];
+                    
+                    // Don't show current user in results
+                    if (userId !== currentUserId) {
+                        database.ref('users/' + userId).once('value')
+                            .then(userSnapshot => {
+                                const userData = userSnapshot.val();
+                                if (userData) {
+                                    const resultItem = document.createElement('div');
+                                    resultItem.className = 'search-result-item';
+                                    resultItem.innerHTML = `
+                                        <img src="${userData.avatar || 'https://via.placeholder.com/40'}" alt="User">
+                                        <div class="search-result-info">
+                                            <h4>${userData.username}</h4>
+                                            <p>${userData.bio || 'No bio yet'}</p>
+                                        </div>
+                                        <button class="add-friend-btn" data-userid="${userId}">Add Friend</button>
+                                    `;
+                                    
+                                    // Check if already friends
+                                    database.ref('friends/' + currentUserId + '/' + userId).once('value')
+                                        .then(friendSnapshot => {
+                                            if (friendSnapshot.exists()) {
+                                                resultItem.querySelector('.add-friend-btn').textContent = 'Added';
+                                                resultItem.querySelector('.add-friend-btn').disabled = true;
+                                            }
+                                        });
+                                    
+                                    resultsContainer.appendChild(resultItem);
+                                }
+                            });
+                    }
+                });
+            } else {
+                resultsContainer.innerHTML = '<p class="no-results">No users found</p>';
+            }
+        });
+}
+
+// Handle Add Friend
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('add-friend-btn')) {
+        const userId = e.target.getAttribute('data-userid');
+        const currentUserId = auth.currentUser.uid;
+        
+        // Add to both users' friend lists
+        database.ref('friends/' + currentUserId + '/' + userId).set(true);
+        database.ref('friends/' + userId + '/' + currentUserId).set(true);
+        
+        e.target.textContent = 'Added';
+        e.target.disabled = true;
+    }
+});
+
+// Create Group
+document.getElementById('createGroupBtn').addEventListener('click', () => {
+    const createGroupModal = document.getElementById('createGroupModal');
+    createGroupModal.classList.add('active');
+    
+    const groupMemberSearch = document.getElementById('groupMemberSearch');
+    const selectedMembers = document.getElementById('selectedMembers');
+    const currentUserId = auth.currentUser.uid;
+    let members = {};
+    
+    // Add current user as admin
+    members[currentUserId] = 'admin';
+    
+    // Search for friends to add
+    groupMemberSearch.addEventListener('input', () => {
+        const query = groupMemberSearch.value.trim();
+        if (query.length >= 3) {
+            searchUsers(query, document.createElement('div')); // Temporary container
+            // In a real app, we'd show search results and let user select
+        }
+    });
+    
+    // Close modal when clicking X
+    createGroupModal.querySelector('.close-btn').addEventListener('click', () => {
+        createGroupModal.classList.remove('active');
+    });
+    
+    // Submit group creation
+    document.getElementById('createGroupSubmit').addEventListener('click', () => {
+        const groupName = document.getElementById('groupName').value.trim();
+        
+        if (!groupName) {
+            alert('Please enter a group name');
+            return;
+        }
+        
+        if (Object.keys(members).length < 2) {
+            alert('Please add at least one member');
+            return;
+        }
+        
+        // Create group
+        const newGroupRef = database.ref('groups').push();
+        newGroupRef.set({
+            name: groupName,
+            createdBy: currentUserId,
+            createdAt: firebase.database.ServerValue.TIMESTAMP,
+            members: members
+        }).then(() => {
+            // Add group to each member's group list
+            Object.keys(members).forEach(memberId => {
+                database.ref('userGroups/' + memberId + '/' + newGroupRef.key).set(true);
+            });
+            
+            createGroupModal.classList.remove('active');
+            alert('Group created successfully!');
+        });
+    });
+});
+
+// Change Avatar
+document.getElementById('changeAvatarBtn').addEventListener('click', () => {
+    document.getElementById('avatarUpload').click();
+});
+
+document.getElementById('avatarUpload').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const userId = auth.currentUser.uid;
+        const storageRef = storage.ref('avatars/' + userId + '/' + file.name);
+        
+        storageRef.put(file).then(snapshot => {
+            return snapshot.ref.getDownloadURL();
+        }).then(downloadURL => {
+            // Update user's avatar URL
+            return database.ref('users/' + userId).update({
+                avatar: downloadURL
+            });
+        }).then(() => {
+            alert('Avatar updated successfully!');
+        }).catch(error => {
+            alert('Error uploading avatar: ' + error.message);
+        });
+    }
+});
+
+// Save Bio
+document.getElementById('saveBioBtn').addEventListener('click', () => {
+    const userId = auth.currentUser.uid;
+    const newBio = document.getElementById('profileBio').value.trim();
+    
+    database.ref('users/' + userId).update({
+        bio: newBio
+    }).then(() => {
+        alert('Bio updated successfully!');
+    });
+});
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    // Update status to offline
+    const userId = auth.currentUser.uid;
+    database.ref('users/' + userId).update({
+        status: 'offline',
+        lastLogin: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        auth.signOut();
+    });
+});
+
+// Tab Switching in App
+document.querySelectorAll('.sidebar-tabs .tab-btn').forEach(tab => {
+    tab.addEventListener('click', () => {
+        // Remove active class from all tabs and contents
+        document.querySelectorAll('.sidebar-tabs .tab-btn').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        // Add active class to clicked tab and corresponding content
+        tab.classList.add('active');
+        const tabId = tab.getAttribute('data-tab');
+        document.getElementById(tabId + 'Tab').classList.add('active');
+    });
+});
+
+// Chat Info
+document.getElementById('chatInfoBtn').addEventListener('click', () => {
+    document.getElementById('rightSidebar').classList.add('active');
+});
+
+document.getElementById('closeSidebar').addEventListener('click', () => {
+    document.getElementById('rightSidebar').classList.remove('active');
+});
+
+// Encryption (simplified example)
+document.getElementById('encryptBtn').addEventListener('click', () => {
+    alert('End-to-end encryption would be implemented here in a production app');
+});
+
+// Global Search
+document.getElementById('globalSearch').addEventListener('input', (e) => {
+    // In a real app, this would search across users, groups, and messages
+    console.log('Searching for:', e.target.value);
+});
