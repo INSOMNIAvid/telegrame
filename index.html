@@ -1,275 +1,140 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecureChat Pro - Encrypted Messaging</title>
+    <title>Telegram-like Messenger</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
-    <script src="firebase-config.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- Auth Page -->
-    <div class="auth-page" id="authPage">
-        <div class="container">
-            <div class="left">
-                <div class="login">SecureChat</div>
-                <div class="eula">By logging in you agree to our terms of service and privacy policy</div>
-                <button class="switch-btn" id="showRegister">Don't have an account? Register</button>
-            </div>
-            <div class="right">
-                <svg viewBox="0 0 320 300">
-                    <defs>
-                        <linearGradient
-                                        inkscape:collect="always"
-                                        id="linearGradient"
-                                        x1="13"
-                                        y1="193.49992"
-                                        x2="307"
-                                        y2="193.49992"
-                                        gradientUnits="userSpaceOnUse">
-                            <stop
-                                  style="stop-color:#7289da;"
-                                  offset="0"
-                                  id="stop876" />
-                            <stop
-                                  style="stop-color:#4e5d94;"
-                                  offset="1"
-                                  id="stop878" />
-                        </linearGradient>
-                    </defs>
-                    <path d="m 40,120.00016 239.99984,-3.2e-4 c 0,0 24.99263,0.79932 25.00016,35.00016 0.008,34.20084 -25.00016,35 -25.00016,35 h -239.99984 c 0,-0.0205 -25,4.01348 -25,38.5 0,34.48652 25,38.5 25,38.5 h 215 c 0,0 20,-0.99604 20,-25 0,-24.00396 -20,-25 -20,-25 h -190 c 0,0 -20,1.71033 -20,25 0,24.00396 20,25 20,25 h 168.57143" />
-                </svg>
-                <div class="form" id="loginForm">
-                    <label for="email">Email or Phone</label>
-                    <input type="text" id="email" autocomplete="username">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" autocomplete="current-password">
-                    <input type="submit" id="submit" value="Login">
-                    <a href="#" class="forgot-password" id="forgotPassword">Forgot password?</a>
+    <div class="app-container" id="app">
+        <!-- Экран авторизации -->
+        <div class="auth-screen" id="authScreen">
+            <div class="auth-container">
+                <h1>Telegram-like</h1>
+                <div class="auth-tabs">
+                    <button class="tab-btn active" id="loginTab">Вход</button>
+                    <button class="tab-btn" id="registerTab">Регистрация</button>
                 </div>
                 
-                <div class="form" id="registerForm" style="display: none;">
-                    <label for="regUsername">Username</label>
-                    <input type="text" id="regUsername" placeholder="@username" autocomplete="username">
-                    <label for="regEmail">Email</label>
-                    <input type="email" id="regEmail" autocomplete="email">
-                    <label for="regPhone">Phone (optional)</label>
-                    <input type="tel" id="regPhone" placeholder="+1234567890">
-                    <label for="regPassword">Password</label>
-                    <input type="password" id="regPassword" autocomplete="new-password">
-                    <label for="regConfirmPassword">Confirm Password</label>
-                    <input type="password" id="regConfirmPassword" autocomplete="new-password">
-                    <input type="submit" id="regSubmit" value="Register">
-                    <button class="switch-btn" id="showLogin">Already have an account? Login</button>
-                </div>
+                <form id="loginForm" class="auth-form">
+                    <input type="email" id="loginEmail" placeholder="Email" required>
+                    <input type="password" id="loginPassword" placeholder="Пароль" required>
+                    <button type="submit">Войти</button>
+                </form>
+                
+                <form id="registerForm" class="auth-form hidden">
+                    <input type="text" id="registerUsername" placeholder="@username" required>
+                    <input type="email" id="registerEmail" placeholder="Email" required>
+                    <input type="password" id="registerPassword" placeholder="Пароль" required>
+                    <button type="submit">Зарегистрироваться</button>
+                </form>
+                
+                <div class="auth-status" id="authStatus"></div>
             </div>
         </div>
-    </div>
-
-    <!-- Main App Container -->
-    <div class="app-container" id="appContainer">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <div class="user-profile">
-                    <img src="https://via.placeholder.com/50" alt="Profile" id="userAvatar">
+        
+        <!-- Основной интерфейс мессенджера -->
+        <div class="messenger-container hidden" id="messengerContainer">
+            <div class="sidebar">
+                <div class="sidebar-header">
                     <div class="user-info">
-                        <span id="usernameDisplay"></span>
-                        <small id="userStatus">Online</small>
+                        <span id="currentUsername">@user</span>
+                        <i class="fas fa-chevron-down"></i>
                     </div>
+                    <button class="new-chat-btn" id="newChatBtn">
+                        <i class="fas fa-edit"></i>
+                    </button>
                 </div>
-                <button id="logoutBtn" class="icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+                
+                <div class="search-container">
+                    <input type="text" placeholder="Поиск" id="searchInput">
+                </div>
+                
+                <div class="chats-list" id="chatsList">
+                    <!-- Список чатов будет здесь -->
+                </div>
+                
+                <div class="sidebar-footer">
+                    <button id="createGroupBtn"><i class="fas fa-users"></i> Создать группу</button>
+                </div>
             </div>
             
-            <div class="sidebar-tabs">
-                <button class="tab-btn active" data-tab="chats"><i class="fas fa-comment-dots"></i> Chats</button>
-                <button class="tab-btn" data-tab="friends"><i class="fas fa-user-friends"></i> Friends</button>
-                <button class="tab-btn" data-tab="groups"><i class="fas fa-users"></i> Groups</button>
-                <button class="tab-btn" data-tab="profile"><i class="fas fa-user-cog"></i> Profile</button>
-            </div>
-            
-            <div class="search-box">
-                <input type="text" placeholder="Search..." id="globalSearch">
-                <button class="search-btn"><i class="fas fa-search"></i></button>
-            </div>
-            
-            <div class="sidebar-content">
-                <!-- Chats Tab -->
-                <div class="tab-content active" id="chatsTab">
-                    <div class="chat-list" id="chatList">
-                        <!-- Chats will be populated here -->
+            <div class="chat-area">
+                <div class="chat-header" id="chatHeader">
+                    <div class="chat-info">
+                        <span id="chatTitle">Выберите чат</span>
                     </div>
                 </div>
                 
-                <!-- Friends Tab -->
-                <div class="tab-content" id="friendsTab">
-                    <div class="friends-header">
-                        <h3>Friends</h3>
-                        <div class="friend-actions">
-                            <button id="addFriendBtn" class="icon-btn"><i class="fas fa-user-plus"></i></button>
-                            <button id="friendRequestsBtn" class="icon-btn"><i class="fas fa-user-clock"></i></button>
-                        </div>
-                    </div>
-                    <div class="friends-list" id="friendsList">
-                        <!-- Friends will be populated here -->
-                    </div>
+                <div class="messages-container" id="messagesContainer">
+                    <!-- Сообщения будут здесь -->
                 </div>
                 
-                <!-- Groups Tab -->
-                <div class="tab-content" id="groupsTab">
-                    <div class="groups-header">
-                        <h3>Groups</h3>
-                        <button id="createGroupBtn" class="icon-btn"><i class="fas fa-plus-circle"></i></button>
-                    </div>
-                    <div class="groups-list" id="groupsList">
-                        <!-- Groups will be populated here -->
-                    </div>
-                </div>
-                
-                <!-- Profile Tab -->
-                <div class="tab-content" id="profileTab">
-                    <div class="profile-view">
-                        <div class="profile-avatar">
-                            <img src="https://via.placeholder.com/150" alt="Profile" id="profileAvatar">
-                            <button id="changeAvatarBtn" class="icon-btn"><i class="fas fa-camera"></i></button>
-                            <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
-                        </div>
-                        <div class="profile-info">
-                            <h3 id="profileUsername"></h3>
-                            <p class="last-seen" id="profileLastSeen"></p>
-                            <div class="profile-field">
-                                <label>Phone Number</label>
-                                <input type="tel" id="profilePhone" placeholder="+1234567890">
-                            </div>
-                            <div class="profile-bio">
-                                <label>About</label>
-                                <textarea id="profileBio" placeholder="Write something about yourself..."></textarea>
-                            </div>
-                            <div class="profile-actions">
-                                <button id="saveProfileBtn" class="small-btn">Save Changes</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Chat Area -->
-        <div class="chat-area">
-            <div class="chat-header" id="chatHeader">
-                <div class="chat-info">
-                    <img src="https://via.placeholder.com/40" alt="Chat" id="currentChatAvatar">
-                    <div>
-                        <h3 id="currentChatName">Select a chat</h3>
-                        <small id="currentChatStatus"></small>
-                    </div>
-                </div>
-                <div class="chat-actions">
-                    <button class="icon-btn" id="chatInfoBtn"><i class="fas fa-info-circle"></i></button>
-                    <button class="icon-btn" id="encryptBtn"><i class="fas fa-lock"></i></button>
+                <div class="message-input-container">
+                    <input type="text" placeholder="Введите сообщение..." id="messageInput">
+                    <button id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
             
-            <div class="messages-container" id="messagesContainer">
-                <div class="no-chat-selected">
-                    <i class="fas fa-comments"></i>
-                    <p>Select a chat to start messaging</p>
+            <div class="right-sidebar hidden" id="rightSidebar">
+                <div class="right-sidebar-header">
+                    <h3>Информация о чате</h3>
+                    <button class="close-sidebar-btn" id="closeSidebarBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
-            </div>
-            
-            <div class="message-input">
-                <div class="message-actions">
-                    <button class="icon-btn" id="attachFileBtn"><i class="fas fa-paperclip"></i></button>
-                    <input type="file" id="fileUpload" style="display: none;">
+                <div class="chat-info-content" id="chatInfoContent">
+                    <!-- Информация о чате будет здесь -->
                 </div>
-                <input type="text" placeholder="Type a message..." id="messageInput" disabled>
-                <button id="sendMessageBtn" disabled><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
-        
-        <!-- Right Sidebar (Chat Info) -->
-        <div class="right-sidebar" id="rightSidebar">
-            <div class="sidebar-header">
-                <h3>Chat Info</h3>
-                <button class="close-btn" id="closeSidebar">&times;</button>
-            </div>
-            
-            <div class="chat-details" id="chatDetails">
-                <!-- Chat details will be populated here -->
-            </div>
-        </div>
-        
-        <!-- Modals -->
-        <div class="modal" id="addFriendModal">
-            <div class="modal-content">
-                <span class="close-btn">&times;</span>
-                <h3>Add Friend</h3>
-                <div class="search-tabs">
-                    <button class="search-tab-btn active" data-search-type="username">By Username</button>
-                    <button class="search-tab-btn" data-search-type="phone">By Phone</button>
-                </div>
-                <div class="search-box">
-                    <input type="text" placeholder="Search by username..." id="friendSearch">
-                    <button class="search-btn"><i class="fas fa-search"></i></button>
-                </div>
-                <div class="search-results" id="friendSearchResults">
-                    <!-- Search results will appear here -->
-                </div>
-            </div>
-        </div>
-        
-        <div class="modal" id="friendRequestsModal">
-            <div class="modal-content">
-                <span class="close-btn">&times;</span>
-                <h3>Friend Requests</h3>
-                <div class="requests-list" id="friendRequestsList">
-                    <!-- Friend requests will appear here -->
-                </div>
-            </div>
-        </div>
-        
-        <div class="modal" id="createGroupModal">
-            <div class="modal-content">
-                <span class="close-btn">&times;</span>
-                <h3>Create Group</h3>
-                <div class="input-group">
-                    <label for="groupName">Group Name</label>
-                    <input type="text" id="groupName" required>
-                </div>
-                <div class="input-group">
-                    <label>Add Members</label>
-                    <div class="search-box">
-                        <input type="text" placeholder="Search friends..." id="groupMemberSearch">
-                        <button class="search-btn"><i class="fas fa-search"></i></button>
-                    </div>
-                    <div class="selected-members" id="selectedMembers">
-                        <!-- Selected members will appear here -->
-                    </div>
-                </div>
-                <button id="createGroupSubmit" class="modal-btn">Create Group</button>
-            </div>
-        </div>
-        
-        <div class="modal" id="filePreviewModal">
-            <div class="modal-content">
-                <span class="close-btn">&times;</span>
-                <h3>Send File</h3>
-                <div class="file-preview" id="filePreview">
-                    <!-- File preview will appear here -->
-                </div>
-                <div class="file-info" id="fileInfo"></div>
-                <button id="sendFileBtn" class="modal-btn">Send File</button>
             </div>
         </div>
     </div>
 
+    <!-- Модальное окно нового чата -->
+    <div class="modal hidden" id="newChatModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Новый чат</h3>
+                <button class="close-modal-btn" id="closeNewChatModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="searchUserInput" placeholder="Найти пользователя по @username">
+                <div class="users-list" id="usersList">
+                    <!-- Список пользователей будет здесь -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно создания группы -->
+    <div class="modal hidden" id="createGroupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Создать группу</h3>
+                <button class="close-modal-btn" id="closeCreateGroupModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="groupNameInput" placeholder="Название группы">
+                <input type="text" id="groupMembersInput" placeholder="Добавить участников по @username">
+                <div class="selected-members" id="selectedMembers">
+                    <!-- Выбранные участники будут здесь -->
+                </div>
+                <div class="available-users" id="availableUsersForGroup">
+                    <!-- Доступные пользователи будут здесь -->
+                </div>
+                <button id="confirmCreateGroupBtn">Создать группу</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="crypto.js"></script>
+    <script src="auth.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
