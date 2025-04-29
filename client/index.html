@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мессенджер</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-container" id="auth-container">
+        <h2>Вход в мессенджер</h2>
+        <input type="text" id="username-input" placeholder="Ваше имя">
+        <button id="login-button">Войти</button>
+    </div>
+
+    <div class="messenger-container" id="messenger-container" style="display: none;">
+        <div class="sidebar">
+            <div class="user-info">
+                <span id="current-username"></span>
+                <button id="logout-button">Выйти</button>
+            </div>
+            <div class="contacts">
+                <h3>Контакты</h3>
+                <ul id="contacts-list"></ul>
+            </div>
+            <div class="group-chat-actions">
+                <input type="text" id="new-group-name" placeholder="Название группы">
+                <button id="create-group-button">Создать группу</button>
+            </div>
+        </div>
+        <div class="chat-area">
+            <div class="chat-header">
+                <h2 id="current-chat-name">Общий чат</h2>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input">
+                <input type="text" id="message-input" placeholder="Введите сообщение...">
+                <button id="send-button">Отправить</button>
+                <button id="send-file-button">Файл</button>
+                <input type="file" id="file-input" style="display: none;">
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
