@@ -3,72 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram-like Messenger</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Простой мессенджер</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="messenger-container">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <div class="search-container">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Поиск">
-                </div>
-            </div>
-            <div class="chat-list">
-                <!-- Чаты будут добавляться здесь -->
-            </div>
+        <div class="chat-header">
+            <h2>Чат</h2>
         </div>
-        <div class="chat-area">
-            <div class="chat-header">
-                <div class="chat-info">
-                    <div class="chat-name">Выберите чат</div>
-                    <div class="chat-status">онлайн</div>
-                </div>
-                <div class="chat-actions">
-                    <i class="fas fa-search"></i>
-                    <i class="fas fa-ellipsis-v"></i>
-                </div>
-            </div>
-            <div class="messages-container">
-                <div class="no-chat-selected">
-                    <i class="fas fa-comment-dots"></i>
-                    <p>Выберите чат, чтобы начать общение</p>
-                </div>
-                <!-- Сообщения будут добавляться здесь -->
-            </div>
-            <div class="message-input-container">
-                <div class="input-actions">
-                    <i class="fas fa-paperclip"></i>
-                    <i class="fas fa-smile"></i>
-                </div>
-                <input type="text" placeholder="Написать сообщение..." id="message-input">
-                <button id="send-button"><i class="fas fa-paper-plane"></i></button>
-            </div>
+        <div class="chat-messages" id="chat-messages">
+            <!-- Сообщения будут появляться здесь -->
+        </div>
+        <div class="chat-input">
+            <input type="text" id="message-input" placeholder="Введите сообщение...">
+            <button id="send-button">Отправить</button>
         </div>
     </div>
 
     <script src="script.js"></script>
-    <!-- Добавляем перед закрывающим тегом body -->
-<div id="notification" class="notification" style="display: none;"></div>
-
-<script>
-    // Функция для показа уведомлений
-    function showNotification(message) {
-        const notification = document.getElementById('notification');
-        notification.textContent = message;
-        notification.style.display = 'block';
-        
-        setTimeout(() => {
-            notification.style.display = 'none';
-        }, 3000);
-    }
-
-    // Пример использования уведомления
-    setTimeout(() => {
-        showNotification('Мария Иванова онлайн');
-    }, 1500);
-</script>
 </body>
 </html>
