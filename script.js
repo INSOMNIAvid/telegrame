@@ -1,1111 +1,404 @@
-// Firebase Configuration
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const database = firebase.database();
-const storage = firebase.storage();
+// Имитация базы данных чатов и сообщений
+let chats = JSON.parse(localStorage.getItem('messenger_chats')) || [];
+let groups = JSON.parse(localStorage.getItem('messenger_groups')) || [];
+let currentChat = null;
 
-// DOM Elements
-const authPage = document.getElementById('authPage');
-const appContainer = document.getElementById('appContainer');
-const showRegisterBtn = document.getElementById('showRegister');
-const showLoginBtn = document.getElementById('showLogin');
-const loginForm = document.getElementById('loginForm');
-const registerForm = document.getElementById('registerForm');
-const forgotPassword = document.getElementById('forgotPassword');
+// DOM элементы
+const chatsList = document.getElementById('chatsList');
+const messagesContainer = document.getElementById('messagesContainer');
+const messageInput = document.getElementById('messageInput');
+const sendMessageBtn = document.getElementById('sendMessageBtn');
+const chatTitle = document.getElementById('chatTitle');
+const newChatBtn = document.getElementById('newChatBtn');
+const newChatModal = document.getElementById('newChatModal');
+const closeNewChatModal = document.getElementById('closeNewChatModal');
+const searchUserInput = document.getElementById('searchUserInput');
+const usersList = document.getElementById('usersList');
+const createGroupBtn = document.getElementById('createGroupBtn');
+const createGroupModal = document.getElementById('createGroupModal');
+const closeCreateGroupModal = document.getElementById('closeCreateGroupModal');
+const groupNameInput = document.getElementById('groupNameInput');
+const groupMembersInput = document.getElementById('groupMembersInput');
+const selectedMembers = document.getElementById('selectedMembers');
+const availableUsersForGroup = document.getElementById('availableUsersForGroup');
+const confirmCreateGroupBtn = document.getElementById('confirmCreateGroupBtn');
 
-// Animation variables
-let currentAnimation = null;
-
-// Form switching
-showRegisterBtn.addEventListener('click', () => {
-    loginForm.style.display = 'none';
-    registerForm.style.display = 'block';
-    animateFormTransition();
-});
-
-showLoginBtn.addEventListener('click', () => {
-    registerForm.style.display = 'none';
-    loginForm.style.display = 'block';
-    animateFormTransition();
-});
-
-function animateFormTransition() {
-    if (currentAnimation) currentAnimation.pause();
-    currentAnimation = anime({
-        targets: 'path',
-        strokeDashoffset: {
-            value: 0,
-            duration: 700,
-            easing: 'easeOutQuart'
-        },
-        strokeDasharray: {
-            value: '240 1386',
-            duration: 700,
-            easing: 'easeOutQuart'
-        }
-    });
-}
-
-// Input focus animations
-document.querySelector('#email').addEventListener('focus', function(e) {
-    if (currentAnimation) currentAnimation.pause();
-    currentAnimation = anime({
-        targets: 'path',
-        strokeDashoffset: {
-            value: 0,
-            duration: 700,
-            easing: 'easeOutQuart'
-        },
-        strokeDasharray: {
-            value: '240 1386',
-            duration: 700,
-            easing: 'easeOutQuart'
-        }
-    });
-});
-
-document.querySelector('#password').addEventListener('focus', function(e) {
-    if (currentAnimation) currentAnimation.pause();
-    currentAnimation = anime({
-        targets: 'path',
-        strokeDashoffset: {
-            value: -336,
-            duration: 700,
-            easing: 'easeOutQuart'
-        },
-        strokeDasharray: {
-            value: '240 1386',
-            duration: 700,
-            easing: 'easeOutQuart'
-        }
-    });
-});
-
-document.querySelector('#submit').addEventListener('focus', function(e) {
-    if (currentAnimation) currentAnimation.pause();
-    currentAnimation = anime({
-        targets: 'path',
-        strokeDashoffset: {
-            value: -730,
-            duration: 700,
-            easing: 'easeOutQuart'
-        },
-        strokeDasharray: {
-            value: '530 1386',
-            duration: 700,
-            easing: 'easeOutQuart'
-        }
-    });
-});
-
-// Register form focus animations
-document.querySelector('#regUsername').addEventListener('focus', function(e) {
-    if (currentAnimation) currentAnimation.pause();
-    currentAnimation = anime({
-        targets: 'path',
-        strokeDashoffset: {
-            value: -150,
-            duration: 700,
-            easing: 'easeOutQuart'
-        },
-        strokeDasharray: {
-            value: '240 1386',
-            duration: 700,
-            easing: 'easeOutQuart'
-        }
-    });
-});
-
-document.querySelector('#regEmail').addEventListener('focus', function(e) {
-    if (currentAnimation) currentAnimation.pause();
-    currentAnimation = anime({
-        targets: 'path',
-        strokeDashoffset: {
-            value: -300,
-            duration: 700,
-            easing: 'easeOutQuart'
-        },
-        strokeDasharray: {
-            value: '240 1386',
-            duration: 700,
-            easing: 'easeOutQuart'
-        }
-    });
-});
-
-document.querySelector('#regPassword').addEventListener('focus', function(e) {
-    if (currentAnimation) currentAnimation.pause();
-    currentAnimation = anime({
-        targets: 'path',
-        strokeDashoffset: {
-            value: -450,
-            duration: 700,
-            easing: 'easeOutQuart'
-        },
-        strokeDasharray: {
-            value: '240 1386',
-            duration: 700,
-            easing: 'easeOutQuart'
-        }
-    });
-});
-
-document.querySelector('#regSubmit').addEventListener('focus', function(e) {
-    if (currentAnimation) currentAnimation.pause();
-    currentAnimation = anime({
-        targets: 'path',
-        strokeDashoffset: {
-            value: -730,
-            duration: 700,
-            easing: 'easeOutQuart'
-        },
-        strokeDasharray: {
-            value: '530 1386',
-            duration: 700,
-            easing: 'easeOutQuart'
-        }
-    });
-});
-
-// Auth State Listener
-auth.onAuthStateChanged(user => {
-    if (user) {
-        // User is signed in
-        authPage.style.display = 'none';
-        appContainer.style.display = 'flex';
-        loadUserData(user.uid);
-        setupRealTimeListeners(user.uid);
+// Загрузка чатов пользователя
+function loadChats() {
+    if (!currentUser) return;
+    
+    chatsList.innerHTML = '';
+    
+    // Личные чаты
+    const personalChats = chats.filter(chat => 
+        chat.participants.includes(currentUser.id) && !chat.isGroup
+    );
+    
+    // Групповые чаты
+    const groupChats = groups.filter(group => 
+        group.members.includes(currentUser.id)
+    );
+    
+    // Отображаем чаты
+    personalChats.forEach(chat => {
+        const otherUserId = chat.participants.find(id => id !== currentUser.id);
+        const otherUser = users.find(u => u.id === otherUserId);
         
-        // Update user status to online
-        database.ref('users/' + user.uid).update({
-            status: 'online',
-            lastLogin: firebase.database.ServerValue.TIMESTAMP
-        });
-    } else {
-        // No user is signed in
-        authPage.style.display = 'flex';
-        appContainer.style.display = 'none';
-    }
-});
-
-// Login Form Submission
-loginForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const loginInput = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    
-    // Determine if input is email or phone
-    let authPromise;
-    if (loginInput.includes('@')) {
-        // Email login
-        authPromise = auth.signInWithEmailAndPassword(loginInput, password);
-    } else {
-        // Phone login (would need Firebase phone auth setup)
-        alert("Phone login not implemented in this example");
-        return;
-    }
-    
-    authPromise
-        .then((userCredential) => {
-            // Update last login time
-            const userId = userCredential.user.uid;
-            return database.ref('users/' + userId).update({
-                lastLogin: firebase.database.ServerValue.TIMESTAMP,
-                status: 'online'
-            });
-        })
-        .catch((error) => {
-            alert(error.message);
-        });
-});
-
-// Register Form Submission
-registerForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = document.getElementById('regEmail').value;
-    const password = document.getElementById('regPassword').value;
-    const confirmPassword = document.getElementById('regConfirmPassword').value;
-    let username = document.getElementById('regUsername').value;
-    const phone = document.getElementById('regPhone').value;
-    
-    // Validate passwords match
-    if (password !== confirmPassword) {
-        alert("Passwords don't match!");
-        return;
-    }
-    
-    // Ensure username starts with @
-    if (!username.startsWith('@')) {
-        username = '@' + username;
-    }
-    
-    // Validate username format
-    if (!/^@[a-zA-Z0-9_]{3,20}$/.test(username)) {
-        alert("Username must start with @ and contain 3-20 letters, numbers or underscores");
-        return;
-    }
-    
-    // Check if username is available
-    database.ref('usernames').child(username).once('value')
-        .then(snapshot => {
-            if (snapshot.exists()) {
-                alert('Username already taken!');
-                return Promise.reject('Username taken');
-            }
-            
-            // Create user
-            return auth.createUserWithEmailAndPassword(email, password);
-        })
-        .then((userCredential) => {
-            const user = userCredential.user;
-            
-            // Prepare user data
-            const userData = {
-                username: username,
-                email: email,
-                createdAt: firebase.database.ServerValue.TIMESTAMP,
-                lastLogin: firebase.database.ServerValue.TIMESTAMP,
-                status: 'online',
-                bio: '',
-                avatar: 'https://via.placeholder.com/150'
-            };
-            
-            // Add phone if provided
-            if (phone) {
-                if (!/^\+[0-9]{10,15}$/.test(phone)) {
-                    alert("Phone number must be in format +1234567890");
-                    return Promise.reject('Invalid phone');
-                }
-                userData.phone = phone;
-                
-                // Store phone mapping
-                return database.ref('phones').child(phone).set(user.uid)
-                    .then(() => {
-                        // Save user data
-                        return database.ref('users/' + user.uid).set(userData);
-                    })
-                    .then(() => {
-                        // Reserve username
-                        return database.ref('usernames/' + username).set(user.uid);
-                    });
-            } else {
-                // Save user data without phone
-                return database.ref('users/' + user.uid).set(userData)
-                    .then(() => {
-                        // Reserve username
-                        return database.ref('usernames/' + username).set(user.uid);
-                    });
-            }
-        })
-        .then(() => {
-            alert('Registration successful!');
-            // Switch to login form
-            registerForm.style.display = 'none';
-            loginForm.style.display = 'block';
-            animateFormTransition();
-        })
-        .catch((error) => {
-            if (error !== 'Username taken' && error !== 'Invalid phone') {
-                alert(error.message);
-            }
-        });
-});
-
-// Forgot Password
-forgotPassword.addEventListener('click', (e) => {
-    e.preventDefault();
-    const email = document.getElementById('email').value;
-    
-    if (!email) {
-        alert('Please enter your email first');
-        return;
-    }
-    
-    auth.sendPasswordResetEmail(email)
-        .then(() => {
-            alert('Password reset email sent!');
-        })
-        .catch((error) => {
-            alert(error.message);
-        });
-});
-
-// Load User Data
-function loadUserData(userId) {
-    database.ref('users/' + userId).once('value')
-        .then(snapshot => {
-            const userData = snapshot.val();
-            
-            // Update UI
-            document.getElementById('usernameDisplay').textContent = userData.username;
-            document.getElementById('profileUsername').textContent = userData.username;
-            document.getElementById('userStatus').textContent = userData.status;
-            document.getElementById('profileBio').value = userData.bio || '';
-            document.getElementById('profilePhone').value = userData.phone || '';
-            
-            // Format last seen
-            if (userData.lastLogin) {
-                const lastSeen = new Date(userData.lastLogin);
-                document.getElementById('profileLastSeen').textContent = 'Last seen: ' + lastSeen.toLocaleString();
-            }
-            
-            // Set avatar
-            if (userData.avatar) {
-                document.getElementById('userAvatar').src = userData.avatar;
-                document.getElementById('profileAvatar').src = userData.avatar;
-            }
-        });
-}
-
-// Setup Real-time Listeners
-function setupRealTimeListeners(userId) {
-    // Listen for user data changes
-    database.ref('users/' + userId).on('value', snapshot => {
-        const userData = snapshot.val();
-        if (userData) {
-            document.getElementById('usernameDisplay').textContent = userData.username;
-            document.getElementById('profileUsername').textContent = userData.username;
-            document.getElementById('userStatus').textContent = userData.status;
-            document.getElementById('profileBio').value = userData.bio || '';
-            document.getElementById('profilePhone').value = userData.phone || '';
-            
-            if (userData.lastLogin) {
-                const lastSeen = new Date(userData.lastLogin);
-                document.getElementById('profileLastSeen').textContent = 'Last seen: ' + lastSeen.toLocaleString();
-            }
-            
-            if (userData.avatar) {
-                document.getElementById('userAvatar').src = userData.avatar;
-                document.getElementById('profileAvatar').src = userData.avatar;
-            }
-        }
-    });
-    
-    // Listen for friends list
-    database.ref('friends/' + userId).on('value', snapshot => {
-        const friendsList = document.getElementById('friendsList');
-        friendsList.innerHTML = '';
+        if (!otherUser) return;
         
-        if (snapshot.exists()) {
-            const friends = snapshot.val();
-            Object.keys(friends).forEach(friendId => {
-                database.ref('users/' + friendId).once('value')
-                    .then(friendSnapshot => {
-                        const friendData = friendSnapshot.val();
-                        if (friendData) {
-                            const friendItem = document.createElement('div');
-                            friendItem.className = 'friend-item';
-                            friendItem.innerHTML = `
-                                <img src="${friendData.avatar || 'https://via.placeholder.com/40'}" alt="Friend">
-                                <div class="friend-info">
-                                    <h4>${friendData.username}</h4>
-                                    <p>${friendData.bio || 'No bio yet'}</p>
-                                </div>
-                                <div class="friend-status status-${friendData.status || 'offline'}"></div>
-                            `;
-                            friendItem.addEventListener('click', () => startPrivateChat(friendId, friendData.username, friendData.avatar));
-                            friendsList.appendChild(friendItem);
-                        }
-                    });
-            });
-        } else {
-            friendsList.innerHTML = '<p class="no-friends">No friends yet. Add some!</p>';
-        }
-    });
-    
-    // Listen for friend requests
-    database.ref('friendRequests/' + userId).on('value', snapshot => {
-        // Update UI to show pending requests
-        const requestsBtn = document.getElementById('friendRequestsBtn');
-        if (snapshot.exists() && Object.keys(snapshot.val()).length > 0) {
-            requestsBtn.classList.add('has-requests');
-        } else {
-            requestsBtn.classList.remove('has-requests');
-        }
-    });
-    
-    // Listen for groups
-    database.ref('userGroups/' + userId).on('value', snapshot => {
-        const groupsList = document.getElementById('groupsList');
-        groupsList.innerHTML = '';
+        const lastMessage = chat.messages.length > 0 ? 
+            decryptMessage(chat.messages[chat.messages.length - 1].content, currentUser.password) : 
+            'Нет сообщений';
         
-        if (snapshot.exists()) {
-            const groups = snapshot.val();
-            Object.keys(groups).forEach(groupId => {
-                database.ref('groups/' + groupId).once('value')
-                    .then(groupSnapshot => {
-                        const groupData = groupSnapshot.val();
-                        if (groupData) {
-                            const groupItem = document.createElement('div');
-                            groupItem.className = 'group-item';
-                            groupItem.innerHTML = `
-                                <img src="${groupData.avatar || 'https://via.placeholder.com/40'}" alt="Group">
-                                <div class="group-info">
-                                    <h4>${groupData.name}</h4>
-                                    <p>${Object.keys(groupData.members || {}).length} members</p>
-                                </div>
-                            `;
-                            groupItem.addEventListener('click', () => startGroupChat(groupId, groupData.name, groupData.avatar));
-                            groupsList.appendChild(groupItem);
-                        }
-                    });
-            });
-        } else {
-            groupsList.innerHTML = '<p class="no-groups">No groups yet. Create one!</p>';
-        }
-    });
-}
-
-// Start Private Chat
-function startPrivateChat(userId, username, avatar) {
-    const currentUserId = auth.currentUser.uid;
-    const chatId = [currentUserId, userId].sort().join('_');
-    
-    // Update UI
-    document.getElementById('currentChatName').textContent = username;
-    document.getElementById('currentChatAvatar').src = avatar || 'https://via.placeholder.com/40';
-    document.getElementById('currentChatStatus').textContent = 'Online';
-    document.getElementById('messageInput').disabled = false;
-    document.getElementById('sendMessageBtn').disabled = false;
-    
-    // Load messages
-    const messagesContainer = document.getElementById('messagesContainer');
-    messagesContainer.innerHTML = '';
-    
-    database.ref('privateMessages/' + chatId).limitToLast(50).on('child_added', snapshot => {
-        const message = snapshot.val();
-        displayMessage(message, currentUserId);
-    });
-    
-    // Set up message sending
-    const messageInput = document.getElementById('messageInput');
-    const sendMessageBtn = document.getElementById('sendMessageBtn');
-    
-    function sendMessage() {
-        const text = messageInput.value.trim();
-        if (text) {
-            const newMessage = {
-                senderId: currentUserId,
-                text: text,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
-            
-            database.ref('privateMessages/' + chatId).push(newMessage);
-            messageInput.value = '';
-        }
-    }
-    
-    sendMessageBtn.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
-}
-
-// Start Group Chat
-function startGroupChat(groupId, groupName, groupAvatar) {
-    const currentUserId = auth.currentUser.uid;
-    
-    // Update UI
-    document.getElementById('currentChatName').textContent = groupName;
-    document.getElementById('currentChatAvatar').src = groupAvatar || 'https://via.placeholder.com/40';
-    document.getElementById('currentChatStatus').textContent = 'Group';
-    document.getElementById('messageInput').disabled = false;
-    document.getElementById('sendMessageBtn').disabled = false;
-    
-    // Load messages
-    const messagesContainer = document.getElementById('messagesContainer');
-    messagesContainer.innerHTML = '';
-    
-    database.ref('groupMessages/' + groupId).limitToLast(50).on('child_added', snapshot => {
-        const message = snapshot.val();
-        displayMessage(message, currentUserId);
-    });
-    
-    // Set up message sending
-    const messageInput = document.getElementById('messageInput');
-    const sendMessageBtn = document.getElementById('sendMessageBtn');
-    
-    function sendMessage() {
-        const text = messageInput.value.trim();
-        if (text) {
-            const newMessage = {
-                senderId: currentUserId,
-                text: text,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
-            
-            database.ref('groupMessages/' + groupId).push(newMessage);
-            messageInput.value = '';
-        }
-    }
-    
-    sendMessageBtn.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
-}
-
-// Display Message
-function displayMessage(message, currentUserId) {
-    const messagesContainer = document.getElementById('messagesContainer');
-    const isCurrentUser = message.senderId === currentUserId;
-    
-    const messageElement = document.createElement('div');
-    messageElement.className = `message ${isCurrentUser ? 'message-sent' : 'message-received'}`;
-    
-    // Get sender info
-    let senderName = 'Unknown';
-    let senderAvatar = 'https://via.placeholder.com/40';
-    
-    database.ref('users/' + message.senderId).once('value')
-        .then(snapshot => {
-            const userData = snapshot.val();
-            if (userData) {
-                senderName = userData.username;
-                senderAvatar = userData.avatar || 'https://via.placeholder.com/40';
-                
-                let messageContent = '';
-                
-                if (message.text) {
-                    messageContent = `<div class="message-content">${message.text}</div>`;
-                } else if (message.fileUrl) {
-                    messageContent = `
-                        <div class="message-content">Sent a file</div>
-                        <img src="${message.fileUrl}" class="message-file" alt="File">
-                    `;
-                }
-                
-                messageElement.innerHTML = `
-                    <div class="message-info">
-                        <span class="message-author">${senderName}</span>
-                        <span class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</span>
-                    </div>
-                    ${messageContent}
-                `;
-                
-                messagesContainer.appendChild(messageElement);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
-        });
-}
-
-// Add Friend Modal
-document.getElementById('addFriendBtn').addEventListener('click', () => {
-    const addFriendModal = document.getElementById('addFriendModal');
-    addFriendModal.classList.add('active');
-    
-    const searchTabs = addFriendModal.querySelectorAll('.search-tab-btn');
-    const friendSearch = document.getElementById('friendSearch');
-    const searchResults = document.getElementById('friendSearchResults');
-    
-    // Set default search to username
-    let searchType = 'username';
-    friendSearch.placeholder = 'Search by username...';
-    
-    // Handle search tab switching
-    searchTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            searchTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            
-            searchType = tab.getAttribute('data-search-type');
-            friendSearch.placeholder = `Search by ${searchType}...`;
-            friendSearch.value = '';
-            searchResults.innerHTML = '';
-        });
-    });
-    
-    friendSearch.addEventListener('input', () => {
-        const query = friendSearch.value.trim();
-        if (query.length >= 3) {
-            if (searchType === 'username') {
-                searchUsersByUsername(query, searchResults);
-            } else {
-                searchUsersByPhone(query, searchResults);
-            }
-        } else {
-            searchResults.innerHTML = '';
-        }
-    });
-    
-    // Close modal when clicking X
-    addFriendModal.querySelector('.close-btn').addEventListener('click', () => {
-        addFriendModal.classList.remove('active');
-    });
-});
-
-// Search Users by Username
-function searchUsersByUsername(query, resultsContainer) {
-    // Ensure query starts with @
-    if (!query.startsWith('@')) {
-        query = '@' + query;
-    }
-    
-    database.ref('usernames').orderByKey().startAt(query).endAt(query + '\uf8ff').once('value')
-        .then(snapshot => {
-            resultsContainer.innerHTML = '';
-            
-            if (snapshot.exists()) {
-                const usernames = snapshot.val();
-                const currentUserId = auth.currentUser.uid;
-                
-                Object.keys(usernames).forEach(username => {
-                    const userId = usernames[username];
-                    
-                    // Don't show current user in results
-                    if (userId !== currentUserId) {
-                        database.ref('users/' + userId).once('value')
-                            .then(userSnapshot => {
-                                const userData = userSnapshot.val();
-                                if (userData) {
-                                    createSearchResultItem(userData, resultsContainer, currentUserId);
-                                }
-                            });
-                    }
-                });
-            } else {
-                resultsContainer.innerHTML = '<p class="no-results">No users found</p>';
-            }
-        });
-}
-
-// Search Users by Phone
-function searchUsersByPhone(query, resultsContainer) {
-    // Clean phone number (remove non-digit characters except +)
-    const cleanQuery = query.replace(/[^\d+]/g, '');
-    
-    if (cleanQuery.length < 3) {
-        resultsContainer.innerHTML = '';
-        return;
-    }
-    
-    database.ref('phones').orderByKey().startAt(cleanQuery).endAt(cleanQuery + '\uf8ff').once('value')
-        .then(snapshot => {
-            resultsContainer.innerHTML = '';
-            
-            if (snapshot.exists()) {
-                const phones = snapshot.val();
-                const currentUserId = auth.currentUser.uid;
-                
-                Object.keys(phones).forEach(phone => {
-                    const userId = phones[phone];
-                    
-                    // Don't show current user in results
-                    if (userId !== currentUserId) {
-                        database.ref('users/' + userId).once('value')
-                            .then(userSnapshot => {
-                                const userData = userSnapshot.val();
-                                if (userData) {
-                                    createSearchResultItem(userData, resultsContainer, currentUserId);
-                                }
-                            });
-                    }
-                });
-            } else {
-                resultsContainer.innerHTML = '<p class="no-results">No users found with this phone number</p>';
-            }
-        });
-}
-
-// Create Search Result Item
-function createSearchResultItem(userData, container, currentUserId) {
-    const resultItem = document.createElement('div');
-    resultItem.className = 'search-result-item';
-    resultItem.innerHTML = `
-        <img src="${userData.avatar || 'https://via.placeholder.com/40'}" alt="User">
-        <div class="search-result-info">
-            <h4>${userData.username}</h4>
-            <p>${userData.bio || 'No bio yet'}</p>
-            ${userData.phone ? `<p><small>Phone: ${userData.phone}</small></p>` : ''}
-        </div>
-        <button class="add-friend-btn" data-userid="${userData.userId || userData.key}">Add Friend</button>
-    `;
-    
-    // Check if already friends
-    database.ref('friends/' + currentUserId + '/' + (userData.userId || userData.key)).once('value')
-        .then(friendSnapshot => {
-            if (friendSnapshot.exists()) {
-                resultItem.querySelector('.add-friend-btn').textContent = 'Added';
-                resultItem.querySelector('.add-friend-btn').disabled = true;
-            }
-        });
-    
-    container.appendChild(resultItem);
-}
-
-// Friend Requests
-document.getElementById('friendRequestsBtn').addEventListener('click', () => {
-    const requestsModal = document.getElementById('friendRequestsModal');
-    requestsModal.classList.add('active');
-    
-    const currentUserId = auth.currentUser.uid;
-    const requestsList = document.getElementById('friendRequestsList');
-    requestsList.innerHTML = '';
-    
-    // Load pending friend requests
-    database.ref('friendRequests/' + currentUserId).once('value')
-        .then(snapshot => {
-            if (snapshot.exists()) {
-                const requests = snapshot.val();
-                
-                Object.keys(requests).forEach(requestId => {
-                    const requesterId = requests[requestId].from;
-                    const timestamp = requests[requestId].timestamp;
-                    
-                    database.ref('users/' + requesterId).once('value')
-                        .then(userSnapshot => {
-                            const userData = userSnapshot.val();
-                            if (userData) {
-                                const requestItem = document.createElement('div');
-                                requestItem.className = 'request-item';
-                                requestItem.innerHTML = `
-                                    <img src="${userData.avatar || 'https://via.placeholder.com/40'}" alt="User">
-                                    <div class="request-info">
-                                        <h4>${userData.username}</h4>
-                                        <p>Wants to be friends</p>
-                                        <small>${new Date(timestamp).toLocaleString()}</small>
-                                    </div>
-                                    <button class="request-action-btn accept" data-requestid="${requestId}" data-userid="${requesterId}">Accept</button>
-                                    <button class="request-action-btn decline" data-requestid="${requestId}">Decline</button>
-                                `;
-                                requestsList.appendChild(requestItem);
-                            }
-                        });
-                });
-            } else {
-                requestsList.innerHTML = '<p class="no-requests">No pending friend requests</p>';
-            }
-        });
-    
-    // Close modal when clicking X
-    requestsModal.querySelector('.close-btn').addEventListener('click', () => {
-        requestsModal.classList.remove('active');
-    });
-});
-
-// Handle Add Friend
-document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('add-friend-btn')) {
-        const userId = e.target.getAttribute('data-userid');
-        const currentUserId = auth.currentUser.uid;
-        
-        // Create friend request instead of directly adding
-        const requestId = database.ref('friendRequests/' + userId).push().key;
-        
-        database.ref('friendRequests/' + userId + '/' + requestId).set({
-            from: currentUserId,
-            timestamp: firebase.database.ServerValue.TIMESTAMP
-        }).then(() => {
-            e.target.textContent = 'Request Sent';
-            e.target.disabled = true;
-            alert('Friend request sent!');
-        });
-    }
-    
-    // Handle friend request actions
-    if (e.target.classList.contains('request-action-btn')) {
-        const requestId = e.target.getAttribute('data-requestid');
-        const currentUserId = auth.currentUser.uid;
-        
-        if (e.target.classList.contains('accept')) {
-            const requesterId = e.target.getAttribute('data-userid');
-            
-            // Add to both users' friend lists
-            database.ref('friends/' + currentUserId + '/' + requesterId).set(true);
-            database.ref('friends/' + requesterId + '/' + currentUserId).set(true);
-            
-            // Remove the request
-            database.ref('friendRequests/' + currentUserId + '/' + requestId).remove()
-                .then(() => {
-                    e.target.closest('.request-item').remove();
-                    alert('Friend added!');
-                });
-        } else if (e.target.classList.contains('decline')) {
-            // Just remove the request
-            database.ref('friendRequests/' + currentUserId + '/' + requestId).remove()
-                .then(() => {
-                    e.target.closest('.request-item').remove();
-                });
-        }
-    }
-});
-
-// Create Group
-document.getElementById('createGroupBtn').addEventListener('click', () => {
-    const createGroupModal = document.getElementById('createGroupModal');
-    createGroupModal.classList.add('active');
-    
-    const groupMemberSearch = document.getElementById('groupMemberSearch');
-    const selectedMembers = document.getElementById('selectedMembers');
-    const currentUserId = auth.currentUser.uid;
-    let members = {};
-    
-    // Add current user as admin
-    members[currentUserId] = 'admin';
-    updateSelectedMembersUI(members);
-    
-    // Search for friends to add
-    groupMemberSearch.addEventListener('input', () => {
-        const query = groupMemberSearch.value.trim();
-        if (query.length >= 3) {
-            // In a real app, we'd show search results and let user select
-        }
-    });
-    
-    // Close modal when clicking X
-    createGroupModal.querySelector('.close-btn').addEventListener('click', () => {
-        createGroupModal.classList.remove('active');
-    });
-    
-    // Submit group creation
-    document.getElementById('createGroupSubmit').addEventListener('click', () => {
-        const groupName = document.getElementById('groupName').value.trim();
-        
-        if (!groupName) {
-            alert('Please enter a group name');
-            return;
-        }
-        
-        if (Object.keys(members).length < 2) {
-            alert('Please add at least one member');
-            return;
-        }
-        
-        // Create group
-        const newGroupRef = database.ref('groups').push();
-        newGroupRef.set({
-            name: groupName,
-            createdBy: currentUserId,
-            createdAt: firebase.database.ServerValue.TIMESTAMP,
-            members: members
-        }).then(() => {
-            // Add group to each member's group list
-            Object.keys(members).forEach(memberId => {
-                database.ref('userGroups/' + memberId + '/' + newGroupRef.key).set(true);
-            });
-            
-            createGroupModal.classList.remove('active');
-            alert('Group created successfully!');
-        });
-    });
-    
-    function updateSelectedMembersUI(members) {
-        selectedMembers.innerHTML = '';
-        
-        // Get member details and display them
-        Object.keys(members).forEach(memberId => {
-            database.ref('users/' + memberId).once('value')
-                .then(snapshot => {
-                    const userData = snapshot.val();
-                    if (userData) {
-                        const memberElement = document.createElement('div');
-                        memberElement.className = 'selected-member';
-                        memberElement.innerHTML = `
-                            <img src="${userData.avatar || 'https://via.placeholder.com/20'}" alt="Member">
-                            <span>${userData.username}</span>
-                            ${memberId !== currentUserId ? '<span class="remove-member" data-userid="' + memberId + '">&times;</span>' : ''}
-                        `;
-                        selectedMembers.appendChild(memberElement);
-                        
-                        // Add remove functionality
-                        const removeBtn = memberElement.querySelector('.remove-member');
-                        if (removeBtn) {
-                            removeBtn.addEventListener('click', () => {
-                                delete members[memberId];
-                                updateSelectedMembersUI(members);
-                            });
-                        }
-                    }
-                });
-        });
-    }
-});
-
-// Change Avatar
-document.getElementById('changeAvatarBtn').addEventListener('click', () => {
-    document.getElementById('avatarUpload').click();
-});
-
-document.getElementById('avatarUpload').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        const userId = auth.currentUser.uid;
-        const storageRef = storage.ref('avatars/' + userId + '/' + file.name);
-        
-        storageRef.put(file).then(snapshot => {
-            return snapshot.ref.getDownloadURL();
-        }).then(downloadURL => {
-            // Update user's avatar URL
-            return database.ref('users/' + userId).update({
-                avatar: downloadURL
-            });
-        }).then(() => {
-            alert('Avatar updated successfully!');
-        }).catch(error => {
-            alert('Error uploading avatar: ' + error.message);
-        });
-    }
-});
-
-// Save Profile
-document.getElementById('saveProfileBtn').addEventListener('click', () => {
-    const userId = auth.currentUser.uid;
-    const newBio = document.getElementById('profileBio').value.trim();
-    const newPhone = document.getElementById('profilePhone').value.trim();
-    
-    const updates = {
-        bio: newBio
-    };
-    
-    // Only update phone if it's changed and valid
-    if (newPhone) {
-        if (!/^\+[0-9]{10,15}$/.test(newPhone)) {
-            alert("Phone number must be in format +1234567890");
-            return;
-        }
-        updates.phone = newPhone;
-        
-        // Update phone mapping
-        database.ref('phones').child(newPhone).set(userId);
-    }
-    
-    database.ref('users/' + userId).update(updates)
-        .then(() => {
-            alert('Profile updated successfully!');
-        });
-});
-
-// File Attachment
-document.getElementById('attachFileBtn').addEventListener('click', () => {
-    document.getElementById('fileUpload').click();
-});
-
-document.getElementById('fileUpload').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        const filePreviewModal = document.getElementById('filePreviewModal');
-        const filePreview = document.getElementById('filePreview');
-        const fileInfo = document.getElementById('fileInfo');
-        
-        filePreviewModal.classList.add('active');
-        
-        // Display file info
-        fileInfo.innerHTML = `
-            <p><strong>Name:</strong> ${file.name}</p>
-            <p><strong>Size:</strong> ${(file.size / 1024).toFixed(2)} KB</p>
-            <p><strong>Type:</strong> ${file.type}</p>
+        const chatItem = document.createElement('div');
+        chatItem.className = 'chat-item';
+        chatItem.dataset.chatId = chat.id;
+        chatItem.innerHTML = `
+            <div class="chat-avatar">${otherUser.username.charAt(1).toUpperCase()}</div>
+            <div class="chat-info">
+                <div class="chat-name">${otherUser.username}</div>
+                <div class="last-message">${lastMessage}</div>
+            </div>
+            <div class="chat-time">${chat.messages.length > 0 ? formatTime(chat.messages[chat.messages.length - 1].timestamp) : ''}</div>
         `;
         
-        // Preview if image
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                filePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
-            };
-            reader.readAsDataURL(file);
-        } else {
-            filePreview.innerHTML = `<i class="fas fa-file" style="font-size: 50px;"></i>`;
-        }
-        
-        // Set up send button
-        document.getElementById('sendFileBtn').onclick = () => {
-            sendFile(file);
-            filePreviewModal.classList.remove('active');
-        };
-        
-        // Close modal when clicking X
-        filePreviewModal.querySelector('.close-btn').addEventListener('click', () => {
-            filePreviewModal.classList.remove('active');
-        });
-    }
-});
-
-function sendFile(file) {
-    const userId = auth.currentUser.uid;
-    const storageRef = storage.ref('chat_files/' + userId + '/' + Date.now() + '_' + file.name);
+        chatItem.addEventListener('click', () => openChat(chat.id, false));
+        chatsList.appendChild(chatItem);
+    });
     
-    storageRef.put(file).then(snapshot => {
-        return snapshot.ref.getDownloadURL();
-    }).then(downloadURL => {
-        // Get current chat info
-        const chatId = getCurrentChatId(); // You'd need to implement this based on your chat state
+    // Отображаем группы
+    groupChats.forEach(group => {
+        const lastMessage = group.messages.length > 0 ? 
+            decryptMessage(group.messages[group.messages.length - 1].content, currentUser.password) : 
+            'Нет сообщений';
         
-        if (chatId) {
-            const newMessage = {
-                senderId: userId,
-                fileUrl: downloadURL,
-                fileName: file.name,
-                fileType: file.type,
-                fileSize: file.size,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
-            
-            // Save to appropriate chat (private or group)
-            if (chatId.includes('_')) {
-                // Private chat
-                database.ref('privateMessages/' + chatId).push(newMessage);
-            } else {
-                // Group chat
-                database.ref('groupMessages/' + chatId).push(newMessage);
-            }
-        }
-    }).catch(error => {
-        alert('Error uploading file: ' + error.message);
+        const chatItem = document.createElement('div');
+        chatItem.className = 'chat-item';
+        chatItem.dataset.chatId = group.id;
+        chatItem.innerHTML = `
+            <div class="chat-avatar"><i class="fas fa-users"></i></div>
+            <div class="chat-info">
+                <div class="chat-name">${group.name}</div>
+                <div class="last-message">${lastMessage}</div>
+            </div>
+            <div class="chat-time">${group.messages.length > 0 ? formatTime(group.messages[group.messages.length - 1].timestamp) : ''}</div>
+        `;
+        
+        chatItem.addEventListener('click', () => openChat(group.id, true));
+        chatsList.appendChild(chatItem);
     });
 }
 
-// Logout
-document.getElementById('logoutBtn').addEventListener('click', () => {
-    // Update status to offline
-    const userId = auth.currentUser.uid;
-    database.ref('users/' + userId).update({
-        status: 'offline',
-        lastLogin: firebase.database.ServerValue.TIMESTAMP
-    }).then(() => {
-        auth.signOut();
+// Открытие чата
+function openChat(chatId, isGroup) {
+    // Снимаем выделение со всех чатов
+    document.querySelectorAll('.chat-item').forEach(item => {
+        item.classList.remove('active');
     });
-});
-
-// Tab Switching in App
-document.querySelectorAll('.sidebar-tabs .tab-btn').forEach(tab => {
-    tab.addEventListener('click', () => {
-        // Remove active class from all tabs and contents
-        document.querySelectorAll('.sidebar-tabs .tab-btn').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    
+    // Выделяем текущий чат
+    document.querySelector(`.chat-item[data-chat-id="${chatId}"]`).classList.add('active');
+    
+    currentChat = { id: chatId, isGroup };
+    
+    if (isGroup) {
+        const group = groups.find(g => g.id === chatId);
+        if (!group) return;
         
-        // Add active class to clicked tab and corresponding content
-        tab.classList.add('active');
-        const tabId = tab.getAttribute('data-tab');
-        document.getElementById(tabId + 'Tab').classList.add('active');
+        chatTitle.textContent = group.name;
+        displayMessages(group.messages);
+    } else {
+        const chat = chats.find(c => c.id === chatId);
+        if (!chat) return;
+        
+        const otherUserId = chat.participants.find(id => id !== currentUser.id);
+        const otherUser = users.find(u => u.id === otherUserId);
+        
+        if (!otherUser) return;
+        
+        chatTitle.textContent = otherUser.username;
+        displayMessages(chat.messages);
+    }
+}
+
+// Отображение сообщений
+function displayMessages(messages) {
+    messagesContainer.innerHTML = '';
+    
+    messages.forEach(msg => {
+        const isOutgoing = msg.senderId === currentUser.id;
+        const decryptedContent = decryptMessage(msg.content, currentUser.password);
+        
+        const messageElement = document.createElement('div');
+        messageElement.className = `message ${isOutgoing ? 'message-outgoing' : 'message-incoming'}`;
+        
+        if (!isOutgoing && currentChat.isGroup) {
+            const sender = users.find(u => u.id === msg.senderId);
+            messageElement.innerHTML = `
+                <div class="message-sender">${sender ? sender.username : 'Unknown'}</div>
+                <div class="message-text">${decryptedContent}</div>
+                <div class="message-time">${formatTime(msg.timestamp)}</div>
+            `;
+        } else {
+            messageElement.innerHTML = `
+                <div class="message-text">${decryptedContent}</div>
+                <div class="message-time">${formatTime(msg.timestamp)}</div>
+            `;
+        }
+        
+        messagesContainer.appendChild(messageElement);
+    });
+    
+    // Прокрутка вниз
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Отправка сообщения
+function sendMessage() {
+    const content = messageInput.value.trim();
+    if (!content || !currentChat) return;
+    
+    const encryptedContent = encryptMessage(content, currentUser.password);
+    const newMessage = {
+        id: generateId(),
+        senderId: currentUser.id,
+        content: encryptedContent,
+        timestamp: Date.now()
+    };
+    
+    if (currentChat.isGroup) {
+        const groupIndex = groups.findIndex(g => g.id === currentChat.id);
+        if (groupIndex !== -1) {
+            groups[groupIndex].messages.push(newMessage);
+            saveGroups();
+        }
+    } else {
+        const chatIndex = chats.findIndex(c => c.id === currentChat.id);
+        if (chatIndex !== -1) {
+            chats[chatIndex].messages.push(newMessage);
+            saveChats();
+        }
+    }
+    
+    messageInput.value = '';
+    loadChats(); // Обновляем список чатов (последнее сообщение)
+    displayMessages(
+        currentChat.isGroup ? 
+        groups.find(g => g.id === currentChat.id).messages : 
+        chats.find(c => c.id === currentChat.id).messages
+    );
+}
+
+// Создание нового личного чата
+function createNewChat(userId) {
+    const existingChat = chats.find(chat => 
+        chat.participants.includes(currentUser.id) && 
+        chat.participants.includes(userId) && 
+        !chat.isGroup
+    );
+    
+    if (existingChat) {
+        openChat(existingChat.id, false);
+        newChatModal.classList.add('hidden');
+        return;
+    }
+    
+    const newChat = {
+        id: generateId(),
+        participants: [currentUser.id, userId],
+        isGroup: false,
+        messages: []
+    };
+    
+    chats.push(newChat);
+    saveChats();
+    
+    // Добавляем в контакты, если еще нет
+    if (!currentUser.contacts.includes(userId)) {
+        currentUser.contacts.push(userId);
+        saveUsers();
+        localStorage.setItem('current_user', JSON.stringify(currentUser));
+    }
+    
+    openChat(newChat.id, false);
+    newChatModal.classList.add('hidden');
+}
+
+// Создание новой группы
+function createNewGroup(name, members) {
+    const groupKey = generateGroupKey();
+    const encryptedKeys = {};
+    
+    // Шифруем групповой ключ для каждого участника
+    members.forEach(memberId => {
+        const member = users.find(u => u.id === memberId);
+        if (member) {
+            // В реальном приложении используйте публичный ключ участника
+            encryptedKeys[memberId] = encryptGroupKeyForMember(groupKey, member.password);
+        }
+    });
+    
+    const newGroup = {
+        id: generateId(),
+        name,
+        creatorId: currentUser.id,
+        members,
+        encryptedKeys,
+        messages: [],
+        createdAt: Date.now()
+    };
+    
+    groups.push(newGroup);
+    saveGroups();
+    
+    // Добавляем группу в список групп каждого участника
+    members.forEach(memberId => {
+        const user = users.find(u => u.id === memberId);
+        if (user) {
+            user.groups.push(newGroup.id);
+        }
+    });
+    
+    saveUsers();
+    if (currentUser) {
+        localStorage.setItem('current_user', JSON.stringify(currentUser));
+    }
+    
+    loadChats();
+    openChat(newGroup.id, true);
+    createGroupModal.classList.add('hidden');
+}
+
+// Поиск пользователей для нового чата
+function searchUsers(query) {
+    usersList.innerHTML = '';
+    
+    if (!query) return;
+    
+    const filteredUsers = users.filter(user => 
+        user.id !== currentUser.id && 
+        user.username.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    if (filteredUsers.length === 0) {
+        usersList.innerHTML = '<div class="no-users">Пользователи не найдены</div>';
+        return;
+    }
+    
+    filteredUsers.forEach(user => {
+        const userItem = document.createElement('div');
+        userItem.className = 'user-item';
+        userItem.innerHTML = `
+            <div class="user-avatar">${user.username.charAt(1).toUpperCase()}</div>
+            <div class="user-name">${user.username}</div>
+        `;
+        
+        userItem.addEventListener('click', () => createNewChat(user.id));
+        usersList.appendChild(userItem);
+    });
+}
+
+// Вспомогательные функции
+function formatTime(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function saveChats() {
+    localStorage.setItem('messenger_chats', JSON.stringify(chats));
+}
+
+function saveGroups() {
+    localStorage.setItem('messenger_groups', JSON.stringify(groups));
+}
+
+// Обработчики событий
+sendMessageBtn.addEventListener('click', sendMessage);
+messageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+});
+
+newChatBtn.addEventListener('click', () => {
+    newChatModal.classList.remove('hidden');
+    searchUserInput.value = '';
+    usersList.innerHTML = '<div class="no-users">Введите имя пользователя для поиска</div>';
+});
+
+closeNewChatModal.addEventListener('click', () => {
+    newChatModal.classList.add('hidden');
+});
+
+searchUserInput.addEventListener('input', () => {
+    searchUsers(searchUserInput.value.trim());
+});
+
+createGroupBtn.addEventListener('click', () => {
+    createGroupModal.classList.remove('hidden');
+    groupNameInput.value = '';
+    groupMembersInput.value = '';
+    selectedMembers.innerHTML = '';
+    availableUsersForGroup.innerHTML = '';
+    
+    // Показываем доступных пользователей (исключая текущего)
+    users.filter(u => u.id !== currentUser.id).forEach(user => {
+        const userItem = document.createElement('div');
+        userItem.className = 'user-item';
+        userItem.innerHTML = `
+            <div class="user-avatar">${user.username.charAt(1).toUpperCase()}</div>
+            <div class="user-name">${user.username}</div>
+            <button class="add-member-btn" data-user-id="${user.id}">Добавить</button>
+        `;
+        
+        userItem.querySelector('.add-member-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            addMemberToGroup(user.id, user.username);
+        });
+        
+        availableUsersForGroup.appendChild(userItem);
     });
 });
 
-// Chat Info
-document.getElementById('chatInfoBtn').addEventListener('click', () => {
-    document.getElementById('rightSidebar').classList.add('active');
+closeCreateGroupModal.addEventListener('click', () => {
+    createGroupModal.classList.add('hidden');
 });
 
-document.getElementById('closeSidebar').addEventListener('click', () => {
-    document.getElementById('rightSidebar').classList.remove('active');
+confirmCreateGroupBtn.addEventListener('click', () => {
+    const name = groupNameInput.value.trim();
+    if (!name) {
+        alert('Введите название группы');
+        return;
+    }
+    
+    const memberIds = Array.from(selectedMembers.children).map(el => el.dataset.userId);
+    if (memberIds.length === 0) {
+        alert('Добавьте хотя бы одного участника');
+        return;
+    }
+    
+    // Добавляем текущего пользователя как участника
+    const allMembers = [...memberIds, currentUser.id];
+    createNewGroup(name, allMembers);
 });
 
-// Encryption (simplified example)
-document.getElementById('encryptBtn').addEventListener('click', () => {
-    alert('End-to-end encryption would be implemented here in a production app');
-});
+function addMemberToGroup(userId, username) {
+    if (document.querySelector(`.selected-member[data-user-id="${userId}"]`)) return;
+    
+    const memberElement = document.createElement('div');
+    memberElement.className = 'selected-member';
+    memberElement.dataset.userId = userId;
+    memberElement.innerHTML = `
+        ${username}
+        <button class="remove-member">&times;</button>
+    `;
+    
+    memberElement.querySelector('.remove-member').addEventListener('click', () => {
+        memberElement.remove();
+    });
+    
+    selectedMembers.appendChild(memberElement);
+}
 
-// Global Search
-document.getElementById('globalSearch').addEventListener('input', (e) => {
-    // In a real app, this would search across users, groups, and messages
-    console.log('Searching for:', e.target.value);
-});
-
-// Helper function to get current chat ID
-function getCurrentChatId() {
-    // This would be implemented based on your current chat state
-    return null;
+// Инициализация при загрузке
+if (currentUser) {
+    loadChats();
 }
