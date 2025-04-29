@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Простой мессенджер</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="messenger-container">
+        <header class="messenger-header">
+            <h1>Простой мессенджер</h1>
+            <div class="user-info">
+                <input type="text" id="username" placeholder="Ваше имя">
+                <button id="set-name">Сохранить</button>
+            </div>
+        </header>
+        
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <!-- Сообщения будут здесь -->
+            </div>
+            
+            <div class="message-input">
+                <textarea id="message-input" placeholder="Введите сообщение..."></textarea>
+                <button id="send-button">Отправить</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
