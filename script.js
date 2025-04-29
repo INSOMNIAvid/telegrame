@@ -1,73 +1,177 @@
-// Firebase Configuration (will be in separate file)
-// Initialize Firebase
+// Firebase Configuration
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
 const storage = firebase.storage();
 
 // DOM Elements
-const authModal = document.getElementById('authModal');
-const closeAuth = document.getElementById('closeAuth');
-const loginTab = document.getElementById('loginTab');
-const registerTab = document.getElementById('registerTab');
+const authPage = document.getElementById('authPage');
+const appContainer = document.getElementById('appContainer');
+const showRegisterBtn = document.getElementById('showRegister');
+const showLoginBtn = document.getElementById('showLogin');
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
 const forgotPassword = document.getElementById('forgotPassword');
-const appContainer = document.getElementById('appContainer');
-ar current = null;
+
+// Animation variables
+let currentAnimation = null;
+
+// Form switching
+showRegisterBtn.addEventListener('click', () => {
+    loginForm.style.display = 'none';
+    registerForm.style.display = 'block';
+    animateFormTransition();
+});
+
+showLoginBtn.addEventListener('click', () => {
+    registerForm.style.display = 'none';
+    loginForm.style.display = 'block';
+    animateFormTransition();
+});
+
+function animateFormTransition() {
+    if (currentAnimation) currentAnimation.pause();
+    currentAnimation = anime({
+        targets: 'path',
+        strokeDashoffset: {
+            value: 0,
+            duration: 700,
+            easing: 'easeOutQuart'
+        },
+        strokeDasharray: {
+            value: '240 1386',
+            duration: 700,
+            easing: 'easeOutQuart'
+        }
+    });
+}
+
+// Input focus animations
 document.querySelector('#email').addEventListener('focus', function(e) {
-  if (current) current.pause();
-  current = anime({
-    targets: 'path',
-    strokeDashoffset: {
-      value: 0,
-      duration: 700,
-      easing: 'easeOutQuart'
-    },
-    strokeDasharray: {
-      value: '240 1386',
-      duration: 700,
-      easing: 'easeOutQuart'
-    }
-  });
+    if (currentAnimation) currentAnimation.pause();
+    currentAnimation = anime({
+        targets: 'path',
+        strokeDashoffset: {
+            value: 0,
+            duration: 700,
+            easing: 'easeOutQuart'
+        },
+        strokeDasharray: {
+            value: '240 1386',
+            duration: 700,
+            easing: 'easeOutQuart'
+        }
+    });
 });
+
 document.querySelector('#password').addEventListener('focus', function(e) {
-  if (current) current.pause();
-  current = anime({
-    targets: 'path',
-    strokeDashoffset: {
-      value: -336,
-      duration: 700,
-      easing: 'easeOutQuart'
-    },
-    strokeDasharray: {
-      value: '240 1386',
-      duration: 700,
-      easing: 'easeOutQuart'
-    }
-  });
+    if (currentAnimation) currentAnimation.pause();
+    currentAnimation = anime({
+        targets: 'path',
+        strokeDashoffset: {
+            value: -336,
+            duration: 700,
+            easing: 'easeOutQuart'
+        },
+        strokeDasharray: {
+            value: '240 1386',
+            duration: 700,
+            easing: 'easeOutQuart'
+        }
+    });
 });
+
 document.querySelector('#submit').addEventListener('focus', function(e) {
-  if (current) current.pause();
-  current = anime({
-    targets: 'path',
-    strokeDashoffset: {
-      value: -730,
-      duration: 700,
-      easing: 'easeOutQuart'
-    },
-    strokeDasharray: {
-      value: '530 1386',
-      duration: 700,
-      easing: 'easeOutQuart'
-    }
-  });
+    if (currentAnimation) currentAnimation.pause();
+    currentAnimation = anime({
+        targets: 'path',
+        strokeDashoffset: {
+            value: -730,
+            duration: 700,
+            easing: 'easeOutQuart'
+        },
+        strokeDasharray: {
+            value: '530 1386',
+            duration: 700,
+            easing: 'easeOutQuart'
+        }
+    });
 });
+
+// Register form focus animations
+document.querySelector('#regUsername').addEventListener('focus', function(e) {
+    if (currentAnimation) currentAnimation.pause();
+    currentAnimation = anime({
+        targets: 'path',
+        strokeDashoffset: {
+            value: -150,
+            duration: 700,
+            easing: 'easeOutQuart'
+        },
+        strokeDasharray: {
+            value: '240 1386',
+            duration: 700,
+            easing: 'easeOutQuart'
+        }
+    });
+});
+
+document.querySelector('#regEmail').addEventListener('focus', function(e) {
+    if (currentAnimation) currentAnimation.pause();
+    currentAnimation = anime({
+        targets: 'path',
+        strokeDashoffset: {
+            value: -300,
+            duration: 700,
+            easing: 'easeOutQuart'
+        },
+        strokeDasharray: {
+            value: '240 1386',
+            duration: 700,
+            easing: 'easeOutQuart'
+        }
+    });
+});
+
+document.querySelector('#regPassword').addEventListener('focus', function(e) {
+    if (currentAnimation) currentAnimation.pause();
+    currentAnimation = anime({
+        targets: 'path',
+        strokeDashoffset: {
+            value: -450,
+            duration: 700,
+            easing: 'easeOutQuart'
+        },
+        strokeDasharray: {
+            value: '240 1386',
+            duration: 700,
+            easing: 'easeOutQuart'
+        }
+    });
+});
+
+document.querySelector('#regSubmit').addEventListener('focus', function(e) {
+    if (currentAnimation) currentAnimation.pause();
+    currentAnimation = anime({
+        targets: 'path',
+        strokeDashoffset: {
+            value: -730,
+            duration: 700,
+            easing: 'easeOutQuart'
+        },
+        strokeDasharray: {
+            value: '530 1386',
+            duration: 700,
+            easing: 'easeOutQuart'
+        }
+    });
+});
+
 // Auth State Listener
 auth.onAuthStateChanged(user => {
     if (user) {
         // User is signed in
-        authModal.style.display = 'none';
+        authPage.style.display = 'none';
         appContainer.style.display = 'flex';
         loadUserData(user.uid);
         setupRealTimeListeners(user.uid);
@@ -79,36 +183,16 @@ auth.onAuthStateChanged(user => {
         });
     } else {
         // No user is signed in
-        authModal.style.display = 'flex';
+        authPage.style.display = 'flex';
         appContainer.style.display = 'none';
     }
-});
-
-// Tab Switching
-loginTab.addEventListener('click', () => {
-    loginTab.classList.add('active');
-    registerTab.classList.remove('active');
-    loginForm.classList.add('active');
-    registerForm.classList.remove('active');
-});
-
-registerTab.addEventListener('click', () => {
-    registerTab.classList.add('active');
-    loginTab.classList.remove('active');
-    registerForm.classList.add('active');
-    loginForm.classList.remove('active');
-});
-
-// Close Auth Modal
-closeAuth.addEventListener('click', () => {
-    authModal.style.display = 'none';
 });
 
 // Login Form Submission
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const loginInput = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
+    const loginInput = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
     
     // Determine if input is email or phone
     let authPromise;
@@ -138,11 +222,11 @@ loginForm.addEventListener('submit', (e) => {
 // Register Form Submission
 registerForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const email = document.getElementById('registerEmail').value;
-    const password = document.getElementById('registerPassword').value;
-    const confirmPassword = document.getElementById('registerConfirmPassword').value;
-    let username = document.getElementById('registerUsername').value;
-    const phone = document.getElementById('registerPhone').value;
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPassword').value;
+    const confirmPassword = document.getElementById('regConfirmPassword').value;
+    let username = document.getElementById('regUsername').value;
+    const phone = document.getElementById('regPhone').value;
     
     // Validate passwords match
     if (password !== confirmPassword) {
@@ -215,7 +299,10 @@ registerForm.addEventListener('submit', (e) => {
         })
         .then(() => {
             alert('Registration successful!');
-            loginTab.click();
+            // Switch to login form
+            registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            animateFormTransition();
         })
         .catch((error) => {
             if (error !== 'Username taken' && error !== 'Invalid phone') {
@@ -227,17 +314,20 @@ registerForm.addEventListener('submit', (e) => {
 // Forgot Password
 forgotPassword.addEventListener('click', (e) => {
     e.preventDefault();
-    const email = prompt('Please enter your email address:');
+    const email = document.getElementById('email').value;
     
-    if (email) {
-        auth.sendPasswordResetEmail(email)
-            .then(() => {
-                alert('Password reset email sent!');
-            })
-            .catch((error) => {
-                alert(error.message);
-            });
+    if (!email) {
+        alert('Please enter your email first');
+        return;
     }
+    
+    auth.sendPasswordResetEmail(email)
+        .then(() => {
+            alert('Password reset email sent!');
+        })
+        .catch((error) => {
+            alert(error.message);
+        });
 });
 
 // Load User Data
@@ -1013,3 +1103,9 @@ document.getElementById('globalSearch').addEventListener('input', (e) => {
     // In a real app, this would search across users, groups, and messages
     console.log('Searching for:', e.target.value);
 });
+
+// Helper function to get current chat ID
+function getCurrentChatId() {
+    // This would be implemented based on your current chat state
+    return null;
+}
