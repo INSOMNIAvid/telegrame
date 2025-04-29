@@ -172,7 +172,117 @@ app.post('/upload', upload.single('file'), (req, res) => {
     
     res.json(fileMessage);
 });
+// Групповые чаты
+app.post('/groups', (req, res) => {
+    const { name, creatorId } = req.body;
+    
+    if (!name || !creatorId) {
+        return res.status(400).json({ error: 'Не указано название группы или создатель' });
+    }
+    
+    const creator = users.find(u => u.id === creatorId);
+    if (!creator) {
+        return res.status(404).json({ error: 'Пользователь не найден' });
+    }
+    
+    const group = {
+        id: generateId(),
+        name,
+        creatorId,
+        createdAt: new Date(),
+        members: [creatorId]
+    };
+    
+    groups.push(group);
+    messages[group.id] = [];
+    
+    // Рассылаем информацию о новой группе
+    broadcastNewGroup(group);
+    
+    res.json(group);
+});
 
+app.get('/groups', (req, res) => {
+    res.json(groups);
+});
+
+app.post('/groups/:groupId/members', (req, res) => {
+    const { groupId } = req.params;
+    const { userId } = req.body;
+    
+    const group = groups.find(g => g.id === groupId);
+    if (!group) {
+        return res.status(404).json({ error: 'Группа не найдена' });
+    }
+    
+    const user = users.find(u => u.id === userId);
+    if (!user) {
+        return res.status(404).json({ error: 'Пользователь не найден' });
+    }
+    
+    if (!group.members.includes(userId)) {
+        group.members.push(userId);
+    }
+    
+    res.json(group);
+});
+
+// Получение сообщений
+app.get('/messages', (req, res) => {
+    const { chatId } = req.query;
+    
+    if (!chatId) {
+        return res.status(400).json({ error: 'Не указан ID чата' });
+    }
+    
+    if (!messages[chatId]) {
+        messages[chatId] = [];
+    }
+    
+    res.json(messages[chatId]);
+});
+
+// Поиск пользователей
+app.get('/users/search', (req, res) => {
+    const { query } = req.query;
+    
+    if (!query) {
+        return res.json([]);
+    }
+    
+    const results = users.filter(user => 
+        user.username.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    res.json(results);
+});
+
+// Информация о пользователе
+app.get('/users/:userId', (req, res) => {
+    const { userId } = req.params;
+    const user = users.find(u => u.id === userId);
+    
+    if (!user) {
+        return res.status(404).json({ error: 'Пользователь не найден' });
+    }
+    
+    res.json({
+        ...user,
+        online: onlineUsers.has(user.id)
+    });
+});
+
+// Рассылка информации о новой группе
+function broadcastNewGroup(group) {
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+                type: 'new_group',
+                group
+            }));
+        }
+    });
+}
 // Запуск сервера
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
