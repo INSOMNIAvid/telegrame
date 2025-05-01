@@ -1,3 +1,51 @@
+/* Тёмная тема */
+body.dark-theme {
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+}
+
+body.dark-theme .chat-container {
+    background-color: #2d2d2d;
+    color: #fff;
+}
+
+/* Кнопки тем */
+.theme-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 1rem;
+}
+
+.theme-buttons button {
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+/* Экстренная помощь */
+.emergency-help {
+    padding: 1rem;
+    text-align: center;
+}
+
+#emergencyBtn {
+    background-color: #ff4d4d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#emergencyBtn:hover {
+    background-color: #e60000;
+}
+
+/* Индикатор набора сообщения */
+.typing-indicator {
+    display: none;
+    padding: 10px;
+    color: #666;
+    font-style: italic;
+}
 /* Базовые стили */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
