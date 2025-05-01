@@ -621,3 +621,74 @@ nav a:hover::after {
         grid-template-columns: 1fr;
     }
 }
+/* Стили для новых элементов */
+
+/* Кнопка экстренной помощи */
+#emergency-btn {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    background: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 999;
+    box-shadow: 0 5px 20px rgba(244, 67, 54, 0.3);
+}
+
+#emergency-btn:hover {
+    background: #e53935;
+    transform: translateY(-3px);
+}
+
+/* Время сообщений */
+.message-time {
+    display: block;
+    font-size: 0.7rem;
+    opacity: 0.7;
+    margin-top: 5px;
+    text-align: right;
+}
+
+/* Плейсхолдер для видео */
+.video-placeholder {
+    background: var(--light-gray);
+    padding: 3rem;
+    text-align: center;
+    border-radius: 10px;
+    margin-top: 1rem;
+}
+
+.video-placeholder i {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+/* Анимации для feature cards */
+.feature-card, .step {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.5s ease-out;
+}
+
+/* Адаптивность для кнопки экстренной помощи */
+@media (max-width: 768px) {
+    #emergency-btn {
+        bottom: 1rem;
+        left: 1rem;
+        right: 1rem;
+        width: calc(100% - 2rem);
+    }
+    
+    .chat-container.active {
+        height: 60vh;
+    }
+}
