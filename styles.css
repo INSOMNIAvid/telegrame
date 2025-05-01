@@ -1,14 +1,22 @@
 :root {
     --primary-color: #5e35b1;
-    --secondary-color: #7e57c2;
+    --primary-light: #7e57c2;
+    --primary-dark: #4527a0;
+    --secondary-color: #26c6da;
     --accent-color: #ff7043;
     --text-color: #2c3e50;
+    --text-light: #546e7a;
     --light-gray: #f5f7fa;
     --medium-gray: #e4e8f0;
     --dark-gray: #90a4ae;
+    --white: #ffffff;
     --success-color: #4caf50;
     --warning-color: #ff9800;
     --danger-color: #f44336;
+    --popular-color: #ffeb3b;
+    --box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    --border-radius: 12px;
+    --transition: all 0.3s ease;
 }
 
 * {
@@ -23,6 +31,28 @@ body {
     line-height: 1.6;
     background-color: #f9f9f9;
     overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+button {
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
 /* Анимации */
@@ -43,7 +73,7 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 1rem 5%;
-    background: white;
+    background: var(--white);
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
     position: fixed;
     width: 100%;
@@ -69,7 +99,7 @@ nav a {
     text-decoration: none;
     color: var(--text-color);
     font-weight: 500;
-    transition: color 0.3s;
+    transition: var(--transition);
     position: relative;
 }
 
@@ -85,7 +115,7 @@ nav a::after {
     width: 0;
     height: 2px;
     background-color: var(--primary-color);
-    transition: width 0.3s;
+    transition: var(--transition);
 }
 
 nav a:hover::after {
@@ -94,20 +124,19 @@ nav a:hover::after {
 
 .cta-button {
     background: var(--primary-color);
-    color: white;
+    color: var(--white);
     border: none;
-    padding: 0.7rem 1.5rem;
+    padding: 0.8rem 1.8rem;
     border-radius: 30px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.3s;
+    font-weight: 600;
+    transition: var(--transition);
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 .cta-button:hover {
-    background: var(--secondary-color);
+    background: var(--primary-dark);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(94, 53, 177, 0.3);
 }
@@ -117,13 +146,24 @@ nav a:hover::after {
 }
 
 .cta-button.secondary {
-    background: white;
+    background: var(--white);
     color: var(--primary-color);
     border: 1px solid var(--primary-color);
 }
 
 .cta-button.secondary:hover {
     background: var(--light-gray);
+}
+
+.cta-button.outline {
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.cta-button.outline:hover {
+    background: var(--primary-color);
+    color: var(--white);
 }
 
 #mobile-menu-btn {
@@ -140,7 +180,7 @@ nav a:hover::after {
     display: flex;
     padding: 8% 5%;
     align-items: center;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    background: linear-gradient(135deg, var(--light-gray) 0%, var(--medium-gray) 100%);
     min-height: 100vh;
     margin-top: 70px;
 }
@@ -160,7 +200,7 @@ nav a:hover::after {
 .hero-text p {
     font-size: 1.2rem;
     margin-bottom: 2rem;
-    color: var(--dark-gray);
+    color: var(--text-light);
 }
 
 .hero-image {
@@ -171,8 +211,8 @@ nav a:hover::after {
 
 .hero-image img {
     max-width: 100%;
-    border-radius: 15px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
     animation: pulse 4s infinite;
 }
 
@@ -192,15 +232,18 @@ nav a:hover::after {
     display: flex;
     align-items: center;
     gap: 5px;
-    color: var(--dark-gray);
+    color: var(--text-light);
     font-size: 0.9rem;
 }
 
 /* Возможности */
 .features {
-    padding: 5% 10%;
+    padding: 5rem 0;
+    background: var(--white);
+}
+
+.features .container {
     text-align: center;
-    background: white;
 }
 
 .features h2 {
@@ -209,7 +252,7 @@ nav a:hover::after {
 }
 
 .section-subtitle {
-    color: var(--dark-gray);
+    color: var(--text-light);
     margin-bottom: 3rem;
     font-size: 1.1rem;
 }
@@ -222,12 +265,15 @@ nav a:hover::after {
 }
 
 .feature-card {
-    background: white;
+    background: var(--white);
     padding: 2.5rem 2rem;
-    border-radius: 15px;
-    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s, box-shadow 0.3s;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
     border: 1px solid var(--medium-gray);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
 }
 
 .feature-card:hover {
@@ -246,9 +292,28 @@ nav a:hover::after {
     font-size: 1.3rem;
 }
 
+.feature-card p {
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+}
+
+.feature-btn {
+    background: var(--primary-light);
+    color: var(--white);
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.feature-btn:hover {
+    background: var(--primary-color);
+}
+
 /* Как это работает */
 .how-it-works {
-    padding: 5% 10%;
+    padding: 5rem 0;
     background: var(--light-gray);
     text-align: center;
 }
@@ -263,18 +328,19 @@ nav a:hover::after {
     justify-content: center;
     gap: 2rem;
     flex-wrap: wrap;
+    margin-bottom: 3rem;
 }
 
 .step {
     flex: 1;
     min-width: 250px;
     max-width: 350px;
-    background: white;
+    background: var(--white);
     padding: 2rem;
-    border-radius: 15px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
     position: relative;
-    transition: transform 0.3s;
+    transition: var(--transition);
 }
 
 .step:hover {
@@ -289,7 +355,7 @@ nav a:hover::after {
     width: 40px;
     height: 40px;
     background: var(--primary-color);
-    color: white;
+    color: var(--white);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -302,6 +368,252 @@ nav a:hover::after {
     color: var(--primary-color);
 }
 
+.video-container {
+    margin-top: 3rem;
+    background: var(--white);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.video-placeholder {
+    background: var(--light-gray);
+    padding: 3rem;
+    text-align: center;
+    border-radius: var(--border-radius);
+    margin-top: 1rem;
+}
+
+.video-placeholder i {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.video-placeholder p {
+    color: var(--text-light);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Отзывы */
+.testimonials {
+    padding: 5rem 0;
+    background: var(--white);
+}
+
+.testimonials h2 {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.testimonial-card {
+    background: var(--white);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--medium-gray);
+}
+
+.testimonial-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--primary-color);
+    color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.user-info h4 {
+    margin-bottom: 0.3rem;
+}
+
+.rating {
+    color: var(--warning-color);
+    font-size: 0.9rem;
+}
+
+.testimonial-card p {
+    color: var(--text-light);
+    font-style: italic;
+}
+
+#add-testimonial {
+    display: block;
+    margin: 2rem auto 0;
+}
+
+/* Тарифы */
+.pricing {
+    padding: 5rem 0;
+    background: var(--light-gray);
+}
+
+.pricing h2 {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.pricing-card {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    position: relative;
+    transition: var(--transition);
+}
+
+.pricing-card:hover {
+    transform: translateY(-10px);
+}
+
+.pricing-card.popular {
+    border: 2px solid var(--popular-color);
+}
+
+.popular-badge {
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    background: var(--popular-color);
+    color: var(--text-color);
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.pricing-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.price {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+.price span {
+    font-size: 1rem;
+    color: var(--text-light);
+    font-weight: normal;
+}
+
+.features-list {
+    list-style: none;
+    margin-bottom: 2rem;
+}
+
+.features-list li {
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.features-list i.fa-check {
+    color: var(--success-color);
+}
+
+.features-list i.fa-times {
+    color: var(--dark-gray);
+}
+
+/* FAQ */
+.faq {
+    padding: 5rem 0;
+    background: var(--white);
+}
+
+.faq h2 {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.faq-grid {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.faq-item {
+    margin-bottom: 1rem;
+    border: 1px solid var(--medium-gray);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.faq-question {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background: var(--white);
+    transition: var(--transition);
+}
+
+.faq-question:hover {
+    background: var(--light-gray);
+}
+
+.faq-question h4 {
+    font-weight: 600;
+}
+
+.faq-question i {
+    transition: var(--transition);
+}
+
+.faq-answer {
+    padding: 0 1.5rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    background: var(--light-gray);
+}
+
+.faq-answer p {
+    padding: 1rem 0;
+    color: var(--text-light);
+}
+
+.faq-item.active .faq-question {
+    background: var(--light-gray);
+}
+
+.faq-item.active .faq-question i {
+    transform: rotate(180deg);
+}
+
+.faq-item.active .faq-answer {
+    max-height: 300px;
+}
+
 /* Чат-бот */
 .chat-container {
     position: fixed;
@@ -309,8 +621,8 @@ nav a:hover::after {
     right: 2rem;
     width: 380px;
     height: 600px;
-    background: white;
-    border-radius: 15px;
+    background: var(--white);
+    border-radius: var(--border-radius);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     display: none;
     flex-direction: column;
@@ -328,8 +640,8 @@ nav a:hover::after {
 }
 
 .chat-header {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+    color: var(--white);
     padding: 1rem 1.5rem;
     display: flex;
     justify-content: space-between;
@@ -361,11 +673,11 @@ nav a:hover::after {
 .chat-actions button {
     background: none;
     border: none;
-    color: white;
+    color: var(--white);
     cursor: pointer;
     font-size: 1rem;
     opacity: 0.8;
-    transition: opacity 0.3s;
+    transition: var(--transition);
 }
 
 .chat-actions button:hover {
@@ -391,7 +703,7 @@ nav a:hover::after {
 }
 
 .bot-message {
-    background: white;
+    background: var(--white);
     align-self: flex-start;
     border-bottom-left-radius: 5px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -399,14 +711,22 @@ nav a:hover::after {
 
 .user-message {
     background: var(--primary-color);
-    color: white;
+    color: var(--white);
     align-self: flex-end;
     border-bottom-right-radius: 5px;
 }
 
+.message-time {
+    display: block;
+    font-size: 0.7rem;
+    opacity: 0.7;
+    margin-top: 5px;
+    text-align: right;
+}
+
 .chat-input-area {
     border-top: 1px solid var(--medium-gray);
-    background: white;
+    background: var(--white);
 }
 
 .quick-questions {
@@ -423,7 +743,7 @@ nav a:hover::after {
     padding: 0.5rem 1rem;
     font-size: 0.8rem;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: var(--transition);
 }
 
 .quick-question:hover {
@@ -442,7 +762,8 @@ nav a:hover::after {
     border: 1px solid var(--medium-gray);
     border-radius: 30px;
     outline: none;
-    transition: border-color 0.3s;
+    transition: var(--transition);
+    font-family: inherit;
 }
 
 .chat-input input:focus {
@@ -455,20 +776,20 @@ nav a:hover::after {
     border-radius: 50%;
     border: none;
     background: var(--primary-color);
-    color: white;
+    color: var(--white);
     cursor: pointer;
-    transition: all 0.3s;
+    transition: var(--transition);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .chat-input button:hover {
-    background: var(--secondary-color);
+    background: var(--primary-dark);
     transform: scale(1.1);
 }
 
-/* Модальное окно */
+/* Модальные окна */
 .modal {
     display: none;
     position: fixed;
@@ -483,13 +804,15 @@ nav a:hover::after {
 }
 
 .modal-content {
-    background: white;
+    background: var(--white);
     padding: 2rem;
-    border-radius: 15px;
+    border-radius: var(--border-radius);
     width: 90%;
     max-width: 500px;
     position: relative;
     animation: fadeIn 0.3s;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .close-modal {
@@ -499,6 +822,11 @@ nav a:hover::after {
     font-size: 1.5rem;
     cursor: pointer;
     color: var(--dark-gray);
+    transition: var(--transition);
+}
+
+.close-modal:hover {
+    color: var(--text-color);
 }
 
 .moods {
@@ -512,9 +840,9 @@ nav a:hover::after {
     padding: 1rem;
     border: 1px solid var(--medium-gray);
     border-radius: 10px;
-    background: white;
+    background: var(--white);
     cursor: pointer;
-    transition: all 0.3s;
+    transition: var(--transition);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -528,6 +856,169 @@ nav a:hover::after {
 
 .mood-option i {
     font-size: 1.2rem;
+}
+
+/* Форма отзыва */
+#testimonial-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+#testimonial-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+#testimonial-form input,
+#testimonial-form textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--medium-gray);
+    border-radius: var(--border-radius);
+    font-family: inherit;
+    transition: var(--transition);
+}
+
+#testimonial-form input:focus,
+#testimonial-form textarea:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+#testimonial-form textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.rating-input {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.rating-input i {
+    font-size: 1.5rem;
+    color: var(--dark-gray);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.rating-input i.active,
+.rating-input i:hover {
+    color: var(--warning-color);
+}
+
+/* Подвал */
+footer {
+    background: var(--text-color);
+    color: var(--white);
+    padding: 4rem 0 2rem;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.footer-col h4 {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    color: var(--white);
+}
+
+.footer-col p {
+    color: var(--dark-gray);
+    margin-bottom: 1rem;
+}
+
+.footer-col ul {
+    list-style: none;
+}
+
+.footer-col ul li {
+    margin-bottom: 0.8rem;
+}
+
+.footer-col ul li a {
+    color: var(--dark-gray);
+    transition: var(--transition);
+}
+
+.footer-col ul li a:hover {
+    color: var(--white);
+}
+
+.social-links {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    color: var(--white);
+    transition: var(--transition);
+}
+
+.social-links a:hover {
+    background: var(--primary-color);
+    transform: translateY(-3px);
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+}
+
+.footer-bottom p:first-child {
+    margin-bottom: 0.5rem;
+}
+
+/* Кнопка экстренной помощи */
+#emergency-btn {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    background: var(--danger-color);
+    color: var(--white);
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 999;
+    box-shadow: 0 5px 20px rgba(244, 67, 54, 0.3);
+}
+
+#emergency-btn:hover {
+    background: #e53935;
+    transform: translateY(-3px);
+}
+
+/* Анимации при скролле */
+[data-animate] {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease-out;
+}
+
+[data-animate].animate {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 /* Адаптивность */
@@ -559,7 +1050,7 @@ nav a:hover::after {
         top: 70px;
         left: 0;
         width: 100%;
-        background: white;
+        background: var(--white);
         flex-direction: column;
         padding: 1rem 0;
         box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
@@ -583,7 +1074,7 @@ nav a:hover::after {
     
     .chat-container {
         width: 100%;
-        height: 80vh;
+        height: 70vh;
         bottom: 0;
         right: 0;
         border-radius: 15px 15px 0 0;
@@ -597,6 +1088,13 @@ nav a:hover::after {
     .step {
         width: 100%;
         max-width: 100%;
+    }
+    
+    #emergency-btn {
+        bottom: 1rem;
+        left: 1rem;
+        right: 1rem;
+        width: calc(100% - 2rem);
     }
 }
 
@@ -620,75 +1118,12 @@ nav a:hover::after {
     .moods {
         grid-template-columns: 1fr;
     }
-}
-/* Стили для новых элементов */
-
-/* Кнопка экстренной помощи */
-#emergency-btn {
-    position: fixed;
-    bottom: 2rem;
-    left: 2rem;
-    background: var(--danger-color);
-    color: white;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 30px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    z-index: 999;
-    box-shadow: 0 5px 20px rgba(244, 67, 54, 0.3);
-}
-
-#emergency-btn:hover {
-    background: #e53935;
-    transform: translateY(-3px);
-}
-
-/* Время сообщений */
-.message-time {
-    display: block;
-    font-size: 0.7rem;
-    opacity: 0.7;
-    margin-top: 5px;
-    text-align: right;
-}
-
-/* Плейсхолдер для видео */
-.video-placeholder {
-    background: var(--light-gray);
-    padding: 3rem;
-    text-align: center;
-    border-radius: 10px;
-    margin-top: 1rem;
-}
-
-.video-placeholder i {
-    font-size: 4rem;
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-}
-
-/* Анимации для feature cards */
-.feature-card, .step {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.5s ease-out;
-}
-
-/* Адаптивность для кнопки экстренной помощи */
-@media (max-width: 768px) {
-    #emergency-btn {
-        bottom: 1rem;
-        left: 1rem;
-        right: 1rem;
-        width: calc(100% - 2rem);
+    
+    .pricing-grid {
+        grid-template-columns: 1fr;
     }
     
-    .chat-container.active {
-        height: 60vh;
+    .testimonials-grid {
+        grid-template-columns: 1fr;
     }
 }
