@@ -12,44 +12,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const quickQuestions = document.querySelectorAll('.quick-question');
     const moodSelector = document.getElementById('mood-selector');
     const moodModal = document.getElementById('mood-modal');
-    const closeModalBtn = document.querySelector('.close-modal');
+    const closeModalBtns = document.querySelectorAll('.close-modal');
     const moodOptions = document.querySelectorAll('.mood-option');
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const mainNav = document.getElementById('main-nav');
     const watchDemoBtn = document.getElementById('watch-demo');
-    const demoModal = document.createElement('div');
-    const emergencyBtn = document.createElement('button');
+    const demoVideo = document.getElementById('demo-video');
+    const addTestimonialBtn = document.getElementById('add-testimonial');
+    const testimonialModal = document.getElementById('testimonial-modal');
+    const testimonialForm = document.getElementById('testimonial-form');
+    const ratingStars = document.querySelectorAll('.rating-input i');
+    const faqItems = document.querySelectorAll('.faq-item');
+    const emergencyBtn = document.getElementById('emergency-btn');
+    const emergencyBtnFooter = document.getElementById('emergency-btn-footer');
+    const featureCards = document.querySelectorAll('.feature-card');
+    const featureBtns = document.querySelectorAll('.feature-btn');
 
     // ========== Состояние приложения ==========
     let chatHistory = JSON.parse(localStorage.getItem('mindbot_chat_history')) || [];
     let currentMood = null;
     let isTyping = false;
+    let selectedRating = 0;
 
     // ========== Инициализация ==========
     initModals();
-    initEmergencyButton();
     initChat();
+    setupAnimations();
+    setupEventListeners();
 
-    // ========== Функции ==========
+    // ========== Функции инициализации ==========
     
-    // Инициализация модальных окон
     function initModals() {
-        // Демо-видео
-        demoModal.className = 'modal';
-        demoModal.id = 'demo-modal';
-        demoModal.innerHTML = `
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h3>Как работает MindBot?</h3>
-                <div class="video-placeholder">
-                    <i class="fas fa-play-circle"></i>
-                    <p>Здесь будет демонстрация работы приложения</p>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(demoModal);
-
-        // Обработчики для всех модальных окон
+        // Инициализация всех модальных окон
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', function(e) {
                 if (e.target === this || e.target.classList.contains('close-modal')) {
@@ -59,33 +53,117 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Кнопка экстренной помощи
-    function initEmergencyButton() {
-        emergencyBtn.id = 'emergency-btn';
-        emergencyBtn.innerHTML = '<i class="fas fa-life-ring"></i> Экстренная помощь';
-        document.body.appendChild(emergencyBtn);
-        
-        emergencyBtn.addEventListener('click', function() {
-            if (confirm('Вы нуждаетесь в срочной помощи? Мы можем направить вас к профессионалам.')) {
-                window.open('https://telefon-doveria.ru/', '_blank');
-            }
-        });
-    }
-
-    // Инициализация чата
     function initChat() {
+        // Загрузка истории чата
         if (chatHistory.length > 0) {
             chatHistory.forEach(msg => {
                 addMessageToChat(msg.text, msg.sender, msg.timestamp);
             });
         } else {
+            // Приветственное сообщение
             setTimeout(() => {
                 addBotMessage("Привет! Я MindBot — ваш виртуальный психолог. Я здесь, чтобы помочь вам разобраться в ваших чувствах и мыслях. О чём вы хотели бы поговорить?");
             }, 500);
         }
     }
 
-    // Добавление сообщения в чат
+    function setupAnimations() {
+        // Анимации при скролле
+        const animateOnScroll = function() {
+            const elements = document.querySelectorAll('[data-animate]');
+            elements.forEach(element => {
+                const elementPosition = element.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                
+                if (elementPosition < windowHeight - 100) {
+                    element.classList.add('animate');
+                }
+            });
+        };
+
+        window.addEventListener('scroll', animateOnScroll);
+        animateOnScroll(); // Инициализация при загрузке
+    }
+
+    function setupEventListeners() {
+        // Навигация и общие элементы
+        startChatBtn.addEventListener('click', openChat);
+        heroChatBtn.addEventListener('click', openChat);
+        closeChatBtn.addEventListener('click', closeChat);
+        clearChatBtn.addEventListener('click', clearChatHistory);
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+        
+        // Модальные окна
+        moodSelector.addEventListener('click', () => moodModal.style.display = 'flex');
+        watchDemoBtn.addEventListener('click', () => demoVideo.scrollIntoView({ behavior: 'smooth' }));
+        addTestimonialBtn.addEventListener('click', () => testimonialModal.style.display = 'flex');
+        
+        // Закрытие модальных окон
+        closeModalBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.closest('.modal').style.display = 'none';
+            });
+        });
+        
+        // Выбор настроения
+        moodOptions.forEach(option => {
+            option.addEventListener('click', selectMood);
+        });
+        
+        // Быстрые вопросы в чате
+        quickQuestions.forEach(question => {
+            question.addEventListener('click', function() {
+                addUserMessage(this.textContent);
+            });
+        });
+        
+        // FAQ аккордеон
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            question.addEventListener('click', () => {
+                item.classList.toggle('active');
+            });
+        });
+        
+        // Рейтинг в форме отзыва
+        ratingStars.forEach(star => {
+            star.addEventListener('click', setRating);
+            star.addEventListener('mouseover', hoverRating);
+            star.addEventListener('mouseout', resetRating);
+        });
+        
+        // Кнопки экстренной помощи
+        emergencyBtn.addEventListener('click', showEmergencyHelp);
+        emergencyBtnFooter.addEventListener('click', showEmergencyHelp);
+        
+        // Кнопки "Подробнее" в карточках возможностей
+        featureBtns.forEach((btn, index) => {
+            btn.addEventListener('click', () => showFeatureDetails(index));
+        });
+        
+        // Плавная прокрутка для якорей
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                    if (mainNav.classList.contains('active')) {
+                        toggleMobileMenu();
+                    }
+                }
+            });
+        });
+    }
+
+    // ========== Функции чата ==========
+    
     function addMessageToChat(text, sender, timestamp = null) {
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message');
@@ -103,7 +181,6 @@ document.addEventListener('DOMContentLoaded', function() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    // Сообщение от бота
     function addBotMessage(text) {
         if (isTyping) return;
         isTyping = true;
@@ -149,7 +226,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
 
-    // Сообщение от пользователя
     function addUserMessage(text) {
         addMessageToChat(text, 'user');
         
@@ -172,7 +248,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 800);
     }
 
-    // Генерация ответа бота (имитация ИИ)
     function generateBotResponse(userMessage) {
         const lowerMsg = userMessage.toLowerCase();
         let response = "";
@@ -198,6 +273,10 @@ document.addEventListener('DOMContentLoaded', function() {
             'привет|здравств': [
                 "Здравствуйте! О чём вы хотели бы поговорить сегодня?",
                 "Привет! Как ваше настроение?"
+            ],
+            'как это работает|как пользоваться': [
+                "MindBot использует когнитивно-поведенческую терапию (CBT) и другие проверенные методики. Просто напишите о своей проблеме, и я предложу техники для её решения.",
+                "Работаю так: 1) Вы описываете ситуацию 2) Я анализирую и предлагаю техники 3) Вы применяете их и отслеживаете прогресс в дневнике настроения."
             ]
         };
 
@@ -236,12 +315,10 @@ document.addEventListener('DOMContentLoaded', function() {
         addBotMessage(response);
     }
 
-    // Сохранение истории чата
     function saveChatHistory() {
         localStorage.setItem('mindbot_chat_history', JSON.stringify(chatHistory));
     }
 
-    // Очистка истории чата
     function clearChatHistory() {
         if (confirm("Очистить всю историю чата? Это действие нельзя отменить.")) {
             chatHistory = [];
@@ -251,18 +328,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Открытие чата
     function openChat() {
         chatContainer.classList.add('active');
         initChat();
     }
 
-    // Закрытие чата
     function closeChat() {
         chatContainer.classList.remove('active');
     }
 
-    // Отправка сообщения
     function sendMessage() {
         const message = userInput.value.trim();
         if (message) {
@@ -271,12 +345,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Открытие модального окна настроения
-    function openMoodModal() {
-        moodModal.style.display = 'flex';
-    }
-
-    // Выбор настроения
+    // ========== Функции настроения ==========
+    
     function selectMood(e) {
         currentMood = e.currentTarget.dataset.mood;
         const moodIcons = {
@@ -290,69 +360,88 @@ document.addEventListener('DOMContentLoaded', function() {
         moodModal.style.display = 'none';
     }
 
-    // Переключение мобильного меню
+    // ========== Функции мобильного меню ==========
+    
     function toggleMobileMenu() {
         mainNav.classList.toggle('active');
         mobileMenuBtn.innerHTML = mainNav.classList.contains('active') ? 
             '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
     }
 
-    // Показать демо
-    function showDemo() {
-        document.getElementById('demo-modal').style.display = 'flex';
+    // ========== Функции отзывов ==========
+    
+    function setRating(e) {
+        selectedRating = parseInt(e.target.dataset.rating);
+        updateRatingStars();
     }
 
-    // ========== Обработчики событий ==========
-    startChatBtn.addEventListener('click', openChat);
-    heroChatBtn.addEventListener('click', openChat);
-    closeChatBtn.addEventListener('click', closeChat);
-    clearChatBtn.addEventListener('click', clearChatHistory);
-    sendButton.addEventListener('click', sendMessage);
-    userInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') sendMessage();
-    });
-    moodSelector.addEventListener('click', openMoodModal);
-    moodOptions.forEach(option => {
-        option.addEventListener('click', selectMood);
-    });
-    quickQuestions.forEach(question => {
-        question.addEventListener('click', function() {
-            addUserMessage(this.textContent);
-        });
-    });
-    mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-    watchDemoBtn.addEventListener('click', showDemo);
-
-    // Плавная прокрутка для якорей
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth'
-                });
-                if (mainNav.classList.contains('active')) {
-                    toggleMobileMenu();
-                }
+    function hoverRating(e) {
+        const hoverRating = parseInt(e.target.dataset.rating);
+        ratingStars.forEach(star => {
+            if (parseInt(star.dataset.rating) <= hoverRating) {
+                star.classList.add('hover');
+            } else {
+                star.classList.remove('hover');
             }
         });
-    });
+    }
 
-    // Анимация при скролле
-    const animateOnScroll = function() {
-        const elements = document.querySelectorAll('.feature-card, .step');
-        elements.forEach(element => {
-            const elementPosition = element.getBoundingClientRect().top;
-            const windowHeight = window.innerHeight;
-            
-            if (elementPosition < windowHeight - 100) {
-                element.style.opacity = '1';
-                element.style.transform = 'translateY(0)';
+    function resetRating() {
+        updateRatingStars();
+    }
+
+    function updateRatingStars() {
+        ratingStars.forEach(star => {
+            star.classList.remove('hover', 'active');
+            if (parseInt(star.dataset.rating) <= selectedRating) {
+                star.classList.add('active');
             }
         });
-    };
+    }
 
-    window.addEventListener('scroll', animateOnScroll);
-    animateOnScroll(); // Инициализация при загрузке
+    // Обработка формы отзыва
+    testimonialForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const userName = document.getElementById('user-name').value || 'Аноним';
+        const testimonialText = document.getElementById('user-testimonial').value;
+        
+        if (testimonialText.trim() === '') {
+            alert('Пожалуйста, напишите ваш отзыв');
+            return;
+        }
+        
+        // Здесь можно добавить отправку на сервер
+        alert('Спасибо за ваш отзыв!');
+        testimonialModal.style.display = 'none';
+        testimonialForm.reset();
+        selectedRating = 0;
+        updateRatingStars();
+    });
+
+    // ========== Функции экстренной помощи ==========
+    
+    function showEmergencyHelp() {
+        if (confirm('Вы нуждаетесь в срочной помощи? Мы можем направить вас к профессионалам.')) {
+            window.open('https://telefon-doveria.ru/', '_blank');
+        }
+    }
+
+    // ========== Функции карточек возможностей ==========
+    
+    function showFeatureDetails(index) {
+        const featureTitles = [
+            "Анонимный чат",
+            "Техники CBT",
+            "Дневник настроения"
+        ];
+        
+        const featureDescriptions = [
+            "Все ваши диалоги полностью анонимны. Мы не сохраняем персональные данные и не требуем регистрации. Ваши секреты в безопасности.",
+            "Когнитивно-поведенческая терапия (CBT) - золотой стандарт психотерапии. Мы используем проверенные техники для работы с тревогой, депрессией и стрессом.",
+            "Отслеживайте ваше эмоциональное состояние с помощью удобного дневника. Анализируйте закономерности и прогресс в терапии."
+        ];
+        
+        alert(`${featureTitles[index]}\n\n${featureDescriptions[index]}`);
+    }
 });
