@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Элементы интерфейса
+    // ========== Элементы интерфейса ==========
     const chatContainer = document.getElementById('chat-container');
     const startChatBtn = document.getElementById('start-chat');
     const heroChatBtn = document.getElementById('hero-chat');
@@ -12,24 +12,73 @@ document.addEventListener('DOMContentLoaded', function() {
     const quickQuestions = document.querySelectorAll('.quick-question');
     const moodSelector = document.getElementById('mood-selector');
     const moodModal = document.getElementById('mood-modal');
-    const closeModal = document.querySelector('.close-modal');
+    const closeModalBtn = document.querySelector('.close-modal');
     const moodOptions = document.querySelectorAll('.mood-option');
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const mainNav = document.getElementById('main-nav');
+    const watchDemoBtn = document.getElementById('watch-demo');
+    const demoModal = document.createElement('div');
+    const emergencyBtn = document.createElement('button');
 
-    // Состояние чата
+    // ========== Состояние приложения ==========
     let chatHistory = JSON.parse(localStorage.getItem('mindbot_chat_history')) || [];
     let currentMood = null;
+    let isTyping = false;
+
+    // ========== Инициализация ==========
+    initModals();
+    initEmergencyButton();
+    initChat();
+
+    // ========== Функции ==========
+    
+    // Инициализация модальных окон
+    function initModals() {
+        // Демо-видео
+        demoModal.className = 'modal';
+        demoModal.id = 'demo-modal';
+        demoModal.innerHTML = `
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3>Как работает MindBot?</h3>
+                <div class="video-placeholder">
+                    <i class="fas fa-play-circle"></i>
+                    <p>Здесь будет демонстрация работы приложения</p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(demoModal);
+
+        // Обработчики для всех модальных окон
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this || e.target.classList.contains('close-modal')) {
+                    this.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Кнопка экстренной помощи
+    function initEmergencyButton() {
+        emergencyBtn.id = 'emergency-btn';
+        emergencyBtn.innerHTML = '<i class="fas fa-life-ring"></i> Экстренная помощь';
+        document.body.appendChild(emergencyBtn);
+        
+        emergencyBtn.addEventListener('click', function() {
+            if (confirm('Вы нуждаетесь в срочной помощи? Мы можем направить вас к профессионалам.')) {
+                window.open('https://telefon-doveria.ru/', '_blank');
+            }
+        });
+    }
 
     // Инициализация чата
     function initChat() {
-        // Загрузка истории чата
         if (chatHistory.length > 0) {
             chatHistory.forEach(msg => {
-                addMessageToChat(msg.text, msg.sender);
+                addMessageToChat(msg.text, msg.sender, msg.timestamp);
             });
         } else {
-            // Приветственное сообщение
             setTimeout(() => {
                 addBotMessage("Привет! Я MindBot — ваш виртуальный психолог. Я здесь, чтобы помочь вам разобраться в ваших чувствах и мыслях. О чём вы хотели бы поговорить?");
             }, 500);
@@ -37,17 +86,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Добавление сообщения в чат
-    function addMessageToChat(text, sender) {
+    function addMessageToChat(text, sender, timestamp = null) {
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message');
         messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
-        messageDiv.innerHTML = `<p>${text}</p>`;
+        
+        const timeStr = timestamp ? new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
+                                  new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        messageDiv.innerHTML = `
+            <p>${text}</p>
+            <span class="message-time">${timeStr}</span>
+        `;
+        
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
     // Сообщение от бота
     function addBotMessage(text) {
+        if (isTyping) return;
+        isTyping = true;
         typingIndicator.classList.add('active');
         
         // Имитация задержки печати
@@ -60,11 +119,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 typedText += words[i] + ' ';
                 const tempDiv = document.createElement('div');
                 tempDiv.classList.add('message', 'bot-message');
-                tempDiv.innerHTML = `<p>${typedText}</p>`;
+                tempDiv.innerHTML = `
+                    <p>${typedText}</p>
+                    <span class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                `;
                 
                 // Удаляем предыдущее сообщение
                 const lastBotMessage = document.querySelector('.message.bot-message:last-child');
-                if (lastBotMessage && lastBotMessage !== tempDiv) {
+                if (lastBotMessage && !lastBotMessage.innerHTML.includes('</span>')) {
                     chatMessages.removeChild(lastBotMessage);
                 }
                 
@@ -74,6 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 clearInterval(typingInterval);
                 typingIndicator.classList.remove('active');
+                isTyping = false;
                 
                 // Сохраняем в историю
                 chatHistory.push({
@@ -101,6 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Сбрасываем выбранное настроение
         currentMood = null;
+        moodSelector.innerHTML = '<i class="fas fa-smile"></i>';
         
         // Ответ бота
         setTimeout(() => {
@@ -110,25 +174,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Генерация ответа бота (имитация ИИ)
     function generateBotResponse(userMessage) {
-        // Анализ сообщения пользователя
         const lowerMsg = userMessage.toLowerCase();
         let response = "";
         
-        // Простые правила для имитации ИИ
-        if (lowerMsg.includes("тревож") || lowerMsg.includes("волн")) {
-            response = "Тревога — это естественная реакция. Попробуйте технику '5-4-3-2-1': назовите 5 вещей, которые видите, 4 — которые слышите, 3 — которые чувствуете, 2 — которые нюхаете, 1 — которую можете попробовать на вкус.";
-        } 
-        else if (lowerMsg.includes("груст") || lowerMsg.includes("плохое настроение")) {
-            response = "Грусть может быть сигналом, что что-то важно для вас. Может, расскажете подробнее, что произошло?";
+        // База знаний психолога
+        const knowledgeBase = {
+            'тревож|волн|боюсь': [
+                "Тревога — это естественная реакция. Попробуйте технику '5-4-3-2-1': назовите 5 вещей, которые видите, 4 — которые слышите, 3 — которые чувствуете, 2 — которые нюхаете, 1 — которую можете попробовать на вкус.",
+                "Когда вы чувствуете тревогу, попробуйте заземление: сожмите и разожмите кулаки 5 раз, почувствуйте опору под ногами, сделайте глубокий вдох."
+            ],
+            'груст|плохое настроение|тоск': [
+                "Грусть может быть сигналом, что что-то важно для вас. Может, расскажете подробнее, что произошло?",
+                "Позвольте себе почувствовать грусть. Иногда нам нужно это переживание. Хотите обсудить, что именно вызывает эти чувства?"
+            ],
+            'стресс|устал|нервнич': [
+                "Стресс часто возникает из-за перегрузки. Попробуйте технику 'Квадратного дыхания': вдох на 4 счёта, задержка на 4, выдох на 4, пауза на 4. Повторите 3-5 раз.",
+                "При стрессе помогает метод 'Помпурри': назовите 3 цвета вокруг вас, 3 звука и сделайте 3 глубоких вдоха."
+            ],
+            'спасибо|благодар': [
+                "Всегда рад помочь! Как ещё я могу вас поддержать?",
+                "Спасибо за ваше доверие. Продолжаем работу?"
+            ],
+            'привет|здравств': [
+                "Здравствуйте! О чём вы хотели бы поговорить сегодня?",
+                "Привет! Как ваше настроение?"
+            ]
+        };
+
+        // Поиск подходящего ответа
+        for (const [pattern, responses] of Object.entries(knowledgeBase)) {
+            if (new RegExp(pattern).test(lowerMsg)) {
+                response = responses[Math.floor(Math.random() * responses.length)];
+                break;
+            }
         }
-        else if (lowerMsg.includes("стресс") || lowerMsg.includes("устал")) {
-            response = "Стресс часто возникает из-за перегрузки. Попробуйте технику 'Квадратного дыхания': вдох на 4 счёта, задержка на 4, выдох на 4, пауза на 4. Повторите 3-5 раз.";
-        }
-        else if (lowerMsg.includes("спасибо") || lowerMsg.includes("благодар")) {
-            response = "Всегда рад помочь! Как ещё я могу вас поддержать?";
-        }
-        else {
-            // Общие ответы
+
+        // Если не найдено совпадений
+        if (!response) {
             const generalResponses = [
                 "Расскажите подробнее, что вас беспокоит?",
                 "Как это на вас влияет?",
@@ -194,14 +276,9 @@ document.addEventListener('DOMContentLoaded', function() {
         moodModal.style.display = 'flex';
     }
 
-    // Закрытие модального окна
-    function closeMoodModal() {
-        moodModal.style.display = 'none';
-    }
-
     // Выбор настроения
     function selectMood(e) {
-        currentMood = e.target.dataset.mood;
+        currentMood = e.currentTarget.dataset.mood;
         const moodIcons = {
             happy: 'fa-laugh-beam',
             sad: 'fa-sad-tear',
@@ -210,15 +287,22 @@ document.addEventListener('DOMContentLoaded', function() {
             neutral: 'fa-meh'
         };
         moodSelector.innerHTML = `<i class="fas ${moodIcons[currentMood]}"></i>`;
-        closeMoodModal();
+        moodModal.style.display = 'none';
     }
 
     // Переключение мобильного меню
     function toggleMobileMenu() {
         mainNav.classList.toggle('active');
+        mobileMenuBtn.innerHTML = mainNav.classList.contains('active') ? 
+            '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
     }
 
-    // Обработчики событий
+    // Показать демо
+    function showDemo() {
+        document.getElementById('demo-modal').style.display = 'flex';
+    }
+
+    // ========== Обработчики событий ==========
     startChatBtn.addEventListener('click', openChat);
     heroChatBtn.addEventListener('click', openChat);
     closeChatBtn.addEventListener('click', closeChat);
@@ -228,7 +312,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Enter') sendMessage();
     });
     moodSelector.addEventListener('click', openMoodModal);
-    closeModal.addEventListener('click', closeMoodModal);
     moodOptions.forEach(option => {
         option.addEventListener('click', selectMood);
     });
@@ -238,13 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-
-    // Закрытие модального окна при клике вне его
-    window.addEventListener('click', function(e) {
-        if (e.target === moodModal) {
-            closeMoodModal();
-        }
-    });
+    watchDemoBtn.addEventListener('click', showDemo);
 
     // Плавная прокрутка для якорей
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -264,20 +341,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Анимация при скролле
     const animateOnScroll = function() {
-        const elements = document.querySelectorAll('.animate__animated');
+        const elements = document.querySelectorAll('.feature-card, .step');
         elements.forEach(element => {
             const elementPosition = element.getBoundingClientRect().top;
             const windowHeight = window.innerHeight;
             
             if (elementPosition < windowHeight - 100) {
-                const animationClass = element.classList[1];
-                element.classList.add(animationClass);
-                
-                // Для элементов с задержкой
-                const delay = element.dataset.delay;
-                if (delay) {
-                    element.style.animationDelay = delay;
-                }
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
             }
         });
     };
