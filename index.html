@@ -69,5 +69,23 @@
     </footer>
 
     <script src="script.js"></script>
+    <!-- Добавьте этот код внутри <body> перед закрывающим </main> -->
+<section id="themeSelector" class="hidden">
+    <div class="container">
+        <h3>Выберите тему:</h3>
+        <div class="theme-buttons">
+            <button data-theme="anxiety">Тревога</button>
+            <button data-theme="depression">Депрессия</button>
+            <button data-theme="relationships">Отношения</button>
+        </div>
+    </div>
+</section>
+
+<!-- Кнопка экстренной помощи (добавить в чат-интерфейс) -->
+<div class="emergency-help">
+    <button id="emergencyBtn">
+        <img src="assets/emergency-icon.svg" alt="SOS"> Экстренная помощь
+    </button>
+</div>
 </body>
 </html>
