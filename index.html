@@ -3,135 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Web</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>MindHelper — Виртуальный психолог</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Левый сайдбар - меню -->
-        <div class="left-sidebar">
-            <div class="sidebar-header">
-                <button class="sidebar-toggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Поиск">
-                </div>
-            </div>
-            <div class="menu-items">
-                <div class="menu-item active">
-                    <i class="fas fa-comment-alt"></i>
-                    <span>Чаты</span>
-                </div>
-                <div class="menu-item">
-                    <i class="fas fa-users"></i>
-                    <span>Контакты</span>
-                </div>
-                <div class="menu-item">
-                    <i class="fas fa-bookmark"></i>
-                    <span>Избранное</span>
-                </div>
-                <div class="menu-item">
-                    <i class="fas fa-phone-alt"></i>
-                    <span>Звонки</span>
-                </div>
-                <div class="menu-item">
-                    <i class="fas fa-cog"></i>
-                    <span>Настройки</span>
-                </div>
-            </div>
+    <!-- Шапка -->
+    <header>
+        <div class="container">
+            <h1>MindHelper</h1>
+            <nav>
+                <a href="#features">Возможности</a>
+                <a href="#about">О нас</a>
+                <button id="authBtn">Войти</button>
+            </nav>
         </div>
+    </header>
 
-        <!-- Центральный сайдбар - список чатов -->
-        <div class="main-sidebar">
-            <div class="sidebar-header">
-                <h2>Чаты</h2>
-                <button class="new-chat-btn">
-                    <i class="fas fa-edit"></i>
-                </button>
-            </div>
-            <div class="chat-list" id="chatList">
-                <!-- Список чатов будет здесь -->
-            </div>
-        </div>
-
-        <!-- Основное окно чата -->
-        <div class="chat-container">
-            <div class="chat-header">
-                <div class="chat-info">
-                    <div class="chat-avatar">
-                        <img src="https://via.placeholder.com/40" alt="User">
-                    </div>
-                    <div class="chat-details">
-                        <h3 id="chatTitle">Выберите чат</h3>
-                        <p id="chatStatus">был(а) недавно</p>
-                    </div>
-                </div>
-                <div class="chat-actions">
-                    <button><i class="fas fa-search"></i></button>
-                    <button><i class="fas fa-phone-alt"></i></button>
-                    <button><i class="fas fa-video"></i></button>
-                    <button><i class="fas fa-ellipsis-v"></i></button>
-                </div>
-            </div>
-            
-            <div class="messages-container" id="messagesContainer">
-                <!-- Сообщения будут здесь -->
-            </div>
-            
-            <div class="message-input-container">
-                <button class="attachment-btn">
-                    <i class="fas fa-paperclip"></i>
-                </button>
-                <input type="text" placeholder="Введите сообщение..." id="messageInput">
-                <button class="emoji-btn">
-                    <i class="far fa-smile"></i>
-                </button>
-                <button class="send-btn" id="sendMessageBtn">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Правый сайдбар - информация о чате -->
-        <div class="right-sidebar">
-            <div class="sidebar-header">
-                <h3>Информация о чате</h3>
-                <button class="close-sidebar">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="chat-info-content">
-                <!-- Информация о чате будет здесь -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Модальные окна -->
-    <div class="modal" id="newChatModal">
+    <!-- Попап аутентификации -->
+    <div id="authModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>Новый чат</h3>
-                <button class="close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Поиск пользователей" id="userSearchInput">
-                </div>
-                <div class="user-list" id="userList">
-                    <!-- Список пользователей будет здесь -->
-                </div>
-            </div>
+            <span class="close">&times;</span>
+            <h2>Анонимный вход</h2>
+            <button id="guestLogin">Продолжить как гость</button>
+            <div class="auth-divider">или</div>
+            <form id="loginForm">
+                <input type="email" placeholder="Email" required>
+                <input type="password" placeholder="Пароль" required>
+                <button type="submit">Войти</button>
+            </form>
         </div>
     </div>
 
-    <div class="modal" id="callModal">
-        <!-- Содержимое модального окна звонка -->
-    </div>
+    <!-- Главный экран -->
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h2>Ваш персональный ИИ-психолог</h2>
+                <p>Анонимно, доступно, 24/7</p>
+                <button id="startChatBtn">Начать беседу</button>
+            </div>
+        </section>
+
+        <!-- Чат-интерфейс (изначально скрыт) -->
+        <section id="chatSection" class="hidden">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <img src="assets/bot-avatar.png" alt="AI Psychologist">
+                    <h3>MindHelper Bot</h3>
+                </div>
+                <div id="chatMessages" class="chat-messages">
+                    <!-- Сообщения будут здесь -->
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="userInput" placeholder="Напишите вашу проблему...">
+                    <button id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Подвал -->
+    <footer>
+        <p>© 2023 MindHelper. Не заменяет профессиональную помощь.</p>
+    </footer>
+
     <script src="script.js"></script>
 </body>
 </html>
