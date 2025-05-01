@@ -43,7 +43,13 @@ startChatBtn.addEventListener('click', () => {
         authModal.style.display = 'block';
     }
 });
+// Добавьте эту кнопку в шапку
+<button id="themeToggle">Тёмная тема</button>
 
+// И этот код в script.js
+document.getElementById('themeToggle').addEventListener('click', () => {
+    document.body.classList.toggle('dark-theme');
+});
 // Отправка сообщения
 async function sendMessage() {
     const message = userInput.value.trim();
