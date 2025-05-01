@@ -4,16 +4,477 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindBot — Виртуальный психолог с ИИ</title>
-    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #5e35b1;
+            --secondary-color: #7e57c2;
+            --accent-color: #ff7043;
+            --text-color: #2c3e50;
+            --light-gray: #f5f7fa;
+            --medium-gray: #e4e8f0;
+            --dark-gray: #90a4ae;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --danger-color: #f44336;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            overflow-x: hidden;
+        }
+
+        /* Шапка */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            background: white;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        nav {
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: width 0.3s;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        .cta-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cta-button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(94, 53, 177, 0.3);
+        }
+
+        #mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        /* Герой-секция */
+        .hero {
+            display: flex;
+            padding: 8% 5%;
+            align-items: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            min-height: 100vh;
+            margin-top: 70px;
+        }
+
+        .hero-text {
+            flex: 1;
+            padding-right: 2rem;
+        }
+
+        .hero-text h1 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+            line-height: 1.2;
+        }
+
+        .hero-text p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: var(--dark-gray);
+        }
+
+        .hero-image {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            animation: pulse 4s infinite;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .trust-badges {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Возможности */
+        .features {
+            padding: 5% 10%;
+            text-align: center;
+            background: white;
+        }
+
+        .features h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            color: var(--dark-gray);
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2.5rem 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+            border: 1px solid var(--medium-gray);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .feature-card h3 {
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        /* Как это работает */
+        .how-it-works {
+            padding: 5% 10%;
+            background: var(--light-gray);
+            text-align: center;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .step {
+            flex: 1;
+            min-width: 250px;
+            max-width: 350px;
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .step-number {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Чат-бот */
+        .chat-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 380px;
+            height: 600px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: #fafafa;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 0.8rem 1rem;
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .bot-message {
+            background: white;
+            align-self: flex-start;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .user-message {
+            background: var(--primary-color);
+            color: white;
+            align-self: flex-end;
+        }
+
+        .chat-input-area {
+            border-top: 1px solid var(--medium-gray);
+            background: white;
+        }
+
+        .quick-questions {
+            display: flex;
+            gap: 8px;
+            padding: 1rem 1.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 1rem 1.5rem;
+            gap: 10px;
+        }
+
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        /* Тарифы */
+        .pricing {
+            padding: 5% 10%;
+            background: white;
+            text-align: center;
+        }
+
+        .pricing-cards {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .pricing-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.05);
+            width: 300px;
+            transition: all 0.3s;
+            border: 1px solid var(--medium-gray);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .pricing-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .price {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+
+        .price span {
+            font-size: 1rem;
+            color: var(--dark-gray);
+        }
+
+        /* Отзывы */
+        .testimonials {
+            padding: 5% 10%;
+            background: var(--light-gray);
+            text-align: center;
+        }
+
+        .testimonial-cards {
+            display: flex;
+            gap: 2rem;
+            overflow-x: auto;
+            padding: 2rem 0;
+            scroll-snap-type: x mandatory;
+        }
+
+        .testimonial-card {
+            min-width: 300px;
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            scroll-snap-align: start;
+        }
+
+        /* Анимации */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            nav {
+                display: none;
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: white;
+                flex-direction: column;
+                padding: 1rem 0;
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            }
+            
+            #mobile-menu-btn {
+                display: block;
+            }
+            
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding-top: 5rem;
+            }
+            
+            .chat-container {
+                width: 100%;
+                height: 80vh;
+                bottom: 0;
+                right: 0;
+                border-radius: 15px 15px 0 0;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Шапка -->
-    <header class="animate__animated animate__fadeInDown">
+    <header>
         <div class="logo">
             <i class="fas fa-robot"></i> MindBot
         </div>
@@ -29,47 +490,41 @@
         <button id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
     </header>
 
-    <!-- Герой-секция -->
-    <section class="hero animate__animated animate__fadeIn">
+    <!-- Основные секции -->
+    <section class="hero">
         <div class="hero-text">
             <h1>Анонимная психологическая помощь с ИИ 24/7</h1>
             <p>Конфиденциально. Без осуждения. Первая сессия бесплатно.</p>
             <div class="hero-buttons">
-                <button class="cta-button primary" id="hero-chat">
+                <button class="cta-button" id="hero-chat">
                     <i class="fas fa-comment-medical"></i> Попробовать сейчас
                 </button>
                 <button class="cta-button secondary" id="watch-demo">
                     <i class="fas fa-play"></i> Как это работает?
                 </button>
             </div>
-            <div class="trust-badges">
-                <span><i class="fas fa-lock"></i> Конфиденциально</span>
-                <span><i class="fas fa-shield-alt"></i> Безопасно</span>
-                <span><i class="fas fa-user-md"></i> Профессионально</span>
-            </div>
         </div>
         <div class="hero-image">
-            <img src="https://via.placeholder.com/600x500/5e35b1/ffffff?text=MindBot" alt="ИИ-психолог" class="animate__animated animate__pulse animate__infinite animate__slower">
+            <img src="https://via.placeholder.com/600x500/5e35b1/ffffff?text=MindBot" alt="ИИ-психолог">
         </div>
     </section>
 
-    <!-- Возможности -->
-    <section id="features" class="features animate__animated animate__fadeInUp">
+    <section id="features" class="features">
         <h2>Ваш личный психолог всегда рядом</h2>
         <p class="section-subtitle">MindBot использует когнитивно-поведенческую терапию (CBT) и другие проверенные методики</p>
         
         <div class="features-grid">
-            <div class="feature-card animate__animated animate__fadeInUp" data-delay="0.1s">
+            <div class="feature-card" id="anon-chat-card">
                 <div class="feature-icon"><i class="fas fa-comments"></i></div>
                 <h3>Анонимный чат</h3>
                 <p>Общайтесь без регистрации. Ваши данные никогда не сохраняются.</p>
             </div>
-            <div class="feature-card animate__animated animate__fadeInUp" data-delay="0.3s">
+            <div class="feature-card" id="cbt-card">
                 <div class="feature-icon"><i class="fas fa-brain"></i></div>
                 <h3>Техники CBT</h3>
                 <p>Помогаем выявлять и менять негативные мыслительные шаблоны.</p>
             </div>
-            <div class="feature-card animate__animated animate__fadeInUp" data-delay="0.5s">
+            <div class="feature-card" id="mood-card">
                 <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
                 <h3>Дневник настроения</h3>
                 <p>Отслеживайте прогресс с помощью визуализации вашего состояния.</p>
@@ -77,7 +532,6 @@
         </div>
     </section>
 
-    <!-- Как это работает -->
     <section id="about" class="how-it-works">
         <div class="container">
             <h2>Как работает MindBot?</h2>
@@ -97,6 +551,76 @@
                     <h3>Практические советы</h3>
                     <p>Получайте персонализированные упражнения и рекомендации.</p>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing" class="pricing">
+        <h2>Наши тарифы</h2>
+        <p class="section-subtitle">Выберите подходящий вариант для ваших потребностей</p>
+        
+        <div class="pricing-cards">
+            <div class="pricing-card">
+                <h3>Бесплатно</h3>
+                <div class="price">0₽ <span>/ навсегда</span></div>
+                <ul style="text-align: left; margin: 1rem 0; list-style: none;">
+                    <li><i class="fas fa-check" style="color: var(--success-color);"></i> Базовый чат с ИИ</li>
+                    <li><i class="fas fa-check" style="color: var(--success-color);"></i> 5 сообщений в день</li>
+                    <li><i class="fas fa-times" style="color: var(--danger-color);"></i> Техники CBT</li>
+                    <li><i class="fas fa-times" style="color: var(--danger-color);"></i> Дневник настроения</li>
+                </ul>
+                <button class="cta-button secondary" style="width: 100%;">Начать</button>
+            </div>
+            <div class="pricing-card" style="border: 2px solid var(--primary-color);">
+                <h3>Премиум</h3>
+                <div class="price">990₽ <span>/ месяц</span></div>
+                <ul style="text-align: left; margin: 1rem 0; list-style: none;">
+                    <li><i class="fas fa-check" style="color: var(--success-color);"></i> Полный доступ к ИИ</li>
+                    <li><i class="fas fa-check" style="color: var(--success-color);"></i> Неограниченные сообщения</li>
+                    <li><i class="fas fa-check" style="color: var(--success-color);"></i> Все техники CBT</li>
+                    <li><i class="fas fa-check" style="color: var(--success-color);"></i> Подробный дневник</li>
+                </ul>
+                <button class="cta-button" style="width: 100%;">Купить</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="testimonials" class="testimonials">
+        <h2>Отзывы наших пользователей</h2>
+        <p class="section-subtitle">Что говорят люди, которые уже попробовали MindBot</p>
+        
+        <div class="testimonial-cards">
+            <div class="testimonial-card">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <div style="width: 50px; height: 50px; background: var(--medium-gray); border-radius: 50%;"></div>
+                    <div>
+                        <h4 style="margin: 0;">Анна, 28 лет</h4>
+                        <div style="color: var(--warning-color);">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+                <p>"MindBot помог мне справиться с тревожностью. Техники дыхания особенно эффективны!"</p>
+            </div>
+            <div class="testimonial-card">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <div style="width: 50px; height: 50px; background: var(--medium-gray); border-radius: 50%;"></div>
+                    <div>
+                        <h4 style="margin: 0;">Михаил, 35 лет</h4>
+                        <div style="color: var(--warning-color);">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                    </div>
+                </div>
+                <p>"Отличная альтернатива, когда нет возможности посещать психолога. Анонимность - большой плюс."</p>
             </div>
         </div>
     </section>
@@ -130,7 +654,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно выбора настроения -->
+    <!-- Модальные окна -->
     <div class="modal" id="mood-modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
@@ -145,6 +669,353 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <div class="modal" id="demo-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Как работает MindBot?</h3>
+            <div class="video-placeholder">
+                <i class="fas fa-play-circle"></i>
+                <p>MindBot использует искусственный интеллект для анализа ваших сообщений и предоставления персонализированных рекомендаций на основе когнитивно-поведенческой терапии (CBT). Просто опишите свои чувства, и бот предложит упражнения и техники, которые помогут улучшить ваше состояние.</p>
+                <p>Все разговоры полностью анонимны. Вы можете в любой момент начать новый чат или очистить историю.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="feature-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 id="feature-modal-title">Заголовок</h3>
+            <div id="feature-modal-content">
+                Содержимое модального окна
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Элементы интерфейса
+            const chatContainer = document.getElementById('chat-container');
+            const startChatBtn = document.getElementById('start-chat');
+            const heroChatBtn = document.getElementById('hero-chat');
+            const closeChatBtn = document.getElementById('close-chat');
+            const clearChatBtn = document.getElementById('clear-chat');
+            const chatMessages = document.getElementById('chat-messages');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            const typingIndicator = document.getElementById('typing-indicator');
+            const quickQuestions = document.querySelectorAll('.quick-question');
+            const moodSelector = document.getElementById('mood-selector');
+            const moodModal = document.getElementById('mood-modal');
+            const closeModalBtns = document.querySelectorAll('.close-modal');
+            const moodOptions = document.querySelectorAll('.mood-option');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mainNav = document.getElementById('main-nav');
+            const watchDemoBtn = document.getElementById('watch-demo');
+            const demoModal = document.getElementById('demo-modal');
+            const featureModal = document.getElementById('feature-modal');
+            const featureModalTitle = document.getElementById('feature-modal-title');
+            const featureModalContent = document.getElementById('feature-modal-content');
+            
+            // Карточки возможностей
+            const anonChatCard = document.getElementById('anon-chat-card');
+            const cbtCard = document.getElementById('cbt-card');
+            const moodCard = document.getElementById('mood-card');
+
+            // Состояние приложения
+            let chatHistory = JSON.parse(localStorage.getItem('mindbot_chat_history')) || [];
+            let currentMood = null;
+            let isTyping = false;
+
+            // Инициализация чата
+            function initChat() {
+                if (chatHistory.length > 0) {
+                    chatHistory.forEach(msg => {
+                        addMessageToChat(msg.text, msg.sender);
+                    });
+                } else {
+                    setTimeout(() => {
+                        addBotMessage("Привет! Я MindBot — ваш виртуальный психолог. Я здесь, чтобы помочь вам разобраться в ваших чувствах и мыслях. О чём вы хотели бы поговорить?");
+                    }, 500);
+                }
+            }
+
+            // Добавление сообщения в чат
+            function addMessageToChat(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+                messageDiv.innerHTML = `<p>${text}</p>`;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Сообщение от бота
+            function addBotMessage(text) {
+                if (isTyping) return;
+                isTyping = true;
+                typingIndicator.classList.add('active');
+                
+                setTimeout(() => {
+                    typingIndicator.classList.remove('active');
+                    isTyping = false;
+                    addMessageToChat(text, 'bot');
+                    
+                    // Сохраняем в историю
+                    chatHistory.push({
+                        text: text,
+                        sender: 'bot',
+                        timestamp: new Date().toISOString()
+                    });
+                    saveChatHistory();
+                }, 1500);
+            }
+
+            // Сообщение от пользователя
+            function addUserMessage(text) {
+                addMessageToChat(text, 'user');
+                
+                // Сохраняем в историю
+                chatHistory.push({
+                    text: text,
+                    sender: 'user',
+                    timestamp: new Date().toISOString(),
+                    mood: currentMood
+                });
+                saveChatHistory();
+                
+                // Сбрасываем выбранное настроение
+                currentMood = null;
+                moodSelector.innerHTML = '<i class="fas fa-smile"></i>';
+                
+                // Ответ бота
+                setTimeout(() => {
+                    generateBotResponse(text);
+                }, 800);
+            }
+
+            // Генерация ответа бота
+            function generateBotResponse(userMessage) {
+                const lowerMsg = userMessage.toLowerCase();
+                let response = "";
+                
+                // База знаний
+                const knowledgeBase = {
+                    'тревож|волн|боюсь': [
+                        "Тревога — это естественная реакция. Попробуйте технику '5-4-3-2-1': назовите 5 вещей, которые видите, 4 — которые слышите, 3 — которые чувствуете, 2 — которые нюхаете, 1 — которую можете попробовать на вкус.",
+                        "Когда вы чувствуете тревогу, попробуйте заземление: сожмите и разожмите кулаки 5 раз, почувствуйте опору под ногами, сделайте глубокий вдох."
+                    ],
+                    'груст|плохое настроение|тоск': [
+                        "Грусть может быть сигналом, что что-то важно для вас. Может, расскажете подробнее, что произошло?",
+                        "Позвольте себе почувствовать грусть. Иногда нам нужно это переживание. Хотите обсудить, что именно вызывает эти чувства?"
+                    ],
+                    'стресс|устал|нервнич': [
+                        "Стресс часто возникает из-за перегрузки. Попробуйте технику 'Квадратного дыхания': вдох на 4 счёта, задержка на 4, выдох на 4, пауза на 4. Повторите 3-5 раз.",
+                        "При стрессе помогает метод 'Помпурри': назовите 3 цвета вокруг вас, 3 звука и сделайте 3 глубоких вдоха."
+                    ],
+                    'спасибо|благодар': [
+                        "Всегда рад помочь! Как ещё я могу вас поддержать?",
+                        "Спасибо за ваше доверие. Продолжаем работу?"
+                    ],
+                    'привет|здравств': [
+                        "Здравствуйте! О чём вы хотели бы поговорить сегодня?",
+                        "Привет! Как ваше настроение?"
+                    ]
+                };
+
+                // Поиск подходящего ответа
+                for (const [pattern, responses] of Object.entries(knowledgeBase)) {
+                    if (new RegExp(pattern).test(lowerMsg)) {
+                        response = responses[Math.floor(Math.random() * responses.length)];
+                        break;
+                    }
+                }
+
+                // Общие ответы
+                if (!response) {
+                    const generalResponses = [
+                        "Расскажите подробнее, что вас беспокоит?",
+                        "Как это на вас влияет?",
+                        "Что обычно помогает вам в таких ситуациях?",
+                        "Давайте разберём это вместе. Что вы чувствуете, когда думаете об этом?",
+                        "Попробуйте выразить это другими словами. Что для вас самое сложное в этой ситуации?"
+                    ];
+                    response = generalResponses[Math.floor(Math.random() * generalResponses.length)];
+                }
+                
+                addBotMessage(response);
+            }
+
+            // Сохранение истории чата
+            function saveChatHistory() {
+                localStorage.setItem('mindbot_chat_history', JSON.stringify(chatHistory));
+            }
+
+            // Очистка истории чата
+            function clearChatHistory() {
+                if (confirm("Очистить всю историю чата? Это действие нельзя отменить.")) {
+                    chatHistory = [];
+                    saveChatHistory();
+                    chatMessages.innerHTML = '';
+                    initChat();
+                }
+            }
+
+            // Открытие чата
+            function openChat() {
+                chatContainer.style.display = 'flex';
+                setTimeout(() => {
+                    chatContainer.style.opacity = '1';
+                    chatContainer.style.transform = 'translateY(0)';
+                }, 10);
+                initChat();
+            }
+
+            // Закрытие чата
+            function closeChat() {
+                chatContainer.style.opacity = '0';
+                chatContainer.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    chatContainer.style.display = 'none';
+                }, 300);
+            }
+
+            // Отправка сообщения
+            function sendMessage() {
+                const message = userInput.value.trim();
+                if (message) {
+                    addUserMessage(message);
+                    userInput.value = '';
+                }
+            }
+
+            // Открытие модального окна настроения
+            function openMoodModal() {
+                moodModal.style.display = 'flex';
+            }
+
+            // Выбор настроения
+            function selectMood(e) {
+                currentMood = e.currentTarget.dataset.mood;
+                const moodIcons = {
+                    happy: 'fa-laugh-beam',
+                    sad: 'fa-sad-tear',
+                    angry: 'fa-angry',
+                    anxious: 'fa-flushed',
+                    neutral: 'fa-meh'
+                };
+                moodSelector.innerHTML = `<i class="fas ${moodIcons[currentMood]}"></i>`;
+                moodModal.style.display = 'none';
+            }
+
+            // Переключение мобильного меню
+            function toggleMobileMenu() {
+                mainNav.classList.toggle('active');
+                mobileMenuBtn.innerHTML = mainNav.classList.contains('active') ? 
+                    '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
+            }
+
+            // Показать демо
+            function showDemo() {
+                demoModal.style.display = 'flex';
+            }
+
+            // Показать информацию о возможности
+            function showFeatureInfo(title, content) {
+                featureModalTitle.textContent = title;
+                featureModalContent.innerHTML = content;
+                featureModal.style.display = 'flex';
+            }
+
+            // Закрытие модальных окон
+            function closeAllModals() {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.style.display = 'none';
+                });
+            }
+
+            // Обработчики событий
+            startChatBtn.addEventListener('click', openChat);
+            heroChatBtn.addEventListener('click', openChat);
+            closeChatBtn.addEventListener('click', closeChat);
+            clearChatBtn.addEventListener('click', clearChatHistory);
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendMessage();
+            });
+            moodSelector.addEventListener('click', openMoodModal);
+            moodOptions.forEach(option => {
+                option.addEventListener('click', selectMood);
+            });
+            quickQuestions.forEach(question => {
+                question.addEventListener('click', function() {
+                    addUserMessage(this.textContent);
+                });
+            });
+            mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+            watchDemoBtn.addEventListener('click', showDemo);
+            
+            // Карточки возможностей
+            anonChatCard.addEventListener('click', function() {
+                showFeatureInfo(
+                    "Анонимный чат",
+                    `<p>Все ваши разговоры с MindBot полностью анонимны. Мы не требуем регистрации, не сохраняем персональные данные и не передаём ваши сообщения третьим лицам.</p>
+                    <p><i class="fas fa-shield-alt"></i> <strong>Безопасность:</strong> Все сообщения шифруются</p>
+                    <p><i class="fas fa-user-secret"></i> <strong>Конфиденциальность:</strong> Вы можете в любой момент очистить историю чата</p>`
+                );
+            });
+            
+            cbtCard.addEventListener('click', function() {
+                showFeatureInfo(
+                    "Техники CBT",
+                    `<p>CBT (Когнитивно-поведенческая терапия) — это научно доказанный метод, который помогает изменить негативные мыслительные шаблоны.</p>
+                    <p>MindBot использует:</p>
+                    <ul>
+                        <li>Метод "Записи мыслей" для анализа автоматических мыслей</li>
+                        <li>Техники когнитивного реструктурирования</li>
+                        <li>Упражнения на выявление когнитивных искажений</li>
+                        <li>Методы поведенческой активации</li>
+                    </ul>`
+                );
+            });
+            
+            moodCard.addEventListener('click', function() {
+                showFeatureInfo(
+                    "Дневник настроения",
+                    `<p>Отслеживайте изменения вашего эмоционального состояния с помощью визуализации:</p>
+                    <p><i class="fas fa-chart-line"></i> <strong>Графики настроения:</strong> Наблюдайте динамику за неделю/месяц</p>
+                    <p><i class="fas fa-tags"></i> <strong>Теги эмоций:</strong> Отмечайте преобладающие чувства</p>
+                    <p><i class="fas fa-lightbulb"></i> <strong>Анализ триггеров:</strong> Выявляйте закономерности в изменениях настроения</p>
+                    <p>Доступно в премиум-версии</p>`
+                );
+            });
+
+            // Закрытие модальных окон
+            closeModalBtns.forEach(btn => {
+                btn.addEventListener('click', closeAllModals);
+            });
+
+            window.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal')) {
+                    closeAllModals();
+                }
+            });
+
+            // Плавная прокрутка
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                        if (mainNav.classList.contains('active')) {
+                            toggleMobileMenu();
+                        }
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
