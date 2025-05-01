@@ -122,7 +122,111 @@ sendBtn.addEventListener('click', sendMessage);
 userInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
 });
+// Конфигурация
+const OPENAI_API_KEY = "sk-your-api-key"; // Замените на свой ключ
+const EMERGENCY_PHONE = "8-800-2000-122"; // Телефон доверия
 
+// Элементы
+const themeSelector = document.getElementById('themeSelector');
+const emergencyBtn = document.getElementById('emergencyBtn');
+const typingIndicator = document.createElement('div');
+typingIndicator.className = 'typing-indicator';
+typingIndicator.textContent = "AI печатает...";
+
+// Темы для ИИ
+const THEMES = {
+    anxiety: "Ты говоришь с пользователем о тревоге. Задавай вопросы о симптомах, предлагай техники дыхания.",
+    depression: "Ты помогаешь с депрессией. Будь мягким, спрашивай о продолжительности симптомов.",
+    relationships: "Ты обсуждаешь проблемы отношений. Помоги разобрать конфликт."
+};
+
+// Инициализация чата
+function initChat() {
+    chatSection.classList.remove('hidden');
+    themeSelector.classList.remove('hidden');
+    addBotMessage("Привет! Я MindHelper. Выбери тему или просто напиши о своей проблеме.");
+}
+
+// Выбор темы
+document.querySelectorAll('.theme-buttons button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const theme = btn.dataset.theme;
+        conversationHistory[0].content = THEMES[theme];
+        addBotMessage(`Выбрана тема: "${btn.textContent}". Опиши свою ситуацию.`);
+        themeSelector.classList.add('hidden');
+    });
+});
+
+// Экстренная помощь
+emergencyBtn.addEventListener('click', () => {
+    if (confirm(`Экстренная помощь: позвонить на ${EMERGENCY_PHONE}?`)) {
+        window.open(`tel:${EMERGENCY_PHONE}`);
+    }
+});
+
+// Индикатор набора сообщения
+function showTypingIndicator() {
+    chatMessages.appendChild(typingIndicator);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function hideTypingIndicator() {
+    typingIndicator.remove();
+}
+
+// Обновлённая функция sendMessage()
+async function sendMessage() {
+    const message = userInput.value.trim();
+    if (!message) return;
+
+    addUserMessage(message);
+    userInput.value = '';
+    userInput.disabled = true;
+    sendBtn.disabled = true;
+    showTypingIndicator();
+
+    conversationHistory.push({ role: "user", content: message });
+
+    try {
+        const aiResponse = await getAIResponse(conversationHistory);
+        hideTypingIndicator();
+        addBotMessage(aiResponse);
+        conversationHistory.push({ role: "assistant", content: aiResponse });
+        saveConversation();
+    } catch (error) {
+        hideTypingIndicator();
+        addBotMessage("⚠️ Ошибка соединения. Попробуйте позже.");
+    }
+
+    userInput.disabled = false;
+    sendBtn.disabled = false;
+    userInput.focus();
+}
+
+// Сохранение диалога в LocalStorage
+function saveConversation() {
+    localStorage.setItem('mindHelperChat', JSON.stringify(conversationHistory));
+}
+
+// Загрузка предыдущего диалога
+function loadConversation() {
+    const savedChat = localStorage.getItem('mindHelperChat');
+    if (savedChat) {
+        conversationHistory = JSON.parse(savedChat);
+        conversationHistory.forEach(msg => {
+            if (msg.role === "user") addUserMessage(msg.content);
+            if (msg.role === "assistant") addBotMessage(msg.content);
+        });
+    }
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('isAuthenticated')) {
+        initChat();
+        loadConversation();
+    }
+});
 // Инициализация
 if (localStorage.getItem('isAuthenticated')) {
     startChatBtn.click();
