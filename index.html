@@ -3,89 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindHelper — Виртуальный психолог</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>MindBot — Виртуальный психолог с ИИ</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Шапка -->
     <header>
-        <div class="container">
-            <h1>MindHelper</h1>
-            <nav>
-                <a href="#features">Возможности</a>
-                <a href="#about">О нас</a>
-                <button id="authBtn">Войти</button>
-            </nav>
-        </div>
+        <div class="logo">MindBot</div>
+        <nav>
+            <a href="#features">Возможности</a>
+            <a href="#about">О нас</a>
+            <a href="#pricing">Тарифы</a>
+        </nav>
+        <button class="cta-button" id="start-chat">Начать чат</button>
     </header>
 
-    <!-- Попап аутентификации -->
-    <div id="authModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Анонимный вход</h2>
-            <button id="guestLogin">Продолжить как гость</button>
-            <div class="auth-divider">или</div>
-            <form id="loginForm">
-                <input type="email" placeholder="Email" required>
-                <input type="password" placeholder="Пароль" required>
-                <button type="submit">Войти</button>
-            </form>
+    <!-- Герой-секция -->
+    <section class="hero">
+        <div class="hero-text">
+            <h1>Анонимный психолог с ИИ 24/7</h1>
+            <p>Без осуждения. Без регистрации. Первая сессия бесплатно.</p>
+            <button class="cta-button" id="hero-chat">Попробовать сейчас</button>
+        </div>
+        <div class="hero-image">
+            <img src="https://via.placeholder.com/500x400" alt="ИИ-психолог" id="bot-avatar">
+        </div>
+    </section>
+
+    <!-- Возможности -->
+    <section id="features" class="features">
+        <h2>Как это работает?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3>Чат в реальном времени</h3>
+                <p>ИИ анализирует ваши сообщения и предлагает техники CBT, медитации и советы.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Дневник настроения</h3>
+                <p>Отслеживайте эмоции и прогресс с помощью графиков.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>100% анонимность</h3>
+                <p>Не требуем почту или телефон. Ваши данные шифруются.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Чат-бот (скрыт по умолчанию) -->
+    <div class="chat-container" id="chat-container">
+        <div class="chat-header">
+            <span>MindBot</span>
+            <button id="close-chat">×</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot-message">
+                <p>Привет! Я — ваш виртуальный психолог. О чём вы хотите поговорить?</p>
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Напишите сообщение...">
+            <button id="send-button">Отправить</button>
         </div>
     </div>
-
-    <!-- Главный экран -->
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h2>Ваш персональный ИИ-психолог</h2>
-                <p>Анонимно, доступно, 24/7</p>
-                <button id="startChatBtn">Начать беседу</button>
-            </div>
-        </section>
-
-        <!-- Чат-интерфейс (изначально скрыт) -->
-        <section id="chatSection" class="hidden">
-            <div class="chat-container">
-                <div class="chat-header">
-                    <img src="assets/bot-avatar.png" alt="AI Psychologist">
-                    <h3>MindHelper Bot</h3>
-                </div>
-                <div id="chatMessages" class="chat-messages">
-                    <!-- Сообщения будут здесь -->
-                </div>
-                <div class="chat-input">
-                    <input type="text" id="userInput" placeholder="Напишите вашу проблему...">
-                    <button id="sendBtn"><i class="fas fa-paper-plane"></i></button>
-                </div>
-            </div>
-        </section>
-    </main>
 
     <!-- Подвал -->
     <footer>
-        <p>© 2023 MindHelper. Не заменяет профессиональную помощь.</p>
+        <p>© 2024 MindBot. Не заменяет профессиональную терапию.</p>
     </footer>
 
     <script src="script.js"></script>
-    <!-- Добавьте этот код внутри <body> перед закрывающим </main> -->
-<section id="themeSelector" class="hidden">
-    <div class="container">
-        <h3>Выберите тему:</h3>
-        <div class="theme-buttons">
-            <button data-theme="anxiety">Тревога</button>
-            <button data-theme="depression">Депрессия</button>
-            <button data-theme="relationships">Отношения</button>
-        </div>
-    </div>
-</section>
-
-<!-- Кнопка экстренной помощи (добавить в чат-интерфейс) -->
-<div class="emergency-help">
-    <button id="emergencyBtn">
-        <img src="assets/emergency-icon.svg" alt="SOS"> Экстренная помощь
-    </button>
-</div>
 </body>
 </html>
