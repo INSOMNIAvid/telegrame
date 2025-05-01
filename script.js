@@ -1,5 +1,5 @@
 // Конфигурация API
-const OPENAI_API_KEY = "sk-your-api-key-here"; // Замените на свой ключ
+const OPENAI_API_KEY = "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"; // Замените на свой ключ
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
 // DOM-элементы
