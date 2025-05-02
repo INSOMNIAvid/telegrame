@@ -27,18 +27,39 @@ document.addEventListener('DOMContentLoaded', function() {
     const emergencyBtnFooter = document.getElementById('emergency-btn-footer');
     const featureCards = document.querySelectorAll('.feature-card');
     const featureBtns = document.querySelectorAll('.feature-btn');
+    const freePlanBtn = document.getElementById('free-plan-btn');
+    const premiumPlanBtn = document.getElementById('premium-plan-btn');
+    const annualPlanBtn = document.getElementById('annual-plan-btn');
+    const subscribeModal = document.getElementById('subscribe-modal');
+    const subscribeTitle = document.getElementById('subscribe-title');
+    const subscribeContent = document.getElementById('subscribe-content');
+    const paymentForm = document.getElementById('payment-form');
+    const paymentSuccess = document.getElementById('payment-success');
+    const closeSuccessBtn = document.getElementById('close-success');
+    const limitModal = document.getElementById('limit-modal');
+    const upgradePlanBtn = document.getElementById('upgrade-plan');
+    const closeLimitBtn = document.getElementById('close-limit');
+    const messagesLeftSpan = document.getElementById('messages-left');
+    const chatLimit = document.getElementById('chat-limit');
+    const userStatus = document.getElementById('user-status');
 
     // ========== Состояние приложения ==========
     let chatHistory = JSON.parse(localStorage.getItem('mindbot_chat_history')) || [];
     let currentMood = null;
     let isTyping = false;
     let selectedRating = 0;
+    let messagesLeft = 3;
+    let isPremium = localStorage.getItem('mindbot_premium') === 'true';
+    let trialUsed = localStorage.getItem('mindbot_trial_used') === 'true';
+    let currentPlan = localStorage.getItem('mindbot_plan') || 'free';
 
     // ========== Инициализация ==========
     initModals();
     initChat();
+    updateUserStatus();
     setupAnimations();
     setupEventListeners();
+    checkMessageLimit();
 
     // ========== Функции инициализации ==========
     
@@ -64,6 +85,18 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 addBotMessage("Привет! Я MindBot — ваш виртуальный психолог. Я здесь, чтобы помочь вам разобраться в ваших чувствах и мыслях. О чём вы хотели бы поговорить?");
             }, 500);
+        }
+    }
+
+    function updateUserStatus() {
+        if (isPremium) {
+            userStatus.textContent = currentPlan === 'annual' ? 'Годовая подписка' : 'Премиум';
+            userStatus.classList.add('premium');
+            chatLimit.style.display = 'none';
+        } else {
+            userStatus.textContent = 'Гость';
+            userStatus.classList.remove('premium');
+            chatLimit.style.display = 'block';
         }
     }
 
@@ -145,6 +178,23 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.addEventListener('click', () => showFeatureDetails(index));
         });
         
+        // Кнопки подписки
+        freePlanBtn.addEventListener('click', () => showSubscribeModal('free'));
+        premiumPlanBtn.addEventListener('click', () => showSubscribeModal('premium'));
+        annualPlanBtn.addEventListener('click', () => showSubscribeModal('annual'));
+        upgradePlanBtn.addEventListener('click', () => showSubscribeModal('premium'));
+        
+        // Форма оплаты
+        paymentForm.addEventListener('submit', processPayment);
+        closeSuccessBtn.addEventListener('click', () => {
+            subscribeModal.style.display = 'none';
+            paymentSuccess.style.display = 'none';
+            paymentForm.style.display = 'block';
+        });
+        
+        // Лимит сообщений
+        closeLimitBtn.addEventListener('click', () => limitModal.style.display = 'none');
+        
         // Плавная прокрутка для якорей
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
@@ -160,6 +210,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+        
+        // Маска для номера карты
+        const cardNumber = document.getElementById('card-number');
+        if (cardNumber) {
+            cardNumber.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\s+/g, '');
+                if (value.length > 16) value = value.substring(0, 16);
+                value = value.replace(/(\d{4})/g, '$1 ').trim();
+                e.target.value = value;
+            });
+        }
+        
+        // Маска для срока действия
+        const cardExpiry = document.getElementById('card-expiry');
+        if (cardExpiry) {
+            cardExpiry.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D+/g, '');
+                if (value.length > 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                e.target.value = value;
+            });
+        }
     }
 
     // ========== Функции чата ==========
@@ -227,7 +300,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function addUserMessage(text) {
+        if (!isPremium && messagesLeft <= 0) {
+            limitModal.style.display = 'flex';
+            return;
+        }
+        
         addMessageToChat(text, 'user');
+        
+        if (!isPremium) {
+            messagesLeft--;
+            updateMessageLimit();
+            localStorage.setItem('mindbot_messages_left', messagesLeft);
+        }
         
         // Сохраняем в историю
         chatHistory.push({
@@ -277,6 +361,10 @@ document.addEventListener('DOMContentLoaded', function() {
             'как это работает|как пользоваться': [
                 "MindBot использует когнитивно-поведенческую терапию (CBT) и другие проверенные методики. Просто напишите о своей проблеме, и я предложу техники для её решения.",
                 "Работаю так: 1) Вы описываете ситуацию 2) Я анализирую и предлагаю техники 3) Вы применяете их и отслеживаете прогресс в дневнике настроения."
+            ],
+            'подписка|премиум|оплата': [
+                "Премиум-подписка дает неограниченное количество сообщений, доступ ко всем техникам CBT и расширенному дневнику настроения.",
+                "Вы можете оформить подписку в разделе 'Тарифы'. Доступна ежемесячная и годовая подписка со скидкой 30%."
             ]
         };
 
@@ -342,6 +430,33 @@ document.addEventListener('DOMContentLoaded', function() {
         if (message) {
             addUserMessage(message);
             userInput.value = '';
+        }
+    }
+
+    function checkMessageLimit() {
+        const savedMessagesLeft = localStorage.getItem('mindbot_messages_left');
+        const lastReset = localStorage.getItem('mindbot_last_reset');
+        const today = new Date().toDateString();
+        
+        if (lastReset !== today) {
+            // Сброс лимита на новый день
+            messagesLeft = 3;
+            localStorage.setItem('mindbot_messages_left', messagesLeft);
+            localStorage.setItem('mindbot_last_reset', today);
+        } else if (savedMessagesLeft) {
+            messagesLeft = parseInt(savedMessagesLeft);
+        }
+        
+        updateMessageLimit();
+    }
+
+    function updateMessageLimit() {
+        messagesLeftSpan.textContent = messagesLeft;
+        
+        if (messagesLeft <= 1) {
+            chatLimit.style.color = 'var(--danger-color)';
+        } else {
+            chatLimit.style.color = 'var(--text-light)';
         }
     }
 
@@ -444,4 +559,112 @@ document.addEventListener('DOMContentLoaded', function() {
         
         alert(`${featureTitles[index]}\n\n${featureDescriptions[index]}`);
     }
+
+    // ========== Функции подписки ==========
+    
+    function showSubscribeModal(plan) {
+        subscribeModal.style.display = 'flex';
+        paymentForm.style.display = 'block';
+        paymentSuccess.style.display = 'none';
+        
+        const planInfo = {
+            free: {
+                title: "Бесплатный тариф",
+                description: "Вы можете продолжить использовать MindBot бесплатно с ограничением 3 сообщения в день.",
+                price: "0₽",
+                button: "Продолжить бесплатно"
+            },
+            premium: {
+                title: "Премиум подписка",
+                description: "Полный доступ ко всем функциям MindBot без ограничений. Платите ежемесячно, отмена в любой момент.",
+                price: "990₽ в месяц",
+                button: "Оформить подписку"
+            },
+            annual: {
+                title: "Годовая подписка",
+                description: "Полный доступ на 1 год со скидкой 30%. Экономия 2,970₽ по сравнению с ежемесячной оплатой.",
+                price: "7,900₽ в год",
+                button: "Оформить подписку"
+            }
+        };
+        
+        subscribeTitle.textContent = planInfo[plan].title;
+        subscribeContent.innerHTML = `
+            <p>${planInfo[plan].description}</p>
+            <div class="plan-price">${planInfo[plan].price}</div>
+            <button class="cta-button" id="confirm-subscription">${planInfo[plan].button}</button>
+        `;
+        
+        document.getElementById('confirm-subscription').addEventListener('click', function() {
+            if (plan === 'free') {
+                subscribeModal.style.display = 'none';
+            } else {
+                showPaymentForm(plan);
+            }
+        });
+    }
+    
+    function showPaymentForm(plan) {
+        subscribeTitle.textContent = `Оплата ${plan === 'annual' ? 'годовой' : 'ежемесячной'} подписки`;
+        subscribeContent.style.display = 'none';
+        paymentForm.style.display = 'block';
+        
+        // Здесь можно добавить обработку разных планов
+        document.getElementById('confirm-payment').onclick = function(e) {
+            e.preventDefault();
+            processPayment(plan);
+        };
+    }
+    
+    function processPayment(plan) {
+        // В реальном приложении здесь будет интеграция с платежной системой
+        // Для демонстрации просто имитируем успешную оплату
+        
+        const cardNumber = document.getElementById('card-number').value;
+        const cardExpiry = document.getElementById('card-expiry').value;
+        const cardCvc = document.getElementById('card-cvc').value;
+        const cardName = document.getElementById('card-name').value;
+        
+        if (!cardNumber || !cardExpiry || !cardCvc || !cardName) {
+            alert('Пожалуйста, заполните все поля');
+            return;
+        }
+        
+        // Имитация обработки платежа
+        setTimeout(() => {
+            paymentForm.style.display = 'none';
+            paymentSuccess.style.display = 'block';
+            
+            // Активируем премиум доступ
+            isPremium = true;
+            currentPlan = plan;
+            localStorage.setItem('mindbot_premium', 'true');
+            localStorage.setItem('mindbot_plan', plan);
+            
+            if (plan === 'premium' && !trialUsed) {
+                // Активируем пробный период
+                localStorage.setItem('mindbot_trial_end', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString());
+                trialUsed = true;
+                localStorage.setItem('mindbot_trial_used', 'true');
+            }
+            
+            updateUserStatus();
+        }, 1500);
+    }
+
+    // Проверка пробного периода
+    function checkTrialPeriod() {
+        const trialEnd = localStorage.getItem('mindbot_trial_end');
+        if (trialEnd && new Date(trialEnd) < new Date()) {
+            isPremium = false;
+            currentPlan = 'free';
+            localStorage.setItem('mindbot_premium', 'false');
+            localStorage.setItem('mindbot_plan', 'free');
+            updateUserStatus();
+            alert('Ваш пробный период закончился. Пожалуйста, оформите подписку для продолжения использования.');
+        }
+    }
+
+    // Проверяем пробный период при загрузке
+    checkTrialPeriod();
 });
