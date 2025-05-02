@@ -244,6 +244,18 @@ nav a:hover::after {
     color: var(--white);
 }
 
+.cta-button.premium-btn {
+    background: var(--popular-color);
+    color: var(--text-color);
+    border: none;
+}
+
+.cta-button.premium-btn:hover {
+    background: #fdd835;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 235, 59, 0.3);
+}
+
 #mobile-menu-btn {
     display: none;
     background: none;
@@ -287,11 +299,61 @@ nav a:hover::after {
     position: relative;
 }
 
-.hero-image img {
-    max-width: 100%;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    animation: pulse 4s infinite;
+.hero-illustration {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-illustration i {
+    font-size: 6rem;
+    color: var(--primary-color);
+    position: relative;
+    z-index: 2;
+    animation: pulse 2s infinite;
+}
+
+.circles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(94, 53, 177, 0.1);
+    animation: pulse 3s infinite;
+}
+
+.circle-1 {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    animation-delay: 0s;
+}
+
+.circle-2 {
+    width: 80%;
+    height: 80%;
+    top: 10%;
+    left: 10%;
+    animation-delay: 0.5s;
+}
+
+.circle-3 {
+    width: 60%;
+    height: 60%;
+    top: 20%;
+    left: 20%;
+    animation-delay: 1s;
 }
 
 .hero-buttons {
@@ -335,6 +397,10 @@ nav a:hover::after {
     font-size: 1.1rem;
 }
 
+.premium-button-container {
+    margin: 2rem 0 3rem;
+}
+
 .features-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -357,6 +423,10 @@ nav a:hover::after {
 .feature-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card.premium-feature {
+    border: 1px solid var(--popular-color);
 }
 
 .feature-icon {
@@ -453,34 +523,6 @@ nav a:hover::after {
 .step h3 {
     margin: 1.5rem 0 1rem;
     color: var(--primary-color);
-}
-
-.video-container {
-    margin-top: 3rem;
-    background: var(--white);
-    padding: 2rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-}
-
-.video-placeholder {
-    background: var(--light-gray);
-    padding: 3rem;
-    text-align: center;
-    border-radius: var(--border-radius);
-    margin-top: 1rem;
-}
-
-.video-placeholder i {
-    font-size: 4rem;
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-}
-
-.video-placeholder p {
-    color: var(--text-light);
-    max-width: 600px;
-    margin: 0 auto;
 }
 
 /* Отзывы */
@@ -1152,6 +1194,78 @@ nav a:hover::after {
     gap: 1rem;
 }
 
+/* Формы входа и регистрации */
+#login-form,
+#register-form,
+#edit-profile-form {
+    margin-top: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--medium-gray);
+    border-radius: var(--border-radius);
+    font-family: inherit;
+    transition: var(--transition);
+}
+
+.form-group input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.form-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: var(--text-light);
+}
+
+.form-footer a {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* Политика конфиденциальности и условия */
+.policy-content,
+.terms-content {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 1rem;
+}
+
+.policy-content h4,
+.terms-content h4 {
+    margin: 1.5rem 0 0.5rem;
+    color: var(--primary-color);
+}
+
+.policy-content ul,
+.terms-content ul {
+    margin: 0.5rem 0 1rem 1.5rem;
+}
+
+.policy-content p,
+.terms-content p {
+    margin-bottom: 1rem;
+}
+
 /* Подвал */
 footer {
     background: var(--text-color);
@@ -1358,6 +1472,10 @@ footer {
         right: auto;
         left: 0;
         width: 100%;
+    }
+    
+    .form-actions {
+        flex-direction: column;
     }
 }
 
