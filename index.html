@@ -37,8 +37,10 @@
                 </button>
                 <div class="dropdown-content" id="dropdown-content">
                     <a href="#" id="profile-link">Профиль</a>
+                    <a href="#" id="login-link">Войти</a>
+                    <a href="#" id="register-link">Регистрация</a>
                     <a href="#" id="subscription-link">Подписка</a>
-                    <a href="#" id="logout-link">Выйти</a>
+                    <a href="#" id="logout-link" style="display:none;">Выйти</a>
                 </div>
             </div>
         </div>
@@ -65,7 +67,14 @@
             </div>
         </div>
         <div class="hero-image">
-            <img src="https://images.unsplash.com/photo-1596524430615-b46475ddff6e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="ИИ-психолог" class="animate__animated animate__pulse animate__infinite animate__slower">
+            <div class="hero-illustration">
+                <i class="fas fa-robot"></i>
+                <div class="circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -74,6 +83,12 @@
         <div class="container">
             <h2>Ваш личный психолог всегда рядом</h2>
             <p class="section-subtitle">MindBot использует когнитивно-поведенческую терапию (CBT) и другие проверенные методики</p>
+            
+            <div class="premium-button-container">
+                <button class="cta-button premium-btn" id="premium-features-btn">
+                    <i class="fas fa-crown"></i> Премиум возможности
+                </button>
+            </div>
             
             <div class="features-grid">
                 <div class="feature-card" id="anonymous-chat-card">
@@ -94,19 +109,19 @@
                     <p>Отслеживайте прогресс с помощью визуализации вашего состояния.</p>
                     <button class="feature-btn">Подробнее</button>
                 </div>
-                <div class="feature-card" id="unlimited-sessions-card">
+                <div class="feature-card premium-feature" id="unlimited-sessions-card">
                     <div class="feature-icon"><i class="fas fa-infinity"></i></div>
                     <h3>Неограниченные сессии</h3>
                     <p>Общайтесь сколько угодно без ограничений по времени и сообщениям.</p>
                     <button class="feature-btn premium-only">Премиум</button>
                 </div>
-                <div class="feature-card" id="personal-programs-card">
+                <div class="feature-card premium-feature" id="personal-programs-card">
                     <div class="feature-icon"><i class="fas fa-clipboard-list"></i></div>
                     <h3>Персональные программы</h3>
                     <p>Индивидуальные планы терапии, адаптированные под ваши потребности.</p>
                     <button class="feature-btn premium-only">Премиум</button>
                 </div>
-                <div class="feature-card" id="advanced-analysis-card">
+                <div class="feature-card premium-feature" id="advanced-analysis-card">
                     <div class="feature-icon"><i class="fas fa-chart-pie"></i></div>
                     <h3>Подробный анализ</h3>
                     <p>Глубокий разбор вашего состояния с рекомендациями и статистикой.</p>
@@ -135,12 +150,6 @@
                     <div class="step-number">3</div>
                     <h3>Практические советы</h3>
                     <p>Получайте персонализированные упражнения и рекомендации.</p>
-                </div>
-            </div>
-            <div class="video-container" id="demo-video">
-                <div class="video-placeholder">
-                    <i class="fas fa-robot"></i>
-                    <p>MindBot анализирует ваши сообщения и предлагает проверенные психологические техники</p>
                 </div>
             </div>
         </div>
@@ -482,10 +491,88 @@
                     </div>
                 </div>
                 <div class="profile-actions">
-                    <button class="cta-button outline" id="upgrade-profile-btn">Перейти на Премиум</button>
                     <button class="cta-button" id="edit-profile-btn">Редактировать профиль</button>
+                    <button class="cta-button outline" id="upgrade-profile-btn" style="display:none;">Перейти на Премиум</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно входа -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Вход в аккаунт</h3>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="Ваш email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Пароль</label>
+                    <input type="password" id="login-password" placeholder="Ваш пароль" required>
+                </div>
+                <button type="submit" class="cta-button">Войти</button>
+                <p class="form-footer">Нет аккаунта? <a href="#" id="show-register">Зарегистрироваться</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно регистрации -->
+    <div class="modal" id="register-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Регистрация</h3>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="register-name">Имя</label>
+                    <input type="text" id="register-name" placeholder="Ваше имя" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" placeholder="Ваш email" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Пароль</label>
+                    <input type="password" id="register-password" placeholder="Придумайте пароль" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm">Подтвердите пароль</label>
+                    <input type="password" id="register-confirm" placeholder="Повторите пароль" required>
+                </div>
+                <button type="submit" class="cta-button">Зарегистрироваться</button>
+                <p class="form-footer">Уже есть аккаунт? <a href="#" id="show-login">Войти</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования профиля -->
+    <div class="modal" id="edit-profile-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Редактирование профиля</h3>
+            <form id="edit-profile-form">
+                <div class="form-group">
+                    <label for="edit-name">Имя</label>
+                    <input type="text" id="edit-name" placeholder="Ваше имя" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-email">Email</label>
+                    <input type="email" id="edit-email" placeholder="Ваш email" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-password">Новый пароль (оставьте пустым, если не хотите менять)</label>
+                    <input type="password" id="edit-password" placeholder="Новый пароль">
+                </div>
+                <div class="form-group">
+                    <label for="edit-confirm">Подтвердите новый пароль</label>
+                    <input type="password" id="edit-confirm" placeholder="Повторите новый пароль">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="cta-button">Сохранить изменения</button>
+                    <button type="button" class="cta-button outline" id="cancel-edit">Отмена</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -516,8 +603,8 @@
                     <h4>Помощь</h4>
                     <ul>
                         <li><a href="#" id="emergency-btn-footer">Экстренная помощь</a></li>
-                        <li><a href="#" id="privacy-policy">Конфиденциальность</a></li>
-                        <li><a href="#" id="terms-of-use">Условия использования</a></li>
+                        <li><a href="#" id="privacy-policy-btn">Конфиденциальность</a></li>
+                        <li><a href="#" id="terms-of-use-btn">Условия использования</a></li>
                         <li><a href="mailto:support@mindbot.com">support@mindbot.com</a></li>
                     </ul>
                 </div>
@@ -528,6 +615,93 @@
             </div>
         </div>
     </footer>
+
+    <!-- Модальное окно конфиденциальности -->
+    <div class="modal" id="privacy-policy-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Политика конфиденциальности</h3>
+            <div class="policy-content">
+                <p>Последнее обновление: 01.01.2023</p>
+                
+                <h4>1. Какие данные мы собираем</h4>
+                <p>Мы собираем минимально необходимую информацию для предоставления наших услуг. Это может включать:</p>
+                <ul>
+                    <li>Информацию, которую вы предоставляете при регистрации (имя, email)</li>
+                    <li>Данные о вашем использовании сервиса (история чата, настройки)</li>
+                    <li>Технические данные (IP-адрес, тип устройства, браузер)</li>
+                </ul>
+                
+                <h4>2. Как мы используем ваши данные</h4>
+                <p>Ваши данные используются исключительно для:</p>
+                <ul>
+                    <li>Предоставления и улучшения наших услуг</li>
+                    <li>Персонализации вашего опыта</li>
+                    <li>Обеспечения безопасности сервиса</li>
+                    <li>Соблюдения юридических обязательств</li>
+                </ul>
+                
+                <h4>3. Защита данных</h4>
+                <p>Мы используем современные методы шифрования и защиты данных, включая:</p>
+                <ul>
+                    <li>SSL-шифрование всех передаваемых данных</li>
+                    <li>Хранение данных на защищенных серверах</li>
+                    <li>Регулярные проверки безопасности</li>
+                </ul>
+                
+                <h4>4. Ваши права</h4>
+                <p>Вы имеете право:</p>
+                <ul>
+                    <li>Запросить доступ к вашим персональным данным</li>
+                    <li>Исправить неточности в ваших данных</li>
+                    <li>Удалить ваши данные (право на забвение)</li>
+                    <li>Ограничить обработку ваших данных</li>
+                </ul>
+                
+                <p>По всем вопросам, связанным с вашими персональными данными, обращайтесь на support@mindbot.com.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно условий использования -->
+    <div class="modal" id="terms-of-use-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Условия использования</h3>
+            <div class="terms-content">
+                <p>Последнее обновление: 01.01.2023</p>
+                
+                <h4>1. Общие положения</h4>
+                <p>Используя сервис MindBot, вы соглашаетесь с настоящими Условиями использования. Если вы не согласны с этими условиями, пожалуйста, не используйте наш сервис.</p>
+                
+                <h4>2. Описание сервиса</h4>
+                <p>MindBot предоставляет услуги виртуального психолога на основе технологий искусственного интеллекта. Сервис не заменяет профессиональную медицинскую помощь и не предназначен для диагностики или лечения психических заболеваний.</p>
+                
+                <h4>3. Обязанности пользователя</h4>
+                <p>Вы соглашаетесь:</p>
+                <ul>
+                    <li>Не использовать сервис для незаконных целей</li>
+                    <li>Не пытаться нарушить работу сервиса</li>
+                    <li>Не передавать свои учетные данные третьим лицам</li>
+                    <li>Не использовать сервис, если вам меньше 16 лет</li>
+                </ul>
+                
+                <h4>4. Подписки и оплата</h4>
+                <p>Премиум-функции доступны по подписке. Оплата производится ежемесячно или ежегодно. Вы можете отменить подписку в любое время, но возврат средств за неиспользованный период не производится.</p>
+                
+                <h4>5. Ограничение ответственности</h4>
+                <p>Мы не несем ответственности за:</p>
+                <ul>
+                    <li>Любые косвенные убытки, связанные с использованием сервиса</li>
+                    <li>Невозможность использования сервиса по техническим причинам</li>
+                    <li>Действия пользователей, нарушающие настоящие Условия</li>
+                </ul>
+                
+                <h4>6. Изменения условий</h4>
+                <p>Мы оставляем за собой право изменять настоящие Условия. О существенных изменениях мы будем уведомлять вас по email или через сервис.</p>
+            </div>
+        </div>
+    </div>
 
     <!-- Кнопка экстренной помощи -->
     <button id="emergency-btn"><i class="fas fa-life-ring"></i> Экстренная помощь</button>
