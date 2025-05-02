@@ -42,6 +42,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const messagesLeftSpan = document.getElementById('messages-left');
     const chatLimit = document.getElementById('chat-limit');
     const userStatus = document.getElementById('user-status');
+    const accountBtn = document.getElementById('account-btn');
+    const dropdownContent = document.getElementById('dropdown-content');
+    const profileLink = document.getElementById('profile-link');
+    const subscriptionLink = document.getElementById('subscription-link');
+    const logoutLink = document.getElementById('logout-link');
+    const profileModal = document.getElementById('profile-modal');
+    const profileStatus = document.getElementById('profile-status');
+    const subscriptionInfo = document.getElementById('subscription-info');
+    const subscriptionEnd = document.getElementById('subscription-end');
+    const subscriptionEndContainer = document.getElementById('subscription-end-container');
+    const upgradeProfileBtn = document.getElementById('upgrade-profile-btn');
+    const editProfileBtn = document.getElementById('edit-profile-btn');
 
     // ========== Состояние приложения ==========
     let chatHistory = JSON.parse(localStorage.getItem('mindbot_chat_history')) || [];
@@ -52,6 +64,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let isPremium = localStorage.getItem('mindbot_premium') === 'true';
     let trialUsed = localStorage.getItem('mindbot_trial_used') === 'true';
     let currentPlan = localStorage.getItem('mindbot_plan') || 'free';
+    let trialEndDate = localStorage.getItem('mindbot_trial_end');
+    let totalMessages = parseInt(localStorage.getItem('mindbot_total_messages')) || 0;
+    let signupDate = localStorage.getItem('mindbot_signup_date') || new Date().toLocaleDateString();
 
     // ========== Инициализация ==========
     initModals();
@@ -60,6 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupAnimations();
     setupEventListeners();
     checkMessageLimit();
+    updatePremiumFeaturesVisibility();
 
     // ========== Функции инициализации ==========
     
@@ -98,6 +114,17 @@ document.addEventListener('DOMContentLoaded', function() {
             userStatus.classList.remove('premium');
             chatLimit.style.display = 'block';
         }
+    }
+
+    function updatePremiumFeaturesVisibility() {
+        const premiumFeatures = document.querySelectorAll('.premium-only');
+        premiumFeatures.forEach(feature => {
+            if (isPremium) {
+                feature.style.display = 'block';
+            } else {
+                feature.style.display = 'none';
+            }
+        });
     }
 
     function setupAnimations() {
@@ -183,6 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
         premiumPlanBtn.addEventListener('click', () => showSubscribeModal('premium'));
         annualPlanBtn.addEventListener('click', () => showSubscribeModal('annual'));
         upgradePlanBtn.addEventListener('click', () => showSubscribeModal('premium'));
+        upgradeProfileBtn.addEventListener('click', () => showSubscribeModal('premium'));
         
         // Форма оплаты
         paymentForm.addEventListener('submit', processPayment);
@@ -194,6 +222,16 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Лимит сообщений
         closeLimitBtn.addEventListener('click', () => limitModal.style.display = 'none');
+        
+        // Аккаунт и профиль
+        accountBtn.addEventListener('click', toggleDropdown);
+        profileLink.addEventListener('click', showProfileModal);
+        subscriptionLink.addEventListener('click', () => {
+            showSubscribeModal('premium');
+            dropdownContent.style.display = 'none';
+        });
+        logoutLink.addEventListener('click', logout);
+        editProfileBtn.addEventListener('click', editProfile);
         
         // Плавная прокрутка для якорей
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -312,6 +350,10 @@ document.addEventListener('DOMContentLoaded', function() {
             updateMessageLimit();
             localStorage.setItem('mindbot_messages_left', messagesLeft);
         }
+        
+        // Увеличиваем счетчик сообщений
+        totalMessages++;
+        localStorage.setItem('mindbot_total_messages', totalMessages);
         
         // Сохраняем в историю
         chatHistory.push({
@@ -548,13 +590,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const featureTitles = [
             "Анонимный чат",
             "Техники CBT",
-            "Дневник настроения"
+            "Дневник настроения",
+            "Неограниченные сессии",
+            "Персональные программы",
+            "Подробный анализ"
         ];
         
         const featureDescriptions = [
             "Все ваши диалоги полностью анонимны. Мы не сохраняем персональные данные и не требуем регистрации. Ваши секреты в безопасности.",
             "Когнитивно-поведенческая терапия (CBT) - золотой стандарт психотерапии. Мы используем проверенные техники для работы с тревогой, депрессией и стрессом.",
-            "Отслеживайте ваше эмоциональное состояние с помощью удобного дневника. Анализируйте закономерности и прогресс в терапии."
+            "Отслеживайте ваше эмоциональное состояние с помощью удобного дневника. Анализируйте закономерности и прогресс в терапии.",
+            "Премиум-функция: общайтесь без ограничений по количеству сообщений и времени сессий.",
+            "Премиум-функция: индивидуальные планы терапии, адаптированные под ваши потребности и цели.",
+            "Премиум-функция: глубокий анализ вашего состояния с детальными отчетами и рекомендациями."
         ];
         
         alert(`${featureTitles[index]}\n\n${featureDescriptions[index]}`);
@@ -643,26 +691,77 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (plan === 'premium' && !trialUsed) {
                 // Активируем пробный период
-                localStorage.setItem('mindbot_trial_end', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString());
+                const trialEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+                trialEndDate = trialEnd.toISOString();
+                localStorage.setItem('mindbot_trial_end', trialEndDate);
                 trialUsed = true;
                 localStorage.setItem('mindbot_trial_used', 'true');
             }
             
             updateUserStatus();
+            updatePremiumFeaturesVisibility();
+            updateProfileInfo();
         }, 1500);
     }
 
     // Проверка пробного периода
     function checkTrialPeriod() {
-        const trialEnd = localStorage.getItem('mindbot_trial_end');
-        if (trialEnd && new Date(trialEnd) < new Date()) {
+        if (trialEndDate && new Date(trialEndDate) < new Date()) {
             isPremium = false;
             currentPlan = 'free';
             localStorage.setItem('mindbot_premium', 'false');
             localStorage.setItem('mindbot_plan', 'free');
             updateUserStatus();
+            updatePremiumFeaturesVisibility();
+            updateProfileInfo();
             alert('Ваш пробный период закончился. Пожалуйста, оформите подписку для продолжения использования.');
         }
+    }
+
+    // ========== Функции аккаунта ==========
+    
+    function toggleDropdown() {
+        dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+    }
+    
+    function showProfileModal() {
+        updateProfileInfo();
+        profileModal.style.display = 'flex';
+        dropdownContent.style.display = 'none';
+    }
+    
+    function updateProfileInfo() {
+        document.getElementById('messages-used').textContent = totalMessages;
+        document.getElementById('signup-date').textContent = signupDate;
+        
+        if (isPremium) {
+            profileStatus.innerHTML = '<span class="status-badge premium">Премиум аккаунт</span>';
+            subscriptionInfo.textContent = currentPlan === 'annual' ? 'Годовая подписка' : 'Ежемесячная подписка';
+            
+            if (trialEndDate) {
+                const endDate = new Date(trialEndDate);
+                subscriptionEnd.textContent = endDate.toLocaleDateString();
+                subscriptionEndContainer.style.display = 'flex';
+            } else {
+                subscriptionEndContainer.style.display = 'none';
+            }
+        } else {
+            profileStatus.innerHTML = '<span class="status-badge free">Бесплатный аккаунт</span>';
+            subscriptionInfo.textContent = 'Не активна';
+            subscriptionEndContainer.style.display = 'none';
+        }
+    }
+    
+    function logout() {
+        if (confirm('Вы уверены, что хотите выйти?')) {
+            // В реальном приложении здесь будет выход из системы
+            alert('Вы вышли из системы');
+            dropdownContent.style.display = 'none';
+        }
+    }
+    
+    function editProfile() {
+        alert('В реальном приложении здесь будет форма редактирования профиля');
     }
 
     // Проверяем пробный период при загрузке
