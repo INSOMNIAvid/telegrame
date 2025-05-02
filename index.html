@@ -24,9 +24,14 @@
             <a href="#pricing">Тарифы</a>
             <a href="#faq">Вопросы</a>
         </nav>
-        <button class="cta-button" id="start-chat">
-            <i class="fas fa-comment-dots"></i> Начать чат
-        </button>
+        <div class="header-actions">
+            <button class="cta-button" id="start-chat">
+                <i class="fas fa-comment-dots"></i> Начать чат
+            </button>
+            <div class="user-status" id="user-status">
+                <span>Гость</span>
+            </div>
+        </div>
         <button id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
     </header>
 
@@ -186,7 +191,7 @@
                         <li><i class="fas fa-times"></i> Персональные программы</li>
                         <li><i class="fas fa-times"></i> Расширенный анализ</li>
                     </ul>
-                    <button class="cta-button outline">Начать бесплатно</button>
+                    <button class="cta-button outline" id="free-plan-btn">Начать бесплатно</button>
                 </div>
                 <div class="pricing-card popular">
                     <div class="popular-badge">Популярный</div>
@@ -199,7 +204,7 @@
                         <li><i class="fas fa-check"></i> Персональные программы</li>
                         <li><i class="fas fa-check"></i> Подробный анализ</li>
                     </ul>
-                    <button class="cta-button">Попробовать бесплатно 7 дней</button>
+                    <button class="cta-button" id="premium-plan-btn">Попробовать бесплатно 7 дней</button>
                 </div>
                 <div class="pricing-card">
                     <h3>Годовой</h3>
@@ -211,7 +216,7 @@
                         <li><i class="fas fa-check"></i> Персональные программы</li>
                         <li><i class="fas fa-check"></i> 2 консультации с психологом</li>
                     </ul>
-                    <button class="cta-button outline">Экономия 30%</button>
+                    <button class="cta-button outline" id="annual-plan-btn">Экономия 30%</button>
                 </div>
             </div>
         </div>
@@ -258,6 +263,24 @@
                         <p>Основные: КПТ (CBT), техники осознанности, дыхательные практики, методы рефрейминга и когнитивного реструктурирования.</p>
                     </div>
                 </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>Как отменить подписку?</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Вы можете отменить подписку в любое время в разделе "Мой аккаунт". Доступ сохранится до конца оплаченного периода.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>Есть ли мобильное приложение?</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Да, MindBot доступен как PWA (прогрессивное веб-приложение), которое можно установить на главный экран вашего устройства.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -288,6 +311,9 @@
             <div class="chat-input">
                 <input type="text" id="user-input" placeholder="Напишите сообщение..." autocomplete="off">
                 <button id="send-button"><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <div class="chat-limit" id="chat-limit">
+                <span>Осталось сегодня: <span id="messages-left">3</span> из 3 сообщений</span>
             </div>
         </div>
     </div>
@@ -333,6 +359,62 @@
                 </div>
                 <button type="submit" class="cta-button">Отправить отзыв</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно подписки -->
+    <div class="modal" id="subscribe-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 id="subscribe-title">Оформление подписки</h3>
+            <div class="subscribe-content" id="subscribe-content">
+                <!-- Контент будет динамически загружаться -->
+            </div>
+            <form id="payment-form" style="display: none;">
+                <div class="form-group">
+                    <label for="card-number">Номер карты</label>
+                    <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="card-expiry">Срок действия</label>
+                        <input type="text" id="card-expiry" placeholder="MM/ГГ" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="card-cvc">CVC</label>
+                        <input type="text" id="card-cvc" placeholder="CVC" maxlength="3">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="card-name">Имя на карте</label>
+                    <input type="text" id="card-name" placeholder="Имя Фамилия">
+                </div>
+                <button type="submit" class="cta-button" id="confirm-payment">Оплатить</button>
+            </form>
+            <div class="payment-success" id="payment-success" style="display: none;">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3>Оплата прошла успешно!</h3>
+                <p>Спасибо за подписку. Теперь вам доступны все премиум-функции MindBot.</p>
+                <button class="cta-button" id="close-success">Понятно</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно лимита -->
+    <div class="modal" id="limit-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="limit-icon">
+                <i class="fas fa-gem"></i>
+            </div>
+            <h3>Лимит сообщений исчерпан</h3>
+            <p>Вы использовали все бесплатные сообщения на сегодня. Для неограниченного общения оформите подписку.</p>
+            <div class="limit-actions">
+                <button class="cta-button" id="upgrade-plan">Оформить подписку</button>
+                <button class="cta-button outline" id="close-limit">Продолжить бесплатно завтра</button>
+            </div>
         </div>
     </div>
 
