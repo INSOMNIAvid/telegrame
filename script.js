@@ -45,6 +45,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const accountBtn = document.getElementById('account-btn');
     const dropdownContent = document.getElementById('dropdown-content');
     const profileLink = document.getElementById('profile-link');
+    const loginLink = document.getElementById('login-link');
+    const registerLink = document.getElementById('register-link');
     const subscriptionLink = document.getElementById('subscription-link');
     const logoutLink = document.getElementById('logout-link');
     const profileModal = document.getElementById('profile-modal');
@@ -54,6 +56,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const subscriptionEndContainer = document.getElementById('subscription-end-container');
     const upgradeProfileBtn = document.getElementById('upgrade-profile-btn');
     const editProfileBtn = document.getElementById('edit-profile-btn');
+    const loginModal = document.getElementById('login-modal');
+    const loginForm = document.getElementById('login-form');
+    const registerModal = document.getElementById('register-modal');
+    const registerForm = document.getElementById('register-form');
+    const showRegisterLink = document.getElementById('show-register');
+    const showLoginLink = document.getElementById('show-login');
+    const editProfileModal = document.getElementById('edit-profile-modal');
+    const editProfileForm = document.getElementById('edit-profile-form');
+    const cancelEditBtn = document.getElementById('cancel-edit');
+    const privacyPolicyBtn = document.getElementById('privacy-policy-btn');
+    const termsOfUseBtn = document.getElementById('terms-of-use-btn');
+    const privacyPolicyModal = document.getElementById('privacy-policy-modal');
+    const termsOfUseModal = document.getElementById('terms-of-use-modal');
+    const premiumFeaturesBtn = document.getElementById('premium-features-btn');
 
     // ========== Состояние приложения ==========
     let chatHistory = JSON.parse(localStorage.getItem('mindbot_chat_history')) || [];
@@ -67,6 +83,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let trialEndDate = localStorage.getItem('mindbot_trial_end');
     let totalMessages = parseInt(localStorage.getItem('mindbot_total_messages')) || 0;
     let signupDate = localStorage.getItem('mindbot_signup_date') || new Date().toLocaleDateString();
+    let isLoggedIn = localStorage.getItem('mindbot_logged_in') === 'true';
+    let currentUser = JSON.parse(localStorage.getItem('mindbot_current_user')) || null;
 
     // ========== Инициализация ==========
     initModals();
@@ -76,6 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
     checkMessageLimit();
     updatePremiumFeaturesVisibility();
+    checkLoginStatus();
 
     // ========== Функции инициализации ==========
     
@@ -110,14 +129,19 @@ document.addEventListener('DOMContentLoaded', function() {
             userStatus.classList.add('premium');
             chatLimit.style.display = 'none';
         } else {
-            userStatus.textContent = 'Гость';
+            userStatus.textContent = isLoggedIn ? (currentUser ? currentUser.name : 'Пользователь') : 'Гость';
             userStatus.classList.remove('premium');
             chatLimit.style.display = 'block';
+        }
+        
+        // Обновляем кнопку в профиле
+        if (upgradeProfileBtn) {
+            upgradeProfileBtn.style.display = isPremium ? 'none' : 'block';
         }
     }
 
     function updatePremiumFeaturesVisibility() {
-        const premiumFeatures = document.querySelectorAll('.premium-only');
+        const premiumFeatures = document.querySelectorAll('.premium-only, .premium-feature');
         premiumFeatures.forEach(feature => {
             if (isPremium) {
                 feature.style.display = 'block';
@@ -125,6 +149,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 feature.style.display = 'none';
             }
         });
+    }
+
+    function checkLoginStatus() {
+        if (isLoggedIn) {
+            // Показываем кнопку выхода и скрываем вход/регистрацию
+            if (logoutLink) logoutLink.style.display = 'block';
+            if (loginLink) loginLink.style.display = 'none';
+            if (registerLink) registerLink.style.display = 'none';
+            if (profileLink) profileLink.style.display = 'block';
+            if (subscriptionLink) subscriptionLink.style.display = 'block';
+        } else {
+            // Показываем кнопки входа/регистрации и скрываем выход
+            if (logoutLink) logoutLink.style.display = 'none';
+            if (loginLink) loginLink.style.display = 'block';
+            if (registerLink) registerLink.style.display = 'block';
+            if (profileLink) profileLink.style.display = 'block';
+            if (subscriptionLink) subscriptionLink.style.display = 'block';
+        }
     }
 
     function setupAnimations() {
@@ -161,6 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
         moodSelector.addEventListener('click', () => moodModal.style.display = 'flex');
         watchDemoBtn.addEventListener('click', () => demoVideo.scrollIntoView({ behavior: 'smooth' }));
         addTestimonialBtn.addEventListener('click', () => testimonialModal.style.display = 'flex');
+        premiumFeaturesBtn.addEventListener('click', () => showSubscribeModal('premium'));
         
         // Закрытие модальных окон
         closeModalBtns.forEach(btn => {
@@ -226,12 +269,40 @@ document.addEventListener('DOMContentLoaded', function() {
         // Аккаунт и профиль
         accountBtn.addEventListener('click', toggleDropdown);
         profileLink.addEventListener('click', showProfileModal);
+        loginLink.addEventListener('click', () => {
+            loginModal.style.display = 'flex';
+            dropdownContent.style.display = 'none';
+        });
+        registerLink.addEventListener('click', () => {
+            registerModal.style.display = 'flex';
+            dropdownContent.style.display = 'none';
+        });
         subscriptionLink.addEventListener('click', () => {
             showSubscribeModal('premium');
             dropdownContent.style.display = 'none';
         });
         logoutLink.addEventListener('click', logout);
         editProfileBtn.addEventListener('click', editProfile);
+        cancelEditBtn.addEventListener('click', () => editProfileModal.style.display = 'none');
+        
+        // Формы входа и регистрации
+        loginForm.addEventListener('submit', handleLogin);
+        registerForm.addEventListener('submit', handleRegister);
+        editProfileForm.addEventListener('submit', handleEditProfile);
+        showRegisterLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginModal.style.display = 'none';
+            registerModal.style.display = 'flex';
+        });
+        showLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerModal.style.display = 'none';
+            loginModal.style.display = 'flex';
+        });
+        
+        // Политика конфиденциальности и условия
+        privacyPolicyBtn.addEventListener('click', () => privacyPolicyModal.style.display = 'flex');
+        termsOfUseBtn.addEventListener('click', () => termsOfUseModal.style.display = 'flex');
         
         // Плавная прокрутка для якорей
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -731,6 +802,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function updateProfileInfo() {
+        document.getElementById('profile-name').textContent = currentUser ? currentUser.name : 'Гость';
         document.getElementById('messages-used').textContent = totalMessages;
         document.getElementById('signup-date').textContent = signupDate;
         
@@ -752,16 +824,141 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function logout() {
-        if (confirm('Вы уверены, что хотите выйти?')) {
-            // В реальном приложении здесь будет выход из системы
-            alert('Вы вышли из системы');
-            dropdownContent.style.display = 'none';
+    function handleLogin(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        
+        // В реальном приложении здесь будет проверка на сервере
+        const users = JSON.parse(localStorage.getItem('mindbot_users')) || [];
+        const user = users.find(u => u.email === email && u.password === password);
+        
+        if (user) {
+            isLoggedIn = true;
+            currentUser = user;
+            localStorage.setItem('mindbot_logged_in', 'true');
+            localStorage.setItem('mindbot_current_user', JSON.stringify(user));
+            
+            alert('Вы успешно вошли в систему!');
+            loginModal.style.display = 'none';
+            checkLoginStatus();
+            updateUserStatus();
+            updateProfileInfo();
+        } else {
+            alert('Неверный email или пароль');
+        }
+    }
+    
+    function handleRegister(e) {
+        e.preventDefault();
+        
+        const name = document.getElementById('register-name').value;
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+        const confirmPassword = document.getElementById('register-confirm').value;
+        
+        if (password !== confirmPassword) {
+            alert('Пароли не совпадают');
+            return;
+        }
+        
+        // В реальном приложении здесь будет регистрация на сервере
+        const users = JSON.parse(localStorage.getItem('mindbot_users')) || [];
+        
+        if (users.some(u => u.email === email)) {
+            alert('Пользователь с таким email уже существует');
+            return;
+        }
+        
+        const newUser = {
+            id: Date.now(),
+            name,
+            email,
+            password,
+            signupDate: new Date().toLocaleDateString()
+        };
+        
+        users.push(newUser);
+        localStorage.setItem('mindbot_users', JSON.stringify(users));
+        
+        isLoggedIn = true;
+        currentUser = newUser;
+        localStorage.setItem('mindbot_logged_in', 'true');
+        localStorage.setItem('mindbot_current_user', JSON.stringify(newUser));
+        signupDate = newUser.signupDate;
+        localStorage.setItem('mindbot_signup_date', signupDate);
+        
+        alert('Регистрация прошла успешно!');
+        registerModal.style.display = 'none';
+        checkLoginStatus();
+        updateUserStatus();
+        updateProfileInfo();
+    }
+    
+    function handleEditProfile(e) {
+        e.preventDefault();
+        
+        const name = document.getElementById('edit-name').value;
+        const email = document.getElementById('edit-email').value;
+        const password = document.getElementById('edit-password').value;
+        const confirmPassword = document.getElementById('edit-confirm').value;
+        
+        if (password && password !== confirmPassword) {
+            alert('Пароли не совпадают');
+            return;
+        }
+        
+        // Обновляем данные пользователя
+        const users = JSON.parse(localStorage.getItem('mindbot_users')) || [];
+        const userIndex = users.findIndex(u => u.id === currentUser.id);
+        
+        if (userIndex !== -1) {
+            users[userIndex].name = name;
+            users[userIndex].email = email;
+            
+            if (password) {
+                users[userIndex].password = password;
+            }
+            
+            localStorage.setItem('mindbot_users', JSON.stringify(users));
+            currentUser = users[userIndex];
+            localStorage.setItem('mindbot_current_user', JSON.stringify(currentUser));
+            
+            alert('Профиль успешно обновлен!');
+            editProfileModal.style.display = 'none';
+            updateUserStatus();
+            updateProfileInfo();
         }
     }
     
     function editProfile() {
-        alert('В реальном приложении здесь будет форма редактирования профиля');
+        if (!isLoggedIn) {
+            alert('Пожалуйста, войдите в систему');
+            return;
+        }
+        
+        document.getElementById('edit-name').value = currentUser.name;
+        document.getElementById('edit-email').value = currentUser.email;
+        document.getElementById('edit-password').value = '';
+        document.getElementById('edit-confirm').value = '';
+        
+        profileModal.style.display = 'none';
+        editProfileModal.style.display = 'flex';
+    }
+    
+    function logout() {
+        if (confirm('Вы уверены, что хотите выйти?')) {
+            isLoggedIn = false;
+            currentUser = null;
+            localStorage.setItem('mindbot_logged_in', 'false');
+            localStorage.removeItem('mindbot_current_user');
+            
+            alert('Вы вышли из системы');
+            dropdownContent.style.display = 'none';
+            checkLoginStatus();
+            updateUserStatus();
+        }
     }
 
     // Проверяем пробный период при загрузке
