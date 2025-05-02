@@ -28,27 +28,17 @@
             <button class="cta-button" id="start-chat">
                 <i class="fas fa-comment-dots"></i> Начать чат
             </button>
-            <div class="user-profile" id="user-profile">
-                <div class="user-avatar" id="user-avatar">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div class="profile-menu" id="profile-menu">
-                    <div class="profile-header">
-                        <div class="user-avatar big">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="user-info">
-                            <h4 id="profile-username">Гость</h4>
-                            <span class="user-status" id="user-status-badge">Бесплатный аккаунт</span>
-                        </div>
-                    </div>
-                    <div class="profile-actions">
-                        <a href="#" id="profile-link"><i class="fas fa-user-cog"></i> Профиль</a>
-                        <a href="#" id="subscription-link"><i class="fas fa-crown"></i> Подписка</a>
-                        <a href="#" id="mood-diary-link"><i class="fas fa-book"></i> Дневник настроения</a>
-                        <a href="#" id="cbt-programs-link"><i class="fas fa-brain"></i> Программы CBT</a>
-                        <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Выйти</a>
-                    </div>
+            <div class="user-status" id="user-status">
+                <span>Гость</span>
+            </div>
+            <div class="account-dropdown" id="account-dropdown">
+                <button class="account-btn" id="account-btn">
+                    <i class="fas fa-user-circle"></i>
+                </button>
+                <div class="dropdown-content" id="dropdown-content">
+                    <a href="#" id="profile-link">Профиль</a>
+                    <a href="#" id="subscription-link">Подписка</a>
+                    <a href="#" id="logout-link">Выйти</a>
                 </div>
             </div>
         </div>
@@ -92,35 +82,35 @@
                     <p>Общайтесь без регистрации. Ваши данные никогда не сохраняются.</p>
                     <button class="feature-btn">Подробнее</button>
                 </div>
-                <div class="feature-card premium-feature" id="cbt-techniques-card">
+                <div class="feature-card" id="cbt-techniques-card">
                     <div class="feature-icon"><i class="fas fa-brain"></i></div>
-                    <h3>Техники CBT <span class="premium-badge">Премиум</span></h3>
-                    <p>Полный доступ ко всем техникам когнитивно-поведенческой терапии.</p>
+                    <h3>Техники CBT</h3>
+                    <p>Помогаем выявлять и менять негативные мыслительные шаблоны.</p>
                     <button class="feature-btn">Подробнее</button>
                 </div>
-                <div class="feature-card premium-feature" id="mood-diary-card">
+                <div class="feature-card" id="mood-diary-card">
                     <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
-                    <h3>Дневник настроения <span class="premium-badge">Премиум</span></h3>
-                    <p>Расширенный анализ вашего эмоционального состояния с графиками.</p>
+                    <h3>Дневник настроения</h3>
+                    <p>Отслеживайте прогресс с помощью визуализации вашего состояния.</p>
                     <button class="feature-btn">Подробнее</button>
                 </div>
-                <div class="feature-card premium-feature" id="personal-programs-card">
-                    <div class="feature-icon"><i class="fas fa-clipboard-list"></i></div>
-                    <h3>Персональные программы <span class="premium-badge">Премиум</span></h3>
-                    <p>Индивидуальные планы терапии, адаптированные под ваши потребности.</p>
-                    <button class="feature-btn">Подробнее</button>
-                </div>
-                <div class="feature-card premium-feature" id="deep-analysis-card">
-                    <div class="feature-icon"><i class="fas fa-search"></i></div>
-                    <h3>Подробный анализ <span class="premium-badge">Премиум</span></h3>
-                    <p>Глубокий разбор ваших ситуаций с выявлением паттернов мышления.</p>
-                    <button class="feature-btn">Подробнее</button>
-                </div>
-                <div class="feature-card premium-feature" id="unlimited-sessions-card">
+                <div class="feature-card" id="unlimited-sessions-card">
                     <div class="feature-icon"><i class="fas fa-infinity"></i></div>
-                    <h3>Неограниченные сессии <span class="premium-badge">Премиум</span></h3>
-                    <p>Общайтесь с ботом без ограничений по времени и количеству сообщений.</p>
-                    <button class="feature-btn">Подробнее</button>
+                    <h3>Неограниченные сессии</h3>
+                    <p>Общайтесь сколько угодно без ограничений по времени и сообщениям.</p>
+                    <button class="feature-btn premium-only">Премиум</button>
+                </div>
+                <div class="feature-card" id="personal-programs-card">
+                    <div class="feature-icon"><i class="fas fa-clipboard-list"></i></div>
+                    <h3>Персональные программы</h3>
+                    <p>Индивидуальные планы терапии, адаптированные под ваши потребности.</p>
+                    <button class="feature-btn premium-only">Премиум</button>
+                </div>
+                <div class="feature-card" id="advanced-analysis-card">
+                    <div class="feature-icon"><i class="fas fa-chart-pie"></i></div>
+                    <h3>Подробный анализ</h3>
+                    <p>Глубокий разбор вашего состояния с рекомендациями и статистикой.</p>
+                    <button class="feature-btn premium-only">Премиум</button>
                 </div>
             </div>
         </div>
@@ -156,278 +146,172 @@
         </div>
     </section>
 
-    <!-- Профиль (скрыт по умолчанию) -->
-    <section id="profile" class="profile-section" style="display: none;">
+    <!-- Отзывы -->
+    <section id="testimonials" class="testimonials">
         <div class="container">
-            <div class="profile-header">
-                <button class="back-button" id="back-from-profile">
-                    <i class="fas fa-arrow-left"></i> Назад
-                </button>
-                <h2>Мой профиль</h2>
-            </div>
-            
-            <div class="profile-content">
-                <div class="profile-sidebar">
-                    <div class="profile-card">
-                        <div class="user-avatar large">
-                            <i class="fas fa-user"></i>
-                            <button class="edit-avatar"><i class="fas fa-camera"></i></button>
-                        </div>
-                        <h3 id="profile-name">Гость</h3>
-                        <p class="user-email" id="profile-email">Не авторизован</p>
-                        <div class="user-status-badge" id="profile-status-badge">
-                            <i class="fas fa-user"></i> Бесплатный аккаунт
+            <h2>Отзывы пользователей</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-header">
+                        <div class="user-avatar">А</div>
+                        <div class="user-info">
+                            <h4>Анна, 28 лет</h4>
+                            <div class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
                         </div>
                     </div>
-                    
-                    <nav class="profile-menu">
-                        <a href="#" class="active" data-tab="profile-info"><i class="fas fa-user-circle"></i> Личные данные</a>
-                        <a href="#" data-tab="subscription"><i class="fas fa-crown"></i> Подписка</a>
-                        <a href="#" data-tab="mood-diary"><i class="fas fa-book"></i> Дневник настроения</a>
-                        <a href="#" data-tab="cbt-programs"><i class="fas fa-brain"></i> Программы CBT</a>
-                        <a href="#" data-tab="settings"><i class="fas fa-cog"></i> Настройки</a>
-                    </nav>
+                    <p>"MindBot помог мне справиться с тревожностью. Техники дыхания особенно эффективны!"</p>
                 </div>
-                
-                <div class="profile-main">
-                    <div class="profile-tab active" id="profile-info">
-                        <h3><i class="fas fa-user-circle"></i> Личные данные</h3>
-                        <form id="profile-form">
-                            <div class="form-group">
-                                <label for="profile-username-input">Имя пользователя</label>
-                                <input type="text" id="profile-username-input" placeholder="Введите ваше имя">
-                            </div>
-                            <div class="form-group">
-                                <label for="profile-email-input">Email</label>
-                                <input type="email" id="profile-email-input" placeholder="Введите ваш email">
-                            </div>
-                            <div class="form-group">
-                                <label for="profile-birthday">Дата рождения</label>
-                                <input type="date" id="profile-birthday">
-                            </div>
-                            <div class="form-group">
-                                <label>Пол</label>
-                                <div class="radio-group">
-                                    <label><input type="radio" name="gender" value="male"> Мужской</label>
-                                    <label><input type="radio" name="gender" value="female"> Женский</label>
-                                    <label><input type="radio" name="gender" value="other"> Другой</label>
-                                </div>
-                            </div>
-                            <button type="submit" class="cta-button">Сохранить изменения</button>
-                        </form>
-                    </div>
-                    
-                    <div class="profile-tab" id="subscription">
-                        <h3><i class="fas fa-crown"></i> Подписка</h3>
-                        <div class="subscription-status" id="subscription-status">
-                            <div class="subscription-card">
-                                <div class="subscription-icon">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <div class="subscription-info">
-                                    <h4>Бесплатный аккаунт</h4>
-                                    <p>Ограничение: 3 сообщения в день</p>
-                                    <p>Доступны базовые функции</p>
-                                </div>
-                            </div>
-                            <button class="cta-button" id="upgrade-button">Перейти на Премиум</button>
-                        </div>
-                        
-                        <div class="premium-features">
-                            <h4>Премиум функции:</h4>
-                            <ul>
-                                <li><i class="fas fa-check"></i> Неограниченные сессии с ботом</li>
-                                <li><i class="fas fa-check"></i> Полный доступ к техникам CBT</li>
-                                <li><i class="fas fa-check"></i> Расширенный дневник настроения</li>
-                                <li><i class="fas fa-check"></i> Персональные программы терапии</li>
-                                <li><i class="fas fa-check"></i> Подробный анализ ваших ситуаций</li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <div class="profile-tab" id="mood-diary">
-                        <h3><i class="fas fa-book"></i> Дневник настроения</h3>
-                        <div class="mood-diary-container">
-                            <div class="mood-stats">
-                                <div class="stat-card">
-                                    <h5>Среднее настроение</h5>
-                                    <div class="stat-value">4.2 <span>/10</span></div>
-                                    <div class="stat-progress">
-                                        <div class="progress-bar" style="width: 42%;"></div>
-                                    </div>
-                                </div>
-                                <div class="stat-card">
-                                    <h5>Дней подряд</h5>
-                                    <div class="stat-value">7</div>
-                                    <p>заполнения дневника</p>
-                                </div>
-                                <div class="stat-card">
-                                    <h5>Лучший день</h5>
-                                    <div class="stat-value">8.6 <span>/10</span></div>
-                                    <p>3 дня назад</p>
-                                </div>
-                            </div>
-                            
-                            <div class="mood-graph">
-                                <div class="graph-placeholder">
-                                    <i class="fas fa-chart-line"></i>
-                                    <p>Здесь будет график вашего настроения</p>
-                                </div>
-                            </div>
-                            
-                            <div class="add-mood-entry">
-                                <h4>Добавить запись</h4>
-                                <form id="mood-form">
-                                    <div class="form-group">
-                                        <label>Как вы себя чувствуете?</label>
-                                        <div class="mood-scale">
-                                            <button type="button" class="mood-level" data-level="1">😭</button>
-                                            <button type="button" class="mood-level" data-level="2">😢</button>
-                                            <button type="button" class="mood-level" data-level="3">😐</button>
-                                            <button type="button" class="mood-level" data-level="4">🙂</button>
-                                            <button type="button" class="mood-level active" data-level="5">😊</button>
-                                            <button type="button" class="mood-level" data-level="6">😄</button>
-                                            <button type="button" class="mood-level" data-level="7">🤩</button>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="mood-notes">Заметки</label>
-                                        <textarea id="mood-notes" placeholder="Опишите, что повлияло на ваше настроение"></textarea>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Активности</label>
-                                        <div class="tags-container">
-                                            <span class="tag">Работа</span>
-                                            <span class="tag">Семья</span>
-                                            <span class="tag">Отдых</span>
-                                            <span class="tag">Спорт</span>
-                                            <span class="tag">Друзья</span>
-                                            <span class="tag">Творчество</span>
-                                        </div>
-                                    </div>
-                                    <button type="submit" class="cta-button">Сохранить</button>
-                                </form>
+                <div class="testimonial-card">
+                    <div class="testimonial-header">
+                        <div class="user-avatar">М</div>
+                        <div class="user-info">
+                            <h4>Михаил, 35 лет</h4>
+                            <div class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="profile-tab" id="cbt-programs">
-                        <h3><i class="fas fa-brain"></i> Программы CBT</h3>
-                        <div class="programs-grid">
-                            <div class="program-card">
-                                <div class="program-icon">
-                                    <i class="fas fa-cloud"></i>
-                                </div>
-                                <h4>Работа с тревогой</h4>
-                                <p>10-дневная программа по снижению тревожности</p>
-                                <div class="program-progress">
-                                    <div class="progress-text">Прогресс: 20%</div>
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: 20%;"></div>
-                                    </div>
-                                </div>
-                                <button class="cta-button outline">Продолжить</button>
-                            </div>
-                            
-                            <div class="program-card">
-                                <div class="program-icon">
-                                    <i class="fas fa-sun"></i>
-                                </div>
-                                <h4>Управление стрессом</h4>
-                                <p>14-дневная программа по управлению стрессом</p>
-                                <div class="program-progress">
-                                    <div class="progress-text">Прогресс: 5%</div>
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: 5%;"></div>
-                                    </div>
-                                </div>
-                                <button class="cta-button outline">Начать</button>
-                            </div>
-                            
-                            <div class="program-card locked">
-                                <div class="program-icon">
-                                    <i class="fas fa-heart"></i>
-                                </div>
-                                <h4>Повышение самооценки</h4>
-                                <p>21-дневная программа работы с самооценкой</p>
-                                <div class="program-lock">
-                                    <i class="fas fa-lock"></i> Премиум
-                                </div>
-                            </div>
-                            
-                            <div class="program-card locked">
-                                <div class="program-icon">
-                                    <i class="fas fa-moon"></i>
-                                </div>
-                                <h4>Борьба с бессонницей</h4>
-                                <p>Программа улучшения качества сна</p>
-                                <div class="program-lock">
-                                    <i class="fas fa-lock"></i> Премиум
-                                </div>
+                    <p>"Удобно, что можно общаться анонимно. Хорошая альтернатива, когда нет возможности к психологу."</p>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-header">
+                        <div class="user-avatar">Е</div>
+                        <div class="user-info">
+                            <h4>Елена, 42 года</h4>
+                            <div class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="profile-tab" id="settings">
-                        <h3><i class="fas fa-cog"></i> Настройки</h3>
-                        <form id="settings-form">
-                            <div class="form-group">
-                                <label>Уведомления</label>
-                                <div class="switch-container">
-                                    <label class="switch">
-                                        <input type="checkbox" checked>
-                                        <span class="slider round"></span>
-                                    </label>
-                                    <span>Email-уведомления</span>
-                                </div>
-                                <div class="switch-container">
-                                    <label class="switch">
-                                        <input type="checkbox" checked>
-                                        <span class="slider round"></span>
-                                    </label>
-                                    <span>Напоминания о дневнике</span>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Конфиденциальность</label>
-                                <div class="switch-container">
-                                    <label class="switch">
-                                        <input type="checkbox">
-                                        <span class="slider round"></span>
-                                    </label>
-                                    <span>Анонимный режим</span>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Тема</label>
-                                <div class="theme-selector">
-                                    <button type="button" class="theme-option active" data-theme="light">
-                                        <i class="fas fa-sun"></i> Светлая
-                                    </button>
-                                    <button type="button" class="theme-option" data-theme="dark">
-                                        <i class="fas fa-moon"></i> Темная
-                                    </button>
-                                    <button type="button" class="theme-option" data-theme="system">
-                                        <i class="fas fa-desktop"></i> Системная
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="form-actions">
-                                <button type="button" class="cta-button secondary">Сменить пароль</button>
-                                <button type="button" class="cta-button danger">Удалить аккаунт</button>
-                            </div>
-                        </form>
-                    </div>
+                    <p>"Дневник настроения помогает отслеживать прогресс. За месяц стало значительно легче!"</p>
+                </div>
+            </div>
+            <button class="cta-button" id="add-testimonial">Оставить отзыв</button>
+        </div>
+    </section>
+
+    <!-- Тарифы -->
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <h2>Тарифные планы</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Бесплатный</h3>
+                    <div class="price">0₽ <span>/ месяц</span></div>
+                    <ul class="features-list">
+                        <li><i class="fas fa-check"></i> 1 чат-сессия в день</li>
+                        <li><i class="fas fa-check"></i> Базовые техники CBT</li>
+                        <li><i class="fas fa-check"></i> Дневник настроения</li>
+                        <li><i class="fas fa-times"></i> Персональные программы</li>
+                        <li><i class="fas fa-times"></i> Расширенный анализ</li>
+                    </ul>
+                    <button class="cta-button outline" id="free-plan-btn">Начать бесплатно</button>
+                </div>
+                <div class="pricing-card popular">
+                    <div class="popular-badge">Популярный</div>
+                    <h3>Премиум</h3>
+                    <div class="price">990₽ <span>/ месяц</span></div>
+                    <ul class="features-list">
+                        <li><i class="fas fa-check"></i> Неограниченные сессии</li>
+                        <li><i class="fas fa-check"></i> Все техники CBT</li>
+                        <li><i class="fas fa-check"></i> Расширенный дневник</li>
+                        <li><i class="fas fa-check"></i> Персональные программы</li>
+                        <li><i class="fas fa-check"></i> Подробный анализ</li>
+                    </ul>
+                    <button class="cta-button" id="premium-plan-btn">Попробовать бесплатно 7 дней</button>
+                </div>
+                <div class="pricing-card">
+                    <h3>Годовой</h3>
+                    <div class="price">7,900₽ <span>/ год</span></div>
+                    <ul class="features-list">
+                        <li><i class="fas fa-check"></i> Неограниченные сессии</li>
+                        <li><i class="fas fa-check"></i> Все техники CBT</li>
+                        <li><i class="fas fa-check"></i> Расширенный дневник</li>
+                        <li><i class="fas fa-check"></i> Персональные программы</li>
+                        <li><i class="fas fa-check"></i> 2 консультации с психологом</li>
+                    </ul>
+                    <button class="cta-button outline" id="annual-plan-btn">Экономия 30%</button>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Остальные разделы (отзывы, тарифы, FAQ) остаются без изменений -->
-    <!-- ... -->
+    <!-- FAQ -->
+    <section id="faq" class="faq">
+        <div class="container">
+            <h2>Частые вопросы</h2>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>Как обеспечивается конфиденциальность?</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Все диалоги шифруются и не сохраняются на наших серверах. Мы не запрашиваем личные данные и не передаем информацию третьим лицам.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>Может ли MindBot заменить психолога?</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>MindBot - это инструмент поддержки, но не замена профессиональной помощи. При серьезных проблемах мы рекомендуем обратиться к специалисту.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>Как работает дневник настроения?</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Вы отмечаете свое настроение и эмоции, а система строит графики, помогая отслеживать динамику и выявлять закономерности.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>Какие методики используются?</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Основные: КПТ (CBT), техники осознанности, дыхательные практики, методы рефрейминга и когнитивного реструктурирования.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>Как отменить подписку?</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Вы можете отменить подписку в любое время в разделе "Мой аккаунт". Доступ сохранится до конца оплаченного периода.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>Есть ли мобильное приложение?</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Да, MindBot доступен как PWA (прогрессивное веб-приложение), которое можно установить на главный экран вашего устройства.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Чат-бот -->
     <div class="chat-container" id="chat-container">
@@ -462,8 +346,148 @@
         </div>
     </div>
 
-    <!-- Модальные окна (выбор настроения, отзыв, подписка, лимит) -->
-    <!-- ... -->
+    <!-- Модальное окно выбора настроения -->
+    <div class="modal" id="mood-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Какое у вас сейчас настроение?</h3>
+            <div class="moods">
+                <button class="mood-option" data-mood="happy"><i class="fas fa-laugh-beam"></i> Радость</button>
+                <button class="mood-option" data-mood="sad"><i class="fas fa-sad-tear"></i> Грусть</button>
+                <button class="mood-option" data-mood="angry"><i class="fas fa-angry"></i> Злость</button>
+                <button class="mood-option" data-mood="anxious"><i class="fas fa-flushed"></i> Тревога</button>
+                <button class="mood-option" data-mood="neutral"><i class="fas fa-meh"></i> Нейтральное</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно отзыва -->
+    <div class="modal" id="testimonial-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Оставить отзыв</h3>
+            <form id="testimonial-form">
+                <div class="form-group">
+                    <label for="user-name">Ваше имя (необязательно)</label>
+                    <input type="text" id="user-name" placeholder="Можно указать только имя">
+                </div>
+                <div class="form-group">
+                    <label for="user-rating">Оценка</label>
+                    <div class="rating-input">
+                        <i class="far fa-star" data-rating="1"></i>
+                        <i class="far fa-star" data-rating="2"></i>
+                        <i class="far fa-star" data-rating="3"></i>
+                        <i class="far fa-star" data-rating="4"></i>
+                        <i class="far fa-star" data-rating="5"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="user-testimonial">Ваш отзыв</label>
+                    <textarea id="user-testimonial" placeholder="Поделитесь вашим опытом использования MindBot" required></textarea>
+                </div>
+                <button type="submit" class="cta-button">Отправить отзыв</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно подписки -->
+    <div class="modal" id="subscribe-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 id="subscribe-title">Оформление подписки</h3>
+            <div class="subscribe-content" id="subscribe-content">
+                <!-- Контент будет динамически загружаться -->
+            </div>
+            <form id="payment-form" style="display: none;">
+                <div class="form-group">
+                    <label for="card-number">Номер карты</label>
+                    <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="card-expiry">Срок действия</label>
+                        <input type="text" id="card-expiry" placeholder="MM/ГГ" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="card-cvc">CVC</label>
+                        <input type="text" id="card-cvc" placeholder="CVC" maxlength="3">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="card-name">Имя на карте</label>
+                    <input type="text" id="card-name" placeholder="Имя Фамилия">
+                </div>
+                <button type="submit" class="cta-button" id="confirm-payment">Оплатить</button>
+            </form>
+            <div class="payment-success" id="payment-success" style="display: none;">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3>Оплата прошла успешно!</h3>
+                <p>Спасибо за подписку. Теперь вам доступны все премиум-функции MindBot.</p>
+                <button class="cta-button" id="close-success">Понятно</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно лимита -->
+    <div class="modal" id="limit-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="limit-icon">
+                <i class="fas fa-gem"></i>
+            </div>
+            <h3>Лимит сообщений исчерпан</h3>
+            <p>Вы использовали все бесплатные сообщения на сегодня. Для неограниченного общения оформите подписку.</p>
+            <div class="limit-actions">
+                <button class="cta-button" id="upgrade-plan">Оформить подписку</button>
+                <button class="cta-button outline" id="close-limit">Продолжить бесплатно завтра</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно профиля -->
+    <div class="modal" id="profile-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Мой профиль</h3>
+            <div class="profile-content">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="profile-info">
+                        <h4 id="profile-name">Гость</h4>
+                        <div class="profile-status" id="profile-status">
+                            <span class="status-badge free">Бесплатный аккаунт</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Дата регистрации:</span>
+                        <span class="detail-value" id="signup-date">Сегодня</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Использовано сообщений:</span>
+                        <span class="detail-value" id="messages-used">0</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Подписка:</span>
+                        <span class="detail-value" id="subscription-info">Не активна</span>
+                    </div>
+                    <div class="detail-item" id="subscription-end-container" style="display: none;">
+                        <span class="detail-label">Окончание подписки:</span>
+                        <span class="detail-value" id="subscription-end">-</span>
+                    </div>
+                </div>
+                <div class="profile-actions">
+                    <button class="cta-button outline" id="upgrade-profile-btn">Перейти на Премиум</button>
+                    <button class="cta-button" id="edit-profile-btn">Редактировать профиль</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Подвал -->
     <footer>
