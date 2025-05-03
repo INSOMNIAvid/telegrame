@@ -775,18 +775,14 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             premium: {
                 title: "Премиум подписка",
-                description: " ",
                 description: "Полный доступ ко всем функциям MindBot без ограничений. Платите ежемесячно, отмена в любой момент.",
                 price: "990₽ в месяц",
-                price: " ",
                 button: "Оформить подписку"
             },
             annual: {
                 title: "Годовая подписка",
-                description: " ",
                 description: "Полный доступ на 1 год со скидкой 30%. Экономия 2,970₽ по сравнению с ежемесячной оплатой.",
                 price: "7,900₽ в год",
-                price: " ",
                 button: "Оформить подписку"
             }
         };
