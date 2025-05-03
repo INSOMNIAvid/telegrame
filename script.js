@@ -1,3 +1,18 @@
+// Инициализация Firebase
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const providerGoogle = new firebase.auth.GoogleAuthProvider();
+const providerFacebook = new firebase.auth.FacebookAuthProvider();
+
 document.addEventListener('DOMContentLoaded', function() {
     // ========== Элементы интерфейса ==========
     const chatContainer = document.getElementById('chat-container');
@@ -70,6 +85,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const privacyPolicyModal = document.getElementById('privacy-policy-modal');
     const termsOfUseModal = document.getElementById('terms-of-use-modal');
     const premiumFeaturesBtn = document.getElementById('premium-features-btn');
+    const registerSuggestion = document.getElementById('register-suggestion');
+    const registerBeforePay = document.getElementById('register-before-pay');
+    const continueWithoutRegister = document.getElementById('continue-without-register');
+    const googleLoginBtn = document.getElementById('google-login');
+    const facebookLoginBtn = document.getElementById('facebook-login');
+    const googleRegisterBtn = document.getElementById('google-register');
+    const facebookRegisterBtn = document.getElementById('facebook-register');
 
     // ========== Состояние приложения ==========
     let chatHistory = JSON.parse(localStorage.getItem('mindbot_chat_history')) || [];
@@ -85,6 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let signupDate = localStorage.getItem('mindbot_signup_date') || new Date().toLocaleDateString();
     let isLoggedIn = localStorage.getItem('mindbot_logged_in') === 'true';
     let currentUser = JSON.parse(localStorage.getItem('mindbot_current_user')) || null;
+    let currentPaymentPlan = null;
 
     // ========== Инициализация ==========
     initModals();
@@ -95,6 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
     checkMessageLimit();
     updatePremiumFeaturesVisibility();
     checkLoginStatus();
+    checkAuthState();
 
     // ========== Функции инициализации ==========
     
@@ -141,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updatePremiumFeaturesVisibility() {
-        const premiumFeatures = document.querySelectorAll('.premium-only, .premium-feature');
+        const premiumFeatures = document.querySelectorAll('.premium-feature');
         premiumFeatures.forEach(feature => {
             if (isPremium) {
                 feature.style.display = 'block';
@@ -167,6 +191,39 @@ document.addEventListener('DOMContentLoaded', function() {
             if (profileLink) profileLink.style.display = 'block';
             if (subscriptionLink) subscriptionLink.style.display = 'block';
         }
+    }
+
+    function checkAuthState() {
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // Пользователь вошел в систему
+                isLoggedIn = true;
+                currentUser = {
+                    id: user.uid,
+                    name: user.displayName || 'Пользователь',
+                    email: user.email,
+                    signupDate: new Date(user.metadata.creationTime).toLocaleDateString() || new Date().toLocaleDateString()
+                };
+                
+                localStorage.setItem('mindbot_logged_in', 'true');
+                localStorage.setItem('mindbot_current_user', JSON.stringify(currentUser));
+                signupDate = currentUser.signupDate;
+                localStorage.setItem('mindbot_signup_date', signupDate);
+                
+                updateUserStatus();
+                checkLoginStatus();
+                updateProfileInfo();
+            } else {
+                // Пользователь вышел из системы
+                isLoggedIn = false;
+                currentUser = null;
+                localStorage.setItem('mindbot_logged_in', 'false');
+                localStorage.removeItem('mindbot_current_user');
+                
+                updateUserStatus();
+                checkLoginStatus();
+            }
+        });
     }
 
     function setupAnimations() {
@@ -303,6 +360,24 @@ document.addEventListener('DOMContentLoaded', function() {
         // Политика конфиденциальности и условия
         privacyPolicyBtn.addEventListener('click', () => privacyPolicyModal.style.display = 'flex');
         termsOfUseBtn.addEventListener('click', () => termsOfUseModal.style.display = 'flex');
+        
+        // Предложение регистрации перед оплатой
+        registerBeforePay.addEventListener('click', () => {
+            registerSuggestion.style.display = 'none';
+            registerModal.style.display = 'flex';
+            subscribeModal.style.display = 'none';
+        });
+        
+        continueWithoutRegister.addEventListener('click', () => {
+            registerSuggestion.style.display = 'none';
+            showPaymentForm(currentPaymentPlan);
+        });
+        
+        // Социальный вход
+        googleLoginBtn.addEventListener('click', () => signInWithGoogle());
+        facebookLoginBtn.addEventListener('click', () => signInWithFacebook());
+        googleRegisterBtn.addEventListener('click', () => signInWithGoogle());
+        facebookRegisterBtn.addEventListener('click', () => signInWithFacebook());
         
         // Плавная прокрутка для якорей
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -671,9 +746,9 @@ document.addEventListener('DOMContentLoaded', function() {
             "Все ваши диалоги полностью анонимны. Мы не сохраняем персональные данные и не требуем регистрации. Ваши секреты в безопасности.",
             "Когнитивно-поведенческая терапия (CBT) - золотой стандарт психотерапии. Мы используем проверенные техники для работы с тревогой, депрессией и стрессом.",
             "Отслеживайте ваше эмоциональное состояние с помощью удобного дневника. Анализируйте закономерности и прогресс в терапии.",
-            "Премиум-функция: общайтесь без ограничений по количеству сообщений и времени сессий.",
-            "Премиум-функция: индивидуальные планы терапии, адаптированные под ваши потребности и цели.",
-            "Премиум-функция: глубокий анализ вашего состояния с детальными отчетами и рекомендациями."
+            "Премиум-функция: общайтесь без ограничений по количеству сообщений и времени сессий. Подробнее: вы сможете общаться столько, сколько вам нужно, без ежедневных лимитов.",
+            "Премиум-функция: индивидуальные планы терапии, адаптированные под ваши потребности и цели. Подробнее: программа будет учитывать ваши уникальные запросы и прогресс.",
+            "Премиум-функция: глубокий анализ вашего состояния с детальными отчетами и рекомендациями. Подробнее: вы получите статистику по вашему эмоциональному состоянию и персональные советы."
         ];
         
         alert(`${featureTitles[index]}\n\n${featureDescriptions[index]}`);
@@ -683,8 +758,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function showSubscribeModal(plan) {
         subscribeModal.style.display = 'flex';
-        paymentForm.style.display = 'block';
+        paymentForm.style.display = 'none';
         paymentSuccess.style.display = 'none';
+        subscribeContent.style.display = 'block';
+        registerSuggestion.style.display = 'none';
+        
+        currentPaymentPlan = plan;
         
         const planInfo = {
             free: {
@@ -718,7 +797,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (plan === 'free') {
                 subscribeModal.style.display = 'none';
             } else {
-                showPaymentForm(plan);
+                // Показываем предложение регистрации, если пользователь не авторизован
+                if (!isLoggedIn) {
+                    subscribeContent.style.display = 'none';
+                    registerSuggestion.style.display = 'block';
+                } else {
+                    showPaymentForm(plan);
+                }
             }
         });
     }
@@ -726,6 +811,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function showPaymentForm(plan) {
         subscribeTitle.textContent = `Оплата ${plan === 'annual' ? 'годовой' : 'ежемесячной'} подписки`;
         subscribeContent.style.display = 'none';
+        registerSuggestion.style.display = 'none';
         paymentForm.style.display = 'block';
         
         // Здесь можно добавить обработку разных планов
@@ -830,24 +916,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
         
-        // В реальном приложении здесь будет проверка на сервере
-        const users = JSON.parse(localStorage.getItem('mindbot_users')) || [];
-        const user = users.find(u => u.email === email && u.password === password);
-        
-        if (user) {
-            isLoggedIn = true;
-            currentUser = user;
-            localStorage.setItem('mindbot_logged_in', 'true');
-            localStorage.setItem('mindbot_current_user', JSON.stringify(user));
-            
-            alert('Вы успешно вошли в систему!');
-            loginModal.style.display = 'none';
-            checkLoginStatus();
-            updateUserStatus();
-            updateProfileInfo();
-        } else {
-            alert('Неверный email или пароль');
-        }
+        auth.signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                // Успешный вход
+                const user = userCredential.user;
+                isLoggedIn = true;
+                currentUser = {
+                    id: user.uid,
+                    name: user.displayName || email.split('@')[0],
+                    email: user.email,
+                    signupDate: new Date(user.metadata.creationTime).toLocaleDateString() || new Date().toLocaleDateString()
+                };
+                
+                localStorage.setItem('mindbot_logged_in', 'true');
+                localStorage.setItem('mindbot_current_user', JSON.stringify(currentUser));
+                signupDate = currentUser.signupDate;
+                localStorage.setItem('mindbot_signup_date', signupDate);
+                
+                alert('Вы успешно вошли в систему!');
+                loginModal.style.display = 'none';
+                checkLoginStatus();
+                updateUserStatus();
+                updateProfileInfo();
+            })
+            .catch((error) => {
+                alert('Ошибка входа: ' + error.message);
+            });
     }
     
     function handleRegister(e) {
@@ -863,37 +957,38 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // В реальном приложении здесь будет регистрация на сервере
-        const users = JSON.parse(localStorage.getItem('mindbot_users')) || [];
-        
-        if (users.some(u => u.email === email)) {
-            alert('Пользователь с таким email уже существует');
-            return;
-        }
-        
-        const newUser = {
-            id: Date.now(),
-            name,
-            email,
-            password,
-            signupDate: new Date().toLocaleDateString()
-        };
-        
-        users.push(newUser);
-        localStorage.setItem('mindbot_users', JSON.stringify(users));
-        
-        isLoggedIn = true;
-        currentUser = newUser;
-        localStorage.setItem('mindbot_logged_in', 'true');
-        localStorage.setItem('mindbot_current_user', JSON.stringify(newUser));
-        signupDate = newUser.signupDate;
-        localStorage.setItem('mindbot_signup_date', signupDate);
-        
-        alert('Регистрация прошла успешно!');
-        registerModal.style.display = 'none';
-        checkLoginStatus();
-        updateUserStatus();
-        updateProfileInfo();
+        auth.createUserWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                // Успешная регистрация
+                const user = userCredential.user;
+                
+                // Обновляем имя пользователя
+                return user.updateProfile({
+                    displayName: name
+                }).then(() => {
+                    isLoggedIn = true;
+                    currentUser = {
+                        id: user.uid,
+                        name: name,
+                        email: email,
+                        signupDate: new Date().toLocaleDateString()
+                    };
+                    
+                    localStorage.setItem('mindbot_logged_in', 'true');
+                    localStorage.setItem('mindbot_current_user', JSON.stringify(currentUser));
+                    signupDate = currentUser.signupDate;
+                    localStorage.setItem('mindbot_signup_date', signupDate);
+                    
+                    alert('Регистрация прошла успешно!');
+                    registerModal.style.display = 'none';
+                    checkLoginStatus();
+                    updateUserStatus();
+                    updateProfileInfo();
+                });
+            })
+            .catch((error) => {
+                alert('Ошибка регистрации: ' + error.message);
+            });
     }
     
     function handleEditProfile(e) {
@@ -909,27 +1004,45 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Обновляем данные пользователя
-        const users = JSON.parse(localStorage.getItem('mindbot_users')) || [];
-        const userIndex = users.findIndex(u => u.id === currentUser.id);
+        const user = auth.currentUser;
         
-        if (userIndex !== -1) {
-            users[userIndex].name = name;
-            users[userIndex].email = email;
-            
-            if (password) {
-                users[userIndex].password = password;
-            }
-            
-            localStorage.setItem('mindbot_users', JSON.stringify(users));
-            currentUser = users[userIndex];
-            localStorage.setItem('mindbot_current_user', JSON.stringify(currentUser));
-            
-            alert('Профиль успешно обновлен!');
-            editProfileModal.style.display = 'none';
-            updateUserStatus();
-            updateProfileInfo();
+        if (!user) {
+            alert('Пользователь не авторизован');
+            return;
         }
+        
+        // Обновляем email
+        const promises = [];
+        
+        if (email !== user.email) {
+            promises.push(user.updateEmail(email));
+        }
+        
+        if (name !== user.displayName) {
+            promises.push(user.updateProfile({
+                displayName: name
+            }));
+        }
+        
+        if (password) {
+            promises.push(user.updatePassword(password));
+        }
+        
+        Promise.all(promises)
+            .then(() => {
+                // Обновляем данные пользователя
+                currentUser.name = name;
+                currentUser.email = email;
+                localStorage.setItem('mindbot_current_user', JSON.stringify(currentUser));
+                
+                alert('Профиль успешно обновлен!');
+                editProfileModal.style.display = 'none';
+                updateUserStatus();
+                updateProfileInfo();
+            })
+            .catch((error) => {
+                alert('Ошибка обновления профиля: ' + error.message);
+            });
     }
     
     function editProfile() {
@@ -949,16 +1062,78 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function logout() {
         if (confirm('Вы уверены, что хотите выйти?')) {
-            isLoggedIn = false;
-            currentUser = null;
-            localStorage.setItem('mindbot_logged_in', 'false');
-            localStorage.removeItem('mindbot_current_user');
-            
-            alert('Вы вышли из системы');
-            dropdownContent.style.display = 'none';
-            checkLoginStatus();
-            updateUserStatus();
+            auth.signOut().then(() => {
+                isLoggedIn = false;
+                currentUser = null;
+                localStorage.setItem('mindbot_logged_in', 'false');
+                localStorage.removeItem('mindbot_current_user');
+                
+                alert('Вы вышли из системы');
+                dropdownContent.style.display = 'none';
+                checkLoginStatus();
+                updateUserStatus();
+            }).catch((error) => {
+                alert('Ошибка при выходе: ' + error.message);
+            });
         }
+    }
+    
+    function signInWithGoogle() {
+        auth.signInWithPopup(providerGoogle)
+            .then((result) => {
+                // Успешный вход
+                const user = result.user;
+                isLoggedIn = true;
+                currentUser = {
+                    id: user.uid,
+                    name: user.displayName || 'Пользователь',
+                    email: user.email,
+                    signupDate: new Date(user.metadata.creationTime).toLocaleDateString() || new Date().toLocaleDateString()
+                };
+                
+                localStorage.setItem('mindbot_logged_in', 'true');
+                localStorage.setItem('mindbot_current_user', JSON.stringify(currentUser));
+                signupDate = currentUser.signupDate;
+                localStorage.setItem('mindbot_signup_date', signupDate);
+                
+                loginModal.style.display = 'none';
+                registerModal.style.display = 'none';
+                checkLoginStatus();
+                updateUserStatus();
+                updateProfileInfo();
+            })
+            .catch((error) => {
+                alert('Ошибка входа через Google: ' + error.message);
+            });
+    }
+    
+    function signInWithFacebook() {
+        auth.signInWithPopup(providerFacebook)
+            .then((result) => {
+                // Успешный вход
+                const user = result.user;
+                isLoggedIn = true;
+                currentUser = {
+                    id: user.uid,
+                    name: user.displayName || 'Пользователь',
+                    email: user.email,
+                    signupDate: new Date(user.metadata.creationTime).toLocaleDateString() || new Date().toLocaleDateString()
+                };
+                
+                localStorage.setItem('mindbot_logged_in', 'true');
+                localStorage.setItem('mindbot_current_user', JSON.stringify(currentUser));
+                signupDate = currentUser.signupDate;
+                localStorage.setItem('mindbot_signup_date', signupDate);
+                
+                loginModal.style.display = 'none';
+                registerModal.style.display = 'none';
+                checkLoginStatus();
+                updateUserStatus();
+                updateProfileInfo();
+            })
+            .catch((error) => {
+                alert('Ошибка входа через Facebook: ' + error.message);
+            });
     }
 
     // Проверяем пробный период при загрузке
