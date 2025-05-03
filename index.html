@@ -10,9 +10,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <!-- Lottie для анимированных аватаров -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <!-- Chart.js для графиков настроения -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <!-- Шапка -->
@@ -70,13 +75,11 @@
             </div>
         </div>
         <div class="hero-image">
-            <div class="hero-illustration">
-                <i class="fas fa-robot"></i>
-                <div class="circles">
-                    <div class="circle circle-1"></div>
-                    <div class="circle circle-2"></div>
-                    <div class="circle circle-3"></div>
-                </div>
+            <div id="bot-animation" class="hero-illustration"></div>
+            <div class="circles">
+                <div class="circle circle-1"></div>
+                <div class="circle circle-2"></div>
+                <div class="circle circle-3"></div>
             </div>
         </div>
     </section>
@@ -128,6 +131,18 @@
                     <div class="feature-icon"><i class="fas fa-chart-pie"></i></div>
                     <h3>Подробный анализ</h3>
                     <p>Глубокий разбор вашего состояния с рекомендациями и статистикой.</p>
+                    <button class="feature-btn yellow-btn">Подробнее</button>
+                </div>
+                <div class="feature-card premium-feature" id="voice-chat-card">
+                    <div class="feature-icon"><i class="fas fa-microphone"></i></div>
+                    <h3>Голосовой чат</h3>
+                    <p>Общайтесь голосом с помощью технологии распознавания речи.</p>
+                    <button class="feature-btn yellow-btn">Подробнее</button>
+                </div>
+                <div class="feature-card premium-feature" id="meditation-library-card">
+                    <div class="feature-icon"><i class="fas fa-spa"></i></div>
+                    <h3>Библиотека медитаций</h3>
+                    <p>Доступ к коллекции управляемых медитаций и техник релаксации.</p>
                     <button class="feature-btn yellow-btn">Подробнее</button>
                 </div>
             </div>
@@ -230,6 +245,7 @@
                         <li><i class="fas fa-check"></i> Дневник настроения</li>
                         <li><i class="fas fa-times"></i> Персональные программы</li>
                         <li><i class="fas fa-times"></i> Расширенный анализ</li>
+                        <li><i class="fas fa-times"></i> Голосовой чат</li>
                     </ul>
                     <button class="cta-button outline" id="free-plan-btn">Начать бесплатно</button>
                 </div>
@@ -243,6 +259,7 @@
                         <li><i class="fas fa-check"></i> Расширенный дневник</li>
                         <li><i class="fas fa-check"></i> Персональные программы</li>
                         <li><i class="fas fa-check"></i> Подробный анализ</li>
+                        <li><i class="fas fa-check"></i> Голосовой чат</li>
                     </ul>
                     <button class="cta-button" id="premium-plan-btn">Попробовать бесплатно 7 дней</button>
                 </div>
@@ -255,6 +272,7 @@
                         <li><i class="fas fa-check"></i> Расширенный дневник</li>
                         <li><i class="fas fa-check"></i> Персональные программы</li>
                         <li><i class="fas fa-check"></i> 2 консультации с психологом</li>
+                        <li><i class="fas fa-check"></i> Голосовой чат и медитации</li>
                     </ul>
                     <button class="cta-button outline" id="annual-plan-btn">Экономия 30%</button>
                 </div>
@@ -329,11 +347,13 @@
     <div class="chat-container" id="chat-container">
         <div class="chat-header">
             <div class="chat-title">
-                <i class="fas fa-robot"></i> MindBot
+                <div id="chat-bot-avatar"></div>
+                MindBot
                 <span class="typing-indicator" id="typing-indicator">печатает...</span>
             </div>
             <div class="chat-actions">
                 <button id="mood-selector" title="Выбрать настроение"><i class="fas fa-smile"></i></button>
+                <button id="voice-input-btn" title="Голосовой ввод"><i class="fas fa-microphone"></i></button>
                 <button id="clear-chat" title="Очистить историю"><i class="fas fa-trash"></i></button>
                 <button id="close-chat" title="Закрыть"><i class="fas fa-times"></i></button>
             </div>
@@ -500,6 +520,10 @@
                         <span class="detail-label">Окончание подписки:</span>
                         <span class="detail-value" id="subscription-end">-</span>
                     </div>
+                </div>
+                <div class="profile-stats">
+                    <h4>Статистика настроения</h4>
+                    <canvas id="mood-chart"></canvas>
                 </div>
                 <div class="profile-actions">
                     <button class="cta-button" id="edit-profile-btn">Редактировать профиль</button>
@@ -677,7 +701,7 @@
                 <h4>3. Защита данных</h4>
                 <p>Мы используем современные методы шифрования и защиты данных, включая:</p>
                 <ul>
-                    <li>SSL-шифрование всех передаваемых данных</li>
+                    <li>End-to-end шифрование всех передаваемых данных</li>
                     <li>Хранение данных на защищенных серверах</li>
                     <li>Регулярные проверки безопасности</li>
                 </ul>
