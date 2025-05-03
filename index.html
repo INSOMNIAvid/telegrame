@@ -10,6 +10,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
 </head>
 <body>
     <!-- Шапка -->
@@ -113,19 +116,19 @@
                     <div class="feature-icon"><i class="fas fa-infinity"></i></div>
                     <h3>Неограниченные сессии</h3>
                     <p>Общайтесь сколько угодно без ограничений по времени и сообщениям.</p>
-                    <button class="feature-btn premium-only">Премиум</button>
+                    <button class="feature-btn yellow-btn">Подробнее</button>
                 </div>
                 <div class="feature-card premium-feature" id="personal-programs-card">
                     <div class="feature-icon"><i class="fas fa-clipboard-list"></i></div>
                     <h3>Персональные программы</h3>
                     <p>Индивидуальные планы терапии, адаптированные под ваши потребности.</p>
-                    <button class="feature-btn premium-only">Премиум</button>
+                    <button class="feature-btn yellow-btn">Подробнее</button>
                 </div>
                 <div class="feature-card premium-feature" id="advanced-analysis-card">
                     <div class="feature-icon"><i class="fas fa-chart-pie"></i></div>
                     <h3>Подробный анализ</h3>
                     <p>Глубокий разбор вашего состояния с рекомендациями и статистикой.</p>
-                    <button class="feature-btn premium-only">Премиум</button>
+                    <button class="feature-btn yellow-btn">Подробнее</button>
                 </div>
             </div>
         </div>
@@ -407,6 +410,14 @@
             <div class="subscribe-content" id="subscribe-content">
                 <!-- Контент будет динамически загружаться -->
             </div>
+            <div class="register-suggestion" id="register-suggestion" style="display: none;">
+                <h4>Рекомендуем зарегистрироваться</h4>
+                <p>После регистрации вы сможете использовать премиум-функции на разных устройствах и сохраните доступ к истории чатов.</p>
+                <div class="suggestion-buttons">
+                    <button class="cta-button" id="register-before-pay">Зарегистрироваться</button>
+                    <button class="cta-button outline" id="continue-without-register">Продолжить без регистрации</button>
+                </div>
+            </div>
             <form id="payment-form" style="display: none;">
                 <div class="form-group">
                     <label for="card-number">Номер карты</label>
@@ -475,7 +486,7 @@
                 <div class="profile-details">
                     <div class="detail-item">
                         <span class="detail-label">Дата регистрации:</span>
-                        <span class="detail-value" id="signup-date">Сегодня</span>
+                        <span class="detail-value" id="signup-date">-</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Использовано сообщений:</span>
@@ -503,6 +514,17 @@
         <div class="modal-content">
             <span class="close-modal">&times;</span>
             <h3>Вход в аккаунт</h3>
+            <div class="social-login">
+                <button class="social-btn google" id="google-login">
+                    <i class="fab fa-google"></i> Войти через Google
+                </button>
+                <button class="social-btn facebook" id="facebook-login">
+                    <i class="fab fa-facebook-f"></i> Войти через Facebook
+                </button>
+            </div>
+            <div class="divider">
+                <span>или</span>
+            </div>
             <form id="login-form">
                 <div class="form-group">
                     <label for="login-email">Email</label>
@@ -523,6 +545,17 @@
         <div class="modal-content">
             <span class="close-modal">&times;</span>
             <h3>Регистрация</h3>
+            <div class="social-login">
+                <button class="social-btn google" id="google-register">
+                    <i class="fab fa-google"></i> Зарегистрироваться через Google
+                </button>
+                <button class="social-btn facebook" id="facebook-register">
+                    <i class="fab fa-facebook-f"></i> Зарегистрироваться через Facebook
+                </button>
+            </div>
+            <div class="divider">
+                <span>или</span>
+            </div>
             <form id="register-form">
                 <div class="form-group">
                     <label for="register-name">Имя</label>
