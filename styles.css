@@ -72,25 +72,7 @@ button {
     40% { transform: translateY(-10px); }
     60% { transform: translateY(-5px); }
 }
-/* Добавьте эти стили в ваш CSS файл */
-.yellow-outline-btn {
-    background: transparent;
-    color: var(--popular-color);
-    border: 2px solid var(--popular-color);
-}
 
-.yellow-outline-btn:hover {
-    background: var(--popular-color);
-    color: var(--text-color);
-}
-
-.subscription-info {
-    font-size: 0.9rem;
-    color: var(--text-light);
-    margin-top: 1rem;
-    text-align: center;
-    line-height: 1.4;
-}
 /* Шапка */
 header {
     display: flex;
@@ -1642,5 +1624,84 @@ footer {
     
     .profile-actions button {
         width: 100%;
+    }
+}
+/* Все предыдущие стили остаются без изменений */
+
+/* Добавляем желтую обводку для кнопок "Подробнее" в премиум возможностях */
+.feature-btn.yellow-btn {
+    border: 2px solid var(--popular-color);
+    background: transparent;
+    color: var(--text-color);
+}
+
+.feature-btn.yellow-btn:hover {
+    background: var(--popular-color);
+    color: var(--text-color);
+}
+
+/* Обновляем стили для кнопки "Как это работает" */
+#watch-demo {
+    cursor: pointer;
+}
+
+/* Улучшаем стили для чат-бота */
+.chat-messages {
+    background-color: #f5f7fa;
+    padding: 1.5rem;
+}
+
+.bot-message {
+    background-color: #ffffff;
+    border-radius: 15px;
+    border-bottom-left-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    max-width: 80%;
+    padding: 0.8rem 1rem;
+    margin-right: auto;
+}
+
+.user-message {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 15px;
+    border-bottom-right-radius: 5px;
+    max-width: 80%;
+    padding: 0.8rem 1rem;
+    margin-left: auto;
+}
+
+/* Обновляем стили для премиум функций */
+.premium-feature {
+    border: 2px solid var(--popular-color) !important;
+    position: relative;
+}
+
+.premium-feature::after {
+    content: 'Премиум';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--popular-color);
+    color: var(--text-color);
+    padding: 0.2rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
+    .hero-text h1 {
+        font-size: 2rem;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .feature-card {
+        padding: 1.5rem;
     }
 }
