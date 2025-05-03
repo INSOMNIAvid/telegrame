@@ -72,7 +72,25 @@ button {
     40% { transform: translateY(-10px); }
     60% { transform: translateY(-5px); }
 }
+/* Добавьте эти стили в ваш CSS файл */
+.yellow-outline-btn {
+    background: transparent;
+    color: var(--popular-color);
+    border: 2px solid var(--popular-color);
+}
 
+.yellow-outline-btn:hover {
+    background: var(--popular-color);
+    color: var(--text-color);
+}
+
+.subscription-info {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-top: 1rem;
+    text-align: center;
+    line-height: 1.4;
+}
 /* Шапка */
 header {
     display: flex;
