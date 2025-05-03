@@ -319,14 +319,6 @@ nav a:hover::after {
     justify-content: center;
 }
 
-.hero-illustration i {
-    font-size: 6rem;
-    color: var(--primary-color);
-    position: relative;
-    z-index: 2;
-    animation: pulse 2s infinite;
-}
-
 .circles {
     position: absolute;
     width: 100%;
@@ -472,13 +464,15 @@ nav a:hover::after {
     background: var(--primary-color);
 }
 
-.feature-btn.premium-only {
-    background: var(--popular-color);
+.feature-btn.yellow-btn {
+    border: 2px solid var(--popular-color);
+    background: transparent;
     color: var(--text-color);
 }
 
-.feature-btn.premium-only:hover {
-    background: #fdd835;
+.feature-btn.yellow-btn:hover {
+    background: var(--popular-color);
+    color: var(--text-color);
 }
 
 /* Как это работает */
@@ -795,6 +789,11 @@ nav a:hover::after {
     align-items: center;
     gap: 10px;
     font-weight: 500;
+}
+
+#chat-bot-avatar {
+    width: 30px;
+    height: 30px;
 }
 
 .typing-indicator {
@@ -1201,6 +1200,21 @@ nav a:hover::after {
     font-weight: 500;
 }
 
+.profile-stats {
+    margin-bottom: 2rem;
+}
+
+.profile-stats h4 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+#mood-chart {
+    width: 100%;
+    height: 200px;
+    margin: 0 auto;
+}
+
 .profile-actions {
     display: flex;
     flex-direction: column;
@@ -1476,6 +1490,141 @@ footer {
     max-width: 200px;
 }
 
+/* Темная тема */
+body.dark-theme {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+.dark-theme header {
+    background-color: #1e1e1e;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .logo {
+    color: #bb86fc;
+}
+
+.dark-theme nav a {
+    color: #e0e0e0;
+}
+
+.dark-theme nav a:hover {
+    color: #bb86fc;
+}
+
+.dark-theme .hero {
+    background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+}
+
+.dark-theme .hero-text h1 {
+    color: #ffffff;
+}
+
+.dark-theme .features {
+    background-color: #1e1e1e;
+}
+
+.dark-theme .feature-card {
+    background-color: #2d2d2d;
+    border-color: #3d3d3d;
+    color: #e0e0e0;
+}
+
+.dark-theme .feature-card p {
+    color: #b0b0b0;
+}
+
+.dark-theme .how-it-works {
+    background-color: #2d2d2d;
+}
+
+.dark-theme .step {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+.dark-theme .testimonials {
+    background-color: #1e1e1e;
+}
+
+.dark-theme .testimonial-card {
+    background-color: #2d2d2d;
+    border-color: #3d3d3d;
+}
+
+.dark-theme .testimonial-card p {
+    color: #b0b0b0;
+}
+
+.dark-theme .pricing {
+    background-color: #2d2d2d;
+}
+
+.dark-theme .pricing-card {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+.dark-theme .faq {
+    background-color: #1e1e1e;
+}
+
+.dark-theme .faq-question {
+    background-color: #2d2d2d;
+}
+
+.dark-theme .faq-answer {
+    background-color: #2d2d2d;
+}
+
+.dark-theme .faq-answer p {
+    color: #b0b0b0;
+}
+
+.dark-theme .chat-container {
+    background-color: #2d2d2d;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.dark-theme .chat-messages {
+    background-color: #1e1e1e;
+}
+
+.dark-theme .bot-message {
+    background-color: #3d3d3d;
+    color: #e0e0e0;
+}
+
+.dark-theme .user-message {
+    background-color: #bb86fc;
+    color: #ffffff;
+}
+
+.dark-theme .modal-content {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+}
+
+.dark-theme .form-group input,
+.dark-theme .form-group textarea {
+    background-color: #1e1e1e;
+    border-color: #3d3d3d;
+    color: #e0e0e0;
+}
+
+.dark-theme footer {
+    background-color: #1e1e1e;
+}
+
+.dark-theme .footer-col ul li a {
+    color: #b0b0b0;
+}
+
+.dark-theme .footer-col ul li a:hover {
+    color: #ffffff;
+}
+
 /* Адаптивность */
 @media (max-width: 1024px) {
     .hero {
@@ -1624,84 +1773,5 @@ footer {
     
     .profile-actions button {
         width: 100%;
-    }
-}
-/* Все предыдущие стили остаются без изменений */
-
-/* Добавляем желтую обводку для кнопок "Подробнее" в премиум возможностях */
-.feature-btn.yellow-btn {
-    border: 2px solid var(--popular-color);
-    background: transparent;
-    color: var(--text-color);
-}
-
-.feature-btn.yellow-btn:hover {
-    background: var(--popular-color);
-    color: var(--text-color);
-}
-
-/* Обновляем стили для кнопки "Как это работает" */
-#watch-demo {
-    cursor: pointer;
-}
-
-/* Улучшаем стили для чат-бота */
-.chat-messages {
-    background-color: #f5f7fa;
-    padding: 1.5rem;
-}
-
-.bot-message {
-    background-color: #ffffff;
-    border-radius: 15px;
-    border-bottom-left-radius: 5px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    max-width: 80%;
-    padding: 0.8rem 1rem;
-    margin-right: auto;
-}
-
-.user-message {
-    background-color: var(--primary-color);
-    color: white;
-    border-radius: 15px;
-    border-bottom-right-radius: 5px;
-    max-width: 80%;
-    padding: 0.8rem 1rem;
-    margin-left: auto;
-}
-
-/* Обновляем стили для премиум функций */
-.premium-feature {
-    border: 2px solid var(--popular-color) !important;
-    position: relative;
-}
-
-.premium-feature::after {
-    content: 'Премиум';
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: var(--popular-color);
-    color: var(--text-color);
-    padding: 0.2rem 0.5rem;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: bold;
-}
-
-/* Адаптивные стили */
-@media (max-width: 768px) {
-    .hero-text h1 {
-        font-size: 2rem;
-    }
-    
-    .hero-buttons {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .feature-card {
-        padding: 1.5rem;
     }
 }
