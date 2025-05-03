@@ -3,7 +3,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyAryOAJtH9AxUBBzPTdNMyhapUvSzxAREs",
   authDomain: "edfghj-eea58.firebaseapp.com",
   projectId: "edfghj-eea58",
-  storageBucket: "edfghj-eea58.firebasestorage.app",
+  storageBucket: "edfghj-eea58.appspot.com",
   messagingSenderId: "441274161947",
   appId: "1:441274161947:web:79a344c0121d0d0bfe91be",
   measurementId: "G-7KZCMLECJM"
@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const mainNav = document.getElementById('main-nav');
     const watchDemoBtn = document.getElementById('watch-demo');
-    const demoVideo = document.getElementById('demo-video');
     const addTestimonialBtn = document.getElementById('add-testimonial');
     const testimonialModal = document.getElementById('testimonial-modal');
     const testimonialForm = document.getElementById('testimonial-form');
@@ -124,7 +123,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========== Функции инициализации ==========
     
     function initModals() {
-        // Инициализация всех модальных окон
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', function(e) {
                 if (e.target === this || e.target.classList.contains('close-modal')) {
@@ -135,13 +133,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function initChat() {
-        // Загрузка истории чата
         if (chatHistory.length > 0) {
             chatHistory.forEach(msg => {
                 addMessageToChat(msg.text, msg.sender, msg.timestamp);
             });
         } else {
-            // Приветственное сообщение
             setTimeout(() => {
                 addBotMessage("Привет! Я MindBot — ваш виртуальный психолог. Я здесь, чтобы помочь вам разобраться в ваших чувствах и мыслях. О чём вы хотели бы поговорить?");
             }, 500);
@@ -159,7 +155,6 @@ document.addEventListener('DOMContentLoaded', function() {
             chatLimit.style.display = 'block';
         }
         
-        // Обновляем кнопку в профиле
         if (upgradeProfileBtn) {
             upgradeProfileBtn.style.display = isPremium ? 'none' : 'block';
         }
@@ -178,14 +173,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function checkLoginStatus() {
         if (isLoggedIn) {
-            // Показываем кнопку выхода и скрываем вход/регистрацию
             if (logoutLink) logoutLink.style.display = 'block';
             if (loginLink) loginLink.style.display = 'none';
             if (registerLink) registerLink.style.display = 'none';
             if (profileLink) profileLink.style.display = 'block';
             if (subscriptionLink) subscriptionLink.style.display = 'block';
         } else {
-            // Показываем кнопки входа/регистрации и скрываем выход
             if (logoutLink) logoutLink.style.display = 'none';
             if (loginLink) loginLink.style.display = 'block';
             if (registerLink) registerLink.style.display = 'block';
@@ -197,7 +190,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function checkAuthState() {
         auth.onAuthStateChanged(user => {
             if (user) {
-                // Пользователь вошел в систему
                 isLoggedIn = true;
                 currentUser = {
                     id: user.uid,
@@ -215,7 +207,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 checkLoginStatus();
                 updateProfileInfo();
             } else {
-                // Пользователь вышел из системы
                 isLoggedIn = false;
                 currentUser = null;
                 localStorage.setItem('mindbot_logged_in', 'false');
@@ -228,7 +219,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function setupAnimations() {
-        // Анимации при скролле
         const animateOnScroll = function() {
             const elements = document.querySelectorAll('[data-animate]');
             elements.forEach(element => {
@@ -242,11 +232,10 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         window.addEventListener('scroll', animateOnScroll);
-        animateOnScroll(); // Инициализация при загрузке
+        animateOnScroll();
     }
 
     function setupEventListeners() {
-        // Навигация и общие элементы
         startChatBtn.addEventListener('click', openChat);
         heroChatBtn.addEventListener('click', openChat);
         closeChatBtn.addEventListener('click', closeChat);
@@ -257,32 +246,33 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         mobileMenuBtn.addEventListener('click', toggleMobileMenu);
         
-        // Модальные окна
         moodSelector.addEventListener('click', () => moodModal.style.display = 'flex');
-        watchDemoBtn.addEventListener('click', () => demoVideo.scrollIntoView({ behavior: 'smooth' }));
+        
+        watchDemoBtn.addEventListener('click', function() {
+            document.querySelector('#about').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        });
+        
         addTestimonialBtn.addEventListener('click', () => testimonialModal.style.display = 'flex');
         premiumFeaturesBtn.addEventListener('click', () => showSubscribeModal('premium'));
         
-        // Закрытие модальных окон
         closeModalBtns.forEach(btn => {
             btn.addEventListener('click', function() {
                 this.closest('.modal').style.display = 'none';
             });
         });
         
-        // Выбор настроения
         moodOptions.forEach(option => {
             option.addEventListener('click', selectMood);
         });
         
-        // Быстрые вопросы в чате
         quickQuestions.forEach(question => {
             question.addEventListener('click', function() {
                 addUserMessage(this.textContent);
             });
         });
         
-        // FAQ аккордеон
         faqItems.forEach(item => {
             const question = item.querySelector('.faq-question');
             question.addEventListener('click', () => {
@@ -290,30 +280,25 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        // Рейтинг в форме отзыва
         ratingStars.forEach(star => {
             star.addEventListener('click', setRating);
             star.addEventListener('mouseover', hoverRating);
             star.addEventListener('mouseout', resetRating);
         });
         
-        // Кнопки экстренной помощи
         emergencyBtn.addEventListener('click', showEmergencyHelp);
         emergencyBtnFooter.addEventListener('click', showEmergencyHelp);
         
-        // Кнопки "Подробнее" в карточках возможностей
         featureBtns.forEach((btn, index) => {
             btn.addEventListener('click', () => showFeatureDetails(index));
         });
         
-        // Кнопки подписки
         freePlanBtn.addEventListener('click', () => showSubscribeModal('free'));
         premiumPlanBtn.addEventListener('click', () => showSubscribeModal('premium'));
         annualPlanBtn.addEventListener('click', () => showSubscribeModal('annual'));
         upgradePlanBtn.addEventListener('click', () => showSubscribeModal('premium'));
         upgradeProfileBtn.addEventListener('click', () => showSubscribeModal('premium'));
         
-        // Форма оплаты
         paymentForm.addEventListener('submit', processPayment);
         closeSuccessBtn.addEventListener('click', () => {
             subscribeModal.style.display = 'none';
@@ -321,10 +306,8 @@ document.addEventListener('DOMContentLoaded', function() {
             paymentForm.style.display = 'block';
         });
         
-        // Лимит сообщений
         closeLimitBtn.addEventListener('click', () => limitModal.style.display = 'none');
         
-        // Аккаунт и профиль
         accountBtn.addEventListener('click', toggleDropdown);
         profileLink.addEventListener('click', showProfileModal);
         loginLink.addEventListener('click', () => {
@@ -343,7 +326,6 @@ document.addEventListener('DOMContentLoaded', function() {
         editProfileBtn.addEventListener('click', editProfile);
         cancelEditBtn.addEventListener('click', () => editProfileModal.style.display = 'none');
         
-        // Формы входа и регистрации
         loginForm.addEventListener('submit', handleLogin);
         registerForm.addEventListener('submit', handleRegister);
         editProfileForm.addEventListener('submit', handleEditProfile);
@@ -358,11 +340,9 @@ document.addEventListener('DOMContentLoaded', function() {
             loginModal.style.display = 'flex';
         });
         
-        // Политика конфиденциальности и условия
         privacyPolicyBtn.addEventListener('click', () => privacyPolicyModal.style.display = 'flex');
         termsOfUseBtn.addEventListener('click', () => termsOfUseModal.style.display = 'flex');
         
-        // Предложение регистрации перед оплатой
         registerBeforePay.addEventListener('click', () => {
             registerSuggestion.style.display = 'none';
             registerModal.style.display = 'flex';
@@ -374,13 +354,11 @@ document.addEventListener('DOMContentLoaded', function() {
             showPaymentForm(currentPaymentPlan);
         });
         
-        // Социальный вход
         googleLoginBtn.addEventListener('click', () => signInWithGoogle());
         facebookLoginBtn.addEventListener('click', () => signInWithFacebook());
         googleRegisterBtn.addEventListener('click', () => signInWithGoogle());
         facebookRegisterBtn.addEventListener('click', () => signInWithFacebook());
         
-        // Плавная прокрутка для якорей
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -396,7 +374,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        // Маска для номера карты
         const cardNumber = document.getElementById('card-number');
         if (cardNumber) {
             cardNumber.addEventListener('input', function(e) {
@@ -407,7 +384,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Маска для срока действия
         const cardExpiry = document.getElementById('card-expiry');
         if (cardExpiry) {
             cardExpiry.addEventListener('input', function(e) {
@@ -444,7 +420,6 @@ document.addEventListener('DOMContentLoaded', function() {
         isTyping = true;
         typingIndicator.classList.add('active');
         
-        // Имитация задержки печати
         const words = text.split(' ');
         let typedText = '';
         let i = 0;
@@ -459,7 +434,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                 `;
                 
-                // Удаляем предыдущее сообщение
                 const lastBotMessage = document.querySelector('.message.bot-message:last-child');
                 if (lastBotMessage && !lastBotMessage.innerHTML.includes('</span>')) {
                     chatMessages.removeChild(lastBotMessage);
@@ -473,7 +447,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 typingIndicator.classList.remove('active');
                 isTyping = false;
                 
-                // Сохраняем в историю
                 chatHistory.push({
                     text: text,
                     sender: 'bot',
@@ -498,11 +471,9 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('mindbot_messages_left', messagesLeft);
         }
         
-        // Увеличиваем счетчик сообщений
         totalMessages++;
         localStorage.setItem('mindbot_total_messages', totalMessages);
         
-        // Сохраняем в историю
         chatHistory.push({
             text: text,
             sender: 'user',
@@ -511,11 +482,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         saveChatHistory();
         
-        // Сбрасываем выбранное настроение
         currentMood = null;
         moodSelector.innerHTML = '<i class="fas fa-smile"></i>';
         
-        // Ответ бота
         setTimeout(() => {
             generateBotResponse(text);
         }, 800);
@@ -525,56 +494,80 @@ document.addEventListener('DOMContentLoaded', function() {
         const lowerMsg = userMessage.toLowerCase();
         let response = "";
         
-        // База знаний психолога
+        // Улучшенная база знаний с более сложными алгоритмами ответов
         const knowledgeBase = {
-            'тревож|волн|боюсь': [
-                "Тревога — это естественная реакция. Попробуйте технику '5-4-3-2-1': назовите 5 вещей, которые видите, 4 — которые слышите, 3 — которые чувствуете, 2 — которые нюхаете, 1 — которую можете попробовать на вкус.",
-                "Когда вы чувствуете тревогу, попробуйте заземление: сожмите и разожмите кулаки 5 раз, почувствуйте опору под ногами, сделайте глубокий вдох."
+            'тревож|волн|боюсь|страх|испуг': [
+                "Я понимаю, что тревога может быть очень тяжелым переживанием. Давайте попробуем технику '5-4-3-2-1': назовите 5 вещей, которые видите вокруг, 4 — которые можете потрогать, 3 — которые слышите, 2 — которые чувствуете запах, 1 — которую можете попробовать на вкус. Это поможет вам заземлиться.",
+                "Тревога часто возникает из-за ощущения потери контроля. Попробуйте дыхательное упражнение: вдох на 4 счета, задержка на 4, выдох на 6. Повторите 5 раз. Это активирует парасимпатическую нервную систему."
             ],
-            'груст|плохое настроение|тоск': [
-                "Грусть может быть сигналом, что что-то важно для вас. Может, расскажете подробнее, что произошло?",
-                "Позвольте себе почувствовать грусть. Иногда нам нужно это переживание. Хотите обсудить, что именно вызывает эти чувства?"
+            'груст|плохое настроение|тоск|печаль|уныни': [
+                "Грусть — это естественная эмоция, которая говорит нам о том, что что-то важно для нас. Можете описать, что именно вызывает у вас эти чувства?",
+                "Когда вам грустно, попробуйте технику 'Трех благодарностей': назовите три вещи, за которые вы благодарны сегодня, даже если они кажутся маленькими."
             ],
-            'стресс|устал|нервнич': [
-                "Стресс часто возникает из-за перегрузки. Попробуйте технику 'Квадратного дыхания': вдох на 4 счёта, задержка на 4, выдох на 4, пауза на 4. Повторите 3-5 раз.",
-                "При стрессе помогает метод 'Помпурри': назовите 3 цвета вокруг вас, 3 звука и сделайте 3 глубоких вдоха."
+            'стресс|устал|нервнич|напряжени|перегрузк': [
+                "Стресс — это реакция организма на вызовы. Попробуйте технику 'Помпурри': назовите 3 цвета вокруг вас, 3 звука и сделайте 3 глубоких вдоха. Это поможет переключить внимание.",
+                "При стрессе помогает метод 'Микро-паузы': каждые 30 минут делайте 30-секундный перерыв — потянитесь, посмотрите в окно, сделайте глоток воды."
             ],
-            'спасибо|благодар': [
-                "Всегда рад помочь! Как ещё я могу вас поддержать?",
-                "Спасибо за ваше доверие. Продолжаем работу?"
+            'спасибо|благодар|хорош': [
+                "Всегда рад помочь! Как еще я могу вас поддержать?",
+                "Спасибо за обратную связь! Продолжаем работу?"
             ],
-            'привет|здравств': [
-                "Здравствуйте! О чём вы хотели бы поговорить сегодня?",
-                "Привет! Как ваше настроение?"
+            'привет|здравств|добр|hi|hello': [
+                "Здравствуйте! Как ваше настроение сегодня?",
+                "Привет! О чем вы хотели бы поговорить?"
             ],
-            'как это работает|как пользоваться': [
-                "MindBot использует когнитивно-поведенческую терапию (CBT) и другие проверенные методики. Просто напишите о своей проблеме, и я предложу техники для её решения.",
-                "Работаю так: 1) Вы описываете ситуацию 2) Я анализирую и предлагаю техники 3) Вы применяете их и отслеживаете прогресс в дневнике настроения."
+            'как это работает|как пользоваться|инструкция': [
+                "MindBot использует когнитивно-поведенческую терапию (CBT) и другие проверенные методики. Просто опишите свою ситуацию, и я предложу техники для ее решения. Вы также можете использовать дневник настроения для отслеживания прогресса.",
+                "Алгоритм работы: 1) Вы описываете ситуацию 2) Я анализирую и предлагаю техники 3) Вы применяете их и отслеживаете изменения в дневнике настроения. Премиум-функции дают доступ к расширенным методикам."
             ],
-            'подписка|премиум|оплата': [
-                "Премиум-подписка дает неограниченное количество сообщений, доступ ко всем техникам CBT и расширенному дневнику настроения.",
-                "Вы можете оформить подписку в разделе 'Тарифы'. Доступна ежемесячная и годовая подписка со скидкой 30%."
+            'подписка|премиум|оплат|купить|тариф': [
+                "Премиум подписка дает полный доступ ко всем функциям MindBot без ограничений. Платите ежемесячно (990₽), отмена в любой момент. Годовая подписка (7,900₽) экономит 30%.",
+                "Премиум-функции включают неограниченные сессии, персональные программы терапии и подробный анализ вашего состояния. Первые 7 дней бесплатно для новых пользователей."
+            ],
+            'отношен|партнер|семья|друзья|любов': [
+                "Конфликты в отношениях — это нормально. Попробуйте технику 'Я-высказываний': говорите о своих чувствах, а не обвиняйте. Например: 'Я чувствую... когда... потому что...'",
+                "В отношениях важно уметь слушать. Попробуйте технику активного слушания: повторите слова партнера своими словами и уточните, правильно ли вы поняли."
+            ],
+            'сон|бессонниц|спать|усталос': [
+                "Проблемы со сном часто связаны со стрессом. Попробуйте вечерний ритуал: за час до сна выключите гаджеты, примите теплый душ, выпейте травяной чай.",
+                "Техника '4-7-8' для засыпания: вдох через нос на 4 счета, задержка на 7, выдох через рот на 8. Повторите 4 раза."
+            ],
+            'мотивац|лень|прокрастинац|лень|не хочу': [
+                "Мотивация — это как мускул, ее нужно тренировать. Начните с малого — поставьте таймер на 5 минут и делайте задачу только это время. Чаще всего вы продолжите.",
+                "Попробуйте метод 'Помидора': 25 минут работы, 5 минут отдыха. После 4 циклов — перерыв 15-30 минут. Это помогает сохранять концентрацию."
             ]
         };
 
-        // Поиск подходящего ответа
+        // Поиск подходящего ответа с учетом контекста
+        let foundMatch = false;
         for (const [pattern, responses] of Object.entries(knowledgeBase)) {
             if (new RegExp(pattern).test(lowerMsg)) {
                 response = responses[Math.floor(Math.random() * responses.length)];
+                foundMatch = true;
                 break;
             }
         }
 
-        // Если не найдено совпадений
-        if (!response) {
-            const generalResponses = [
-                "Расскажите подробнее, что вас беспокоит?",
-                "Как это на вас влияет?",
-                "Что обычно помогает вам в таких ситуациях?",
-                "Давайте разберём это вместе. Что вы чувствуете, когда думаете об этом?",
-                "Попробуйте выразить это другими словами. Что для вас самое сложное в этой ситуации?"
-            ];
-            response = generalResponses[Math.floor(Math.random() * generalResponses.length)];
+        // Если не найдено совпадений, используем более сложный алгоритм
+        if (!foundMatch) {
+            const lastUserMessage = chatHistory.length > 1 ? chatHistory[chatHistory.length - 2].text.toLowerCase() : '';
+            
+            if (lastUserMessage.includes('тревож') || lastUserMessage.includes('волн')) {
+                response = "Вы упоминали о тревоге ранее. Как изменилось ваше состояние с тех пор?";
+            } 
+            else if (lastUserMessage.includes('груст') || lastUserMessage.includes('плохое настроение')) {
+                response = "Вы говорили о грусти. Что помогает вам улучшить настроение в таких ситуациях?";
+            }
+            else {
+                const generalResponses = [
+                    "Расскажите подробнее, что вас беспокоит?",
+                    "Как это на вас влияет?",
+                    "Что обычно помогает вам в таких ситуациях?",
+                    "Давайте разберём это вместе. Что вы чувствуете, когда думаете об этом?",
+                    "Попробуйте выразить это другими словами. Что для вас самое сложное в этой ситуации?"
+                ];
+                response = generalResponses[Math.floor(Math.random() * generalResponses.length)];
+            }
         }
         
         // Добавление ответа с учетом настроения
@@ -628,7 +621,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const today = new Date().toDateString();
         
         if (lastReset !== today) {
-            // Сброс лимита на новый день
             messagesLeft = 3;
             localStorage.setItem('mindbot_messages_left', messagesLeft);
             localStorage.setItem('mindbot_last_reset', today);
@@ -703,7 +695,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Обработка формы отзыва
     testimonialForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -715,7 +706,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Здесь можно добавить отправку на сервер
         alert('Спасибо за ваш отзыв!');
         testimonialModal.style.display = 'none';
         testimonialForm.reset();
@@ -775,7 +765,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             premium: {
                 title: "Премиум подписка",
-                description: "Полный доступ ко всем функциям MindBot без ограничений. Платите ежемесячно, отмена в любой момент.",
+                description: "Полный доступ ко всем функциям MindBot без ограничений. Платите ежемесячно, отмена в любой момент. 990₽ в месяц (также и в годовой подписке).",
                 price: "990₽ в месяц",
                 button: "Оформить подписку"
             },
@@ -798,7 +788,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (plan === 'free') {
                 subscribeModal.style.display = 'none';
             } else {
-                // Показываем предложение регистрации, если пользователь не авторизован
                 if (!isLoggedIn) {
                     subscribeContent.style.display = 'none';
                     registerSuggestion.style.display = 'block';
@@ -815,7 +804,6 @@ document.addEventListener('DOMContentLoaded', function() {
         registerSuggestion.style.display = 'none';
         paymentForm.style.display = 'block';
         
-        // Здесь можно добавить обработку разных планов
         document.getElementById('confirm-payment').onclick = function(e) {
             e.preventDefault();
             processPayment(plan);
@@ -823,9 +811,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function processPayment(plan) {
-        // В реальном приложении здесь будет интеграция с платежной системой
-        // Для демонстрации просто имитируем успешную оплату
-        
         const cardNumber = document.getElementById('card-number').value;
         const cardExpiry = document.getElementById('card-expiry').value;
         const cardCvc = document.getElementById('card-cvc').value;
@@ -836,19 +821,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Имитация обработки платежа
         setTimeout(() => {
             paymentForm.style.display = 'none';
             paymentSuccess.style.display = 'block';
             
-            // Активируем премиум доступ
             isPremium = true;
             currentPlan = plan;
             localStorage.setItem('mindbot_premium', 'true');
             localStorage.setItem('mindbot_plan', plan);
             
             if (plan === 'premium' && !trialUsed) {
-                // Активируем пробный период
                 const trialEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
                 trialEndDate = trialEnd.toISOString();
                 localStorage.setItem('mindbot_trial_end', trialEndDate);
@@ -862,7 +844,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1500);
     }
 
-    // Проверка пробного периода
     function checkTrialPeriod() {
         if (trialEndDate && new Date(trialEndDate) < new Date()) {
             isPremium = false;
@@ -919,7 +900,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         auth.signInWithEmailAndPassword(email, password)
             .then((userCredential) => {
-                // Успешный вход
                 const user = userCredential.user;
                 isLoggedIn = true;
                 currentUser = {
@@ -960,10 +940,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         auth.createUserWithEmailAndPassword(email, password)
             .then((userCredential) => {
-                // Успешная регистрация
                 const user = userCredential.user;
                 
-                // Обновляем имя пользователя
                 return user.updateProfile({
                     displayName: name
                 }).then(() => {
@@ -1012,7 +990,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Обновляем email
         const promises = [];
         
         if (email !== user.email) {
@@ -1031,7 +1008,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         Promise.all(promises)
             .then(() => {
-                // Обновляем данные пользователя
                 currentUser.name = name;
                 currentUser.email = email;
                 localStorage.setItem('mindbot_current_user', JSON.stringify(currentUser));
@@ -1082,7 +1058,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function signInWithGoogle() {
         auth.signInWithPopup(providerGoogle)
             .then((result) => {
-                // Успешный вход
                 const user = result.user;
                 isLoggedIn = true;
                 currentUser = {
@@ -1111,7 +1086,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function signInWithFacebook() {
         auth.signInWithPopup(providerFacebook)
             .then((result) => {
-                // Успешный вход
                 const user = result.user;
                 isLoggedIn = true;
                 currentUser = {
