@@ -10,7 +10,7 @@ const firebaseConfig = {
 };
 
 // Hugging Face Inference API configuration
-const HF_API_KEY = "YOUR_HUGGING_FACE_API_KEY"; // Замените на ваш действительный API ключ
+const HF_API_KEY = "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"; // Замените на ваш действительный API ключ
 const HF_API_URL = "https://api-inference.huggingface.ai/models/facebook/blenderbot-400M-distill";
 const HF_API_CHECK_INTERVAL = 30000; // Проверка доступности API каждые 30 секунд
 
