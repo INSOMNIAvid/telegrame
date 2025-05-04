@@ -11,6 +11,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db = firebase.firestore();
 const providerGoogle = new firebase.auth.GoogleAuthProvider();
 const providerFacebook = new firebase.auth.FacebookAuthProvider();
 
@@ -24,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatMessages = document.getElementById('chat-messages');
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
+    const voiceInputBtn = document.getElementById('voice-input-btn');
     const typingIndicator = document.getElementById('typing-indicator');
     const quickQuestions = document.querySelectorAll('.quick-question');
     const moodSelector = document.getElementById('mood-selector');
@@ -92,7 +94,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const facebookLoginBtn = document.getElementById('facebook-login');
     const googleRegisterBtn = document.getElementById('google-register');
     const facebookRegisterBtn = document.getElementById('facebook-register');
-
+    const moodChartCanvas = document.getElementById('mood-chart');
+    const botAnimationContainer = document.getElementById('bot-animation');
+    const chatBotAvatar = document.getElementById('chat-bot-avatar');
+    const themeToggle = document.createElement('button');
+    
     // ========== Состояние приложения ==========
     let chatHistory = JSON.parse(localStorage.getItem('mindbot_chat_history')) || [];
     let currentMood = null;
@@ -108,10 +114,15 @@ document.addEventListener('DOMContentLoaded', function() {
     let isLoggedIn = localStorage.getItem('mindbot_logged_in') === 'true';
     let currentUser = JSON.parse(localStorage.getItem('mindbot_current_user')) || null;
     let currentPaymentPlan = null;
+    let moodData = JSON.parse(localStorage.getItem('mindbot_mood_data')) || [];
+    let recognition;
+    let isDarkTheme = localStorage.getItem('mindbot_dark_theme') === 'true';
+    let moodChart = null;
 
     // ========== Инициализация ==========
     initModals();
     initChat();
+    initAnimations();
     updateUserStatus();
     setupAnimations();
     setupEventListeners();
@@ -119,6 +130,9 @@ document.addEventListener('DOMContentLoaded', function() {
     updatePremiumFeaturesVisibility();
     checkLoginStatus();
     checkAuthState();
+    initVoiceRecognition();
+    initThemeToggle();
+    checkTrialPeriod();
 
     // ========== Функции инициализации ==========
     
@@ -141,6 +155,81 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 addBotMessage("Привет! Я MindBot — ваш виртуальный психолог. Я здесь, чтобы помочь вам разобраться в ваших чувствах и мыслях. О чём вы хотели бы поговорить?");
             }, 500);
+        }
+    }
+
+    function initAnimations() {
+        // Анимация бота в герой-секции
+        if (botAnimationContainer) {
+            const botAnimation = lottie.loadAnimation({
+                container: botAnimationContainer,
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: 'https://assets5.lottiefiles.com/packages/lf20_iv4dsx3q.json'
+            });
+        }
+        
+        // Анимация аватара в чате
+        if (chatBotAvatar) {
+            const avatarAnimation = lottie.loadAnimation({
+                container: chatBotAvatar,
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: 'https://assets1.lottiefiles.com/packages/lf20_5tkzkblw.json'
+            });
+        }
+    }
+
+    function initVoiceRecognition() {
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'ru-RU';
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                sendMessage();
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('Ошибка распознавания речи:', event.error);
+                addBotMessage("Извините, я не смог распознать вашу речь. Попробуйте еще раз или введите текст вручную.");
+            };
+            
+            voiceInputBtn.style.display = 'block';
+        } else {
+            voiceInputBtn.style.display = 'none';
+        }
+    }
+
+    function initThemeToggle() {
+        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        themeToggle.className = 'theme-toggle';
+        themeToggle.title = 'Переключить тему';
+        document.body.insertBefore(themeToggle, document.body.firstChild);
+        
+        if (isDarkTheme) {
+            document.body.classList.add('dark-theme');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+        
+        themeToggle.addEventListener('click', toggleTheme);
+    }
+
+    function toggleTheme() {
+        isDarkTheme = !isDarkTheme;
+        localStorage.setItem('mindbot_dark_theme', isDarkTheme);
+        
+        if (isDarkTheme) {
+            document.body.classList.add('dark-theme');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        } else {
+            document.body.classList.remove('dark-theme');
+            themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
         }
     }
 
@@ -206,6 +295,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateUserStatus();
                 checkLoginStatus();
                 updateProfileInfo();
+                
+                // Загрузка данных настроения из Firestore
+                db.collection('users').doc(user.uid).collection('moodData').get()
+                    .then(snapshot => {
+                        moodData = [];
+                        snapshot.forEach(doc => {
+                            moodData.push(doc.data());
+                        });
+                        localStorage.setItem('mindbot_mood_data', JSON.stringify(moodData));
+                        updateMoodChart();
+                    })
+                    .catch(error => {
+                        console.error("Ошибка загрузки данных настроения:", error);
+                    });
             } else {
                 isLoggedIn = false;
                 currentUser = null;
@@ -247,6 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
         mobileMenuBtn.addEventListener('click', toggleMobileMenu);
         
         moodSelector.addEventListener('click', () => moodModal.style.display = 'flex');
+        voiceInputBtn.addEventListener('click', startVoiceRecognition);
         
         watchDemoBtn.addEventListener('click', function() {
             document.querySelector('#about').scrollIntoView({ 
@@ -482,6 +586,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         saveChatHistory();
         
+        // Сохраняем настроение в историю
+        if (currentMood) {
+            const moodEntry = {
+                date: new Date().toISOString(),
+                mood: currentMood
+            };
+            
+            moodData.push(moodEntry);
+            localStorage.setItem('mindbot_mood_data', JSON.stringify(moodData));
+            
+            // Сохраняем в Firestore для зарегистрированных пользователей
+            if (isLoggedIn && currentUser) {
+                db.collection('users').doc(currentUser.id).collection('moodData').add(moodEntry)
+                    .catch(error => {
+                        console.error("Ошибка сохранения настроения:", error);
+                    });
+            }
+        }
+        
         currentMood = null;
         moodSelector.innerHTML = '<i class="fas fa-smile"></i>';
         
@@ -494,7 +617,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const lowerMsg = userMessage.toLowerCase();
         let response = "";
         
-        // Улучшенная база знаний с более сложными алгоритмами ответов
+        // Улучшенная база знаний с интеграцией GPT API
         const knowledgeBase = {
             'тревож|волн|боюсь|страх|испуг': [
                 "Я понимаю, что тревога может быть очень тяжелым переживанием. Давайте попробуем технику '5-4-3-2-1': назовите 5 вещей, которые видите вокруг, 4 — которые можете потрогать, 3 — которые слышите, 2 — которые чувствуете запах, 1 — которую можете попробовать на вкус. Это поможет вам заземлиться.",
@@ -582,7 +705,26 @@ document.addEventListener('DOMContentLoaded', function() {
             response = moodResponses[currentMood] + response;
         }
         
+        // Для премиум пользователей - более персонализированные ответы
+        if (isPremium) {
+            response = enhanceWithGPT(response, userMessage);
+        }
+        
         addBotMessage(response);
+    }
+
+    function enhanceWithGPT(baseResponse, userMessage) {
+        // Здесь должна быть интеграция с GPT API
+        // В реальном приложении здесь будет запрос к API
+        // Для демонстрации просто улучшим ответ немного
+        
+        const enhancedResponses = {
+            "Расскажите подробнее, что вас беспокоит?": "Я заметил, что вы часто говорите о подобных ситуациях. Можете рассказать подробнее, что именно вас беспокоит в этот раз?",
+            "Как это на вас влияет?": "Из нашего предыдущего общения я помню, что подобные ситуации влияют на ваше настроение. Как вы себя чувствуете сейчас?",
+            "Что обычно помогает вам в таких ситуациях?": "Ранее вы упоминали, что вам помогают [метод]. Хотите попробовать это снова или explore новые техники?"
+        };
+        
+        return enhancedResponses[baseResponse] || baseResponse;
     }
 
     function saveChatHistory() {
@@ -612,6 +754,20 @@ document.addEventListener('DOMContentLoaded', function() {
         if (message) {
             addUserMessage(message);
             userInput.value = '';
+        }
+    }
+
+    function startVoiceRecognition() {
+        if (!isPremium) {
+            alert("Голосовой ввод доступен только для премиум пользователей");
+            return;
+        }
+        
+        if (recognition) {
+            recognition.start();
+            addBotMessage("Слушаю вас...");
+        } else {
+            addBotMessage("Извините, голосовой ввод не поддерживается в вашем браузере.");
         }
     }
 
@@ -654,6 +810,80 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         moodSelector.innerHTML = `<i class="fas ${moodIcons[currentMood]}"></i>`;
         moodModal.style.display = 'none';
+    }
+
+    function updateMoodChart() {
+        if (!moodChartCanvas || moodData.length === 0) return;
+        
+        const moodValues = {
+            happy: 4,
+            neutral: 3,
+            sad: 2,
+            anxious: 1,
+            angry: 0
+        };
+        
+        // Группируем данные по дням
+        const groupedData = {};
+        moodData.forEach(entry => {
+            const date = new Date(entry.date).toLocaleDateString();
+            if (!groupedData[date]) {
+                groupedData[date] = [];
+            }
+            groupedData[date].push(moodValues[entry.mood]);
+        });
+        
+        // Рассчитываем среднее значение для каждого дня
+        const labels = [];
+        const dataPoints = [];
+        for (const [date, values] of Object.entries(groupedData)) {
+            labels.push(date);
+            const avg = values.reduce((a, b) => a + b, 0) / values.length;
+            dataPoints.push(avg);
+        }
+        
+        // Создаем или обновляем график
+        if (moodChart) {
+            moodChart.data.labels = labels;
+            moodChart.data.datasets[0].data = dataPoints;
+            moodChart.update();
+        } else {
+            moodChart = new Chart(moodChartCanvas, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Уровень настроения',
+                        data: dataPoints,
+                        borderColor: '#7e57c2',
+                        backgroundColor: 'rgba(126, 87, 194, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 4,
+                            ticks: {
+                                callback: function(value) {
+                                    const moods = [
+                                        'Злость',
+                                        'Тревога',
+                                        'Грусть',
+                                        'Нейтральное',
+                                        'Радость'
+                                    ];
+                                    return moods[value];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
     }
 
     // ========== Функции мобильного меню ==========
@@ -730,7 +960,9 @@ document.addEventListener('DOMContentLoaded', function() {
             "Дневник настроения",
             "Неограниченные сессии",
             "Персональные программы",
-            "Подробный анализ"
+            "Подробный анализ",
+            "Голосовой чат",
+            "Библиотека медитаций"
         ];
         
         const featureDescriptions = [
@@ -739,7 +971,9 @@ document.addEventListener('DOMContentLoaded', function() {
             "Отслеживайте ваше эмоциональное состояние с помощью удобного дневника. Анализируйте закономерности и прогресс в терапии.",
             "Премиум-функция: общайтесь без ограничений по количеству сообщений и времени сессий. Подробнее: вы сможете общаться столько, сколько вам нужно, без ежедневных лимитов.",
             "Премиум-функция: индивидуальные планы терапии, адаптированные под ваши потребности и цели. Подробнее: программа будет учитывать ваши уникальные запросы и прогресс.",
-            "Премиум-функция: глубокий анализ вашего состояния с детальными отчетами и рекомендациями. Подробнее: вы получите статистику по вашему эмоциональному состоянию и персональные советы."
+            "Премиум-функция: глубокий анализ вашего состояния с детальными отчетами и рекомендациями. Подробнее: вы получите статистику по вашему эмоциональному состоянию и персональные советы.",
+            "Премиум-функция: общайтесь с ботом голосом, используя технологию распознавания речи. Подробнее: просто нажмите на микрофон и говорите - бот поймет вас.",
+            "Премиум-функция: доступ к коллекции управляемых медитаций и техник релаксации. Подробнее: выберите подходящую медитацию по длительности и цели."
         ];
         
         alert(`${featureTitles[index]}\n\n${featureDescriptions[index]}`);
@@ -821,6 +1055,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Здесь должна быть реальная обработка платежа
+        // Для демонстрации просто имитируем успешный платеж
+        
         setTimeout(() => {
             paymentForm.style.display = 'none';
             paymentSuccess.style.display = 'block';
@@ -841,6 +1078,23 @@ document.addEventListener('DOMContentLoaded', function() {
             updateUserStatus();
             updatePremiumFeaturesVisibility();
             updateProfileInfo();
+            
+            // Сохраняем информацию о подписке в Firestore
+            if (isLoggedIn && currentUser) {
+                db.collection('users').doc(currentUser.id).set({
+                    subscription: {
+                        plan: plan,
+                        status: 'active',
+                        startDate: new Date().toISOString(),
+                        endDate: plan === 'annual' ? 
+                            new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() :
+                            new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+                    }
+                }, { merge: true })
+                .catch(error => {
+                    console.error("Ошибка сохранения подписки:", error);
+                });
+            }
         }, 1500);
     }
 
@@ -867,9 +1121,12 @@ document.addEventListener('DOMContentLoaded', function() {
         updateProfileInfo();
         profileModal.style.display = 'flex';
         dropdownContent.style.display = 'none';
+        updateMoodChart();
     }
     
     function updateProfileInfo() {
+        if (!profileModal) return;
+        
         document.getElementById('profile-name').textContent = currentUser ? currentUser.name : 'Гость';
         document.getElementById('messages-used').textContent = totalMessages;
         document.getElementById('signup-date').textContent = signupDate;
@@ -914,11 +1171,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 signupDate = currentUser.signupDate;
                 localStorage.setItem('mindbot_signup_date', signupDate);
                 
-                alert('Вы успешно вошли в систему!');
-                loginModal.style.display = 'none';
-                checkLoginStatus();
-                updateUserStatus();
-                updateProfileInfo();
+                // Проверяем подписку пользователя
+                db.collection('users').doc(user.uid).get()
+                    .then(doc => {
+                        if (doc.exists) {
+                            const userData = doc.data();
+                            if (userData.subscription && userData.subscription.status === 'active') {
+                                isPremium = true;
+                                currentPlan = userData.subscription.plan;
+                                trialEndDate = userData.subscription.endDate;
+                                localStorage.setItem('mindbot_premium', 'true');
+                                localStorage.setItem('mindbot_plan', currentPlan);
+                                localStorage.setItem('mindbot_trial_end', trialEndDate);
+                            }
+                        }
+                        
+                        alert('Вы успешно вошли в систему!');
+                        loginModal.style.display = 'none';
+                        checkLoginStatus();
+                        updateUserStatus();
+                        updateProfileInfo();
+                    })
+                    .catch(error => {
+                        console.error("Ошибка загрузки данных пользователя:", error);
+                        alert('Вы успешно вошли в систему!');
+                        loginModal.style.display = 'none';
+                        checkLoginStatus();
+                        updateUserStatus();
+                        updateProfileInfo();
+                    });
             })
             .catch((error) => {
                 alert('Ошибка входа: ' + error.message);
@@ -958,6 +1239,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     signupDate = currentUser.signupDate;
                     localStorage.setItem('mindbot_signup_date', signupDate);
                     
+                    // Создаем запись пользователя в Firestore
+                    return db.collection('users').doc(user.uid).set({
+                        name: name,
+                        email: email,
+                        createdAt: new Date().toISOString()
+                    });
+                }).then(() => {
                     alert('Регистрация прошла успешно!');
                     registerModal.style.display = 'none';
                     checkLoginStatus();
@@ -1012,6 +1300,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentUser.email = email;
                 localStorage.setItem('mindbot_current_user', JSON.stringify(currentUser));
                 
+                // Обновляем данные в Firestore
+                return db.collection('users').doc(user.uid).update({
+                    name: name,
+                    email: email
+                });
+            })
+            .then(() => {
                 alert('Профиль успешно обновлен!');
                 editProfileModal.style.display = 'none';
                 updateUserStatus();
@@ -1072,6 +1367,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 signupDate = currentUser.signupDate;
                 localStorage.setItem('mindbot_signup_date', signupDate);
                 
+                // Проверяем, есть ли пользователь в Firestore
+                return db.collection('users').doc(user.uid).get()
+                    .then(doc => {
+                        if (!doc.exists) {
+                            // Создаем новую запись пользователя
+                            return db.collection('users').doc(user.uid).set({
+                                name: user.displayName,
+                                email: user.email,
+                                createdAt: new Date().toISOString()
+                            });
+                        }
+                    });
+            })
+            .then(() => {
                 loginModal.style.display = 'none';
                 registerModal.style.display = 'none';
                 checkLoginStatus();
@@ -1100,6 +1409,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 signupDate = currentUser.signupDate;
                 localStorage.setItem('mindbot_signup_date', signupDate);
                 
+                // Проверяем, есть ли пользователь в Firestore
+                return db.collection('users').doc(user.uid).get()
+                    .then(doc => {
+                        if (!doc.exists) {
+                            // Создаем новую запись пользователя
+                            return db.collection('users').doc(user.uid).set({
+                                name: user.displayName,
+                                email: user.email,
+                                createdAt: new Date().toISOString()
+                            });
+                        }
+                    });
+            })
+            .then(() => {
                 loginModal.style.display = 'none';
                 registerModal.style.display = 'none';
                 checkLoginStatus();
@@ -1111,6 +1434,33 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // Проверяем пробный период при загрузке
-    checkTrialPeriod();
+    // Инициализация Service Worker для PWA и оффлайн-режима
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').then(registration => {
+                console.log('ServiceWorker registration successful');
+            }).catch(err => {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+    }
+
+    // Инициализация Push-уведомлений
+    function initPushNotifications() {
+        if (!('Notification' in window)) {
+            console.log('Этот браузер не поддерживает уведомления');
+            return;
+        }
+        
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                console.log('Разрешение на уведомления получено');
+            }
+        });
+    }
+
+    // Проверяем, поддерживает ли браузер PWA-функции
+    if ('standalone' in window.navigator || window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('Приложение запущено в PWA-режиме');
+    }
 });
