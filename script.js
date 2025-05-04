@@ -11,7 +11,11 @@ const firebaseConfig = {
 
 // Hugging Face Inference API configuration
 const HF_API_KEY = "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"; // Замените на ваш API ключ
-const HF_API_URL = "https://api-inference.huggingface.ai/models/facebook/blenderbot-400M-distill";
+fetch("https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill", {
+  headers: { 
+    "Authorization": `Bearer ${HF_API_KEY}` // Добавьте этот заголовок
+  }
+})
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
