@@ -19,6 +19,19 @@ const db = firebase.firestore();
 const providerGoogle = new firebase.auth.GoogleAuthProvider();
 const providerFacebook = new firebase.auth.FacebookAuthProvider();
 
+async function checkHuggingFaceAPI() {
+    try {
+        const testResponse = await queryHuggingFaceAPI("Test");
+        console.log("Hugging Face API connection successful");
+    } catch (error) {
+        console.error("Hugging Face API connection failed:", error);
+        alert("Премиум-функции временно недоступны. Используется локальная база знаний.");
+    }
+}
+
+// Вызовите при инициализации
+checkHuggingFaceAPI();
+
 document.addEventListener('DOMContentLoaded', function() {
     // ========== Элементы интерфейса ==========
     const chatContainer = document.getElementById('chat-container');
