@@ -32,6 +32,14 @@ async function checkHuggingFaceAPI() {
 // Вызовите при инициализации
 checkHuggingFaceAPI();
 
+if (response.status === 401) {
+    throw new Error("Invalid API key");
+} else if (response.status === 503) {
+    throw new Error("Model is loading, try again later");
+} else if (response.status === 429) {
+    throw new Error("API rate limit exceeded");
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // ========== Элементы интерфейса ==========
     const chatContainer = document.getElementById('chat-container');
