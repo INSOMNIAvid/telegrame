@@ -1,4 +1,4 @@
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Конфигурация Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAryOAJtH9AxUBBzPTdNMyhapUvSzxAREs",
   authDomain: "edfghj-eea58.firebaseapp.com",
@@ -9,11 +9,17 @@ const firebaseConfig = {
   measurementId: "G-7KZCMLECJM"
 };
 
+// Инициализация Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 const providerGoogle = new firebase.auth.GoogleAuthProvider();
 const providerFacebook = new firebase.auth.FacebookAuthProvider();
+
+// Конфигурация для Hugging Face Inference API (бесплатный ИИ)
+const HF_API_URL = "https://api-inference.huggingface.co/models/";
+const HF_API_TOKEN = "ваш_api_токен"; // Замените на ваш реальный токен
+const HF_MODEL_NAME = "facebook/blenderbot-400M-distill"; // Модель для чат-бота
 
 document.addEventListener('DOMContentLoaded', function() {
     // ========== Элементы интерфейса ==========
@@ -118,6 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let recognition;
     let isDarkTheme = localStorage.getItem('mindbot_dark_theme') === 'true';
     let moodChart = null;
+    let conversationContext = []; // Контекст для ИИ
 
     // ========== Инициализация ==========
     initModals();
@@ -150,10 +157,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (chatHistory.length > 0) {
             chatHistory.forEach(msg => {
                 addMessageToChat(msg.text, msg.sender, msg.timestamp);
+                // Добавляем сообщения в контекст для ИИ
+                if (msg.sender === 'user') {
+                    conversationContext.push({ role: 'user', content: msg.text });
+                } else {
+                    conversationContext.push({ role: 'assistant', content: msg.text });
+                }
             });
         } else {
             setTimeout(() => {
-                addBotMessage("Привет! Я MindBot — ваш виртуальный психолог. Я здесь, чтобы помочь вам разобраться в ваших чувствах и мыслях. О чём вы хотели бы поговорить?");
+                const welcomeMessage = "Привет! Я MindBot — ваш виртуальный психолог. Я здесь, чтобы помочь вам разобраться в ваших чувствах и мыслях. О чём вы хотели бы поговорить?";
+                addBotMessage(welcomeMessage);
+                conversationContext.push({ role: 'assistant', content: welcomeMessage });
             }, 500);
         }
     }
@@ -233,69 +248,266 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateUserStatus() {
-        if (isPremium) {
-            userStatus.textContent = currentPlan === 'annual' ? 'Годовая подписка' : 'Премиум';
-            userStatus.classList.add('premium');
-            chatLimit.style.display = 'none';
-        } else {
-            userStatus.textContent = isLoggedIn ? (currentUser ? currentUser.name : 'Пользователь') : 'Гость';
-            userStatus.classList.remove('premium');
-            chatLimit.style.display = 'block';
+    // ========== Функции чата ==========
+    
+    function addMessageToChat(text, sender, timestamp = null) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message');
+        messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+        
+        const timeStr = timestamp ? new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
+                                  new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        messageDiv.innerHTML = `
+            <p>${text}</p>
+            <span class="message-time">${timeStr}</span>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addBotMessage(text) {
+        if (isTyping) return;
+        isTyping = true;
+        typingIndicator.classList.add('active');
+        
+        const words = text.split(' ');
+        let typedText = '';
+        let i = 0;
+        
+        const typingInterval = setInterval(() => {
+            if (i < words.length) {
+                typedText += words[i] + ' ';
+                const tempDiv = document.createElement('div');
+                tempDiv.classList.add('message', 'bot-message');
+                tempDiv.innerHTML = `
+                    <p>${typedText}</p>
+                    <span class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                `;
+                
+                const lastBotMessage = document.querySelector('.message.bot-message:last-child');
+                if (lastBotMessage && !lastBotMessage.innerHTML.includes('</span>')) {
+                    chatMessages.removeChild(lastBotMessage);
+                }
+                
+                chatMessages.appendChild(tempDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                i++;
+            } else {
+                clearInterval(typingInterval);
+                typingIndicator.classList.remove('active');
+                isTyping = false;
+                
+                chatHistory.push({
+                    text: text,
+                    sender: 'bot',
+                    timestamp: new Date().toISOString()
+                });
+                saveChatHistory();
+            }
+        }, 100);
+    }
+
+    function addUserMessage(text) {
+        if (!isPremium && messagesLeft <= 0) {
+            limitModal.style.display = 'flex';
+            return;
         }
         
-        if (upgradeProfileBtn) {
-            upgradeProfileBtn.style.display = isPremium ? 'none' : 'block';
+        addMessageToChat(text, 'user');
+        
+        if (!isPremium) {
+            messagesLeft--;
+            updateMessageLimit();
+            localStorage.setItem('mindbot_messages_left', messagesLeft);
         }
-    }
-
-    function updatePremiumFeaturesVisibility() {
-        const premiumFeatures = document.querySelectorAll('.premium-feature');
-        premiumFeatures.forEach(feature => {
-            if (isPremium) {
-                feature.style.display = 'block';
-            } else {
-                feature.style.display = 'none';
-            }
+        
+        totalMessages++;
+        localStorage.setItem('mindbot_total_messages', totalMessages);
+        
+        chatHistory.push({
+            text: text,
+            sender: 'user',
+            timestamp: new Date().toISOString(),
+            mood: currentMood
         });
+        saveChatHistory();
+        
+        // Добавляем сообщение пользователя в контекст для ИИ
+        conversationContext.push({ role: 'user', content: text });
+        
+        // Сохраняем настроение в историю
+        if (currentMood) {
+            const moodEntry = {
+                date: new Date().toISOString(),
+                mood: currentMood
+            };
+            
+            moodData.push(moodEntry);
+            localStorage.setItem('mindbot_mood_data', JSON.stringify(moodData));
+            
+            // Сохраняем в Firestore для зарегистрированных пользователей
+            if (isLoggedIn && currentUser) {
+                db.collection('users').doc(currentUser.id).collection('moodData').add(moodEntry)
+                    .catch(error => {
+                        console.error("Ошибка сохранения настроения:", error);
+                    });
+            }
+        }
+        
+        currentMood = null;
+        moodSelector.innerHTML = '<i class="fas fa-smile"></i>';
+        
+        setTimeout(() => {
+            generateBotResponse(text);
+        }, 800);
     }
 
-    function checkLoginStatus() {
-        if (isLoggedIn) {
-            if (logoutLink) logoutLink.style.display = 'block';
-            if (loginLink) loginLink.style.display = 'none';
-            if (registerLink) registerLink.style.display = 'none';
-            if (profileLink) profileLink.style.display = 'block';
-            if (subscriptionLink) subscriptionLink.style.display = 'block';
-        } else {
-            if (logoutLink) logoutLink.style.display = 'none';
-            if (loginLink) loginLink.style.display = 'block';
-            if (registerLink) registerLink.style.display = 'block';
-            if (profileLink) profileLink.style.display = 'block';
-            if (subscriptionLink) subscriptionLink.style.display = 'block';
+    async function generateBotResponse(userMessage) {
+        try {
+            // Для премиум пользователей используем ИИ API
+            if (isPremium) {
+                const response = await queryHuggingFaceAI(userMessage);
+                addBotMessage(response);
+                conversationContext.push({ role: 'assistant', content: response });
+                return;
+            }
+            
+            // Для бесплатных пользователей - локальная база знаний
+            const response = generateLocalResponse(userMessage);
+            addBotMessage(response);
+            conversationContext.push({ role: 'assistant', content: response });
+        } catch (error) {
+            console.error("Ошибка при генерации ответа:", error);
+            const fallbackResponse = "Извините, возникла техническая ошибка. Пожалуйста, попробуйте еще раз.";
+            addBotMessage(fallbackResponse);
+            conversationContext.push({ role: 'assistant', content: fallbackResponse });
         }
     }
 
-    function checkAuthState() {
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                isLoggedIn = true;
-                currentUser = {
-                    id: user.uid,
-                    name: user.displayName || 'Пользователь',
-                    email: user.email,
-                    signupDate: new Date(user.metadata.creationTime).toLocaleDateString() || new Date().toLocaleDateString()
-                };
-                
-                localStorage.setItem('mindbot_logged_in', 'true');
-                localStorage.setItem('mindbot_current_user', JSON.stringify(currentUser));
-                signupDate = currentUser.signupDate;
-                localStorage.setItem('mindbot_signup_date', signupDate);
-                
-                updateUserStatus();
-                checkLoginStatus();
-                updateProfileInfo();
-                
+    async function queryHuggingFaceAI(message) {
+        try {
+            // Подготовка контекста для ИИ
+            const messages = conversationContext.slice(-6); // Берем последние 6 сообщений для контекста
+            
+            const response = await fetch(HF_API_URL + HF_MODEL_NAME, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${HF_API_TOKEN}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    inputs: {
+                        past_user_inputs: messages.filter(m => m.role === 'user').map(m => m.content),
+                        generated_responses: messages.filter(m => m.role === 'assistant').map(m => m.content),
+                        text: message
+                    },
+                    parameters: {
+                        max_length: 200,
+                        temperature: 0.7,
+                        repetition_penalty: 1.2
+                    }
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // Обработка ответа от Hugging Face API
+            if (data.generated_text) {
+                return data.generated_text;
+            } else if (data.error) {
+                throw new Error(data.error);
+            } else {
+                throw new Error("Неизвестный формат ответа от API");
+            }
+        } catch (error) {
+            console.error("Ошибка при запросе к Hugging Face API:", error);
+            throw error;
+        }
+    }
+
+    function generateLocalResponse(userMessage) {
+        const lowerMsg = userMessage.toLowerCase();
+        
+        // Улучшенная база знаний с учетом контекста
+        const knowledgeBase = {
+            'тревож|волн|боюсь|страх|испуг': [
+                "Я понимаю, что тревога может быть очень тяжелым переживанием. Давайте попробуем технику '5-4-3-2-1': назовите 5 вещей, которые видите вокруг, 4 — которые можете потрогать, 3 — которые слышите, 2 — которые чувствуете запах, 1 — которую можете попробовать на вкус. Это поможет вам заземлиться.",
+                "Тревога часто возникает из-за ощущения потери контроля. Попробуйте дыхательное упражнение: вдох на 4 счета, задержка на 4, выдох на 6. Повторите 5 раз. Это активирует парасимпатическую нервную систему."
+            ],
+            'груст|плохое настроение|тоск|печаль|уныни': [
+                "Грусть — это естественная эмоция, которая говорит нам о том, что что-то важно для нас. Можете описать, что именно вызывает у вас эти чувства?",
+                "Когда вам грустно, попробуйте технику 'Трех благодарностей': назовите три вещи, за которые вы благодарны сегодня, даже если они кажутся маленькими."
+            ],
+            'стресс|устал|нервнич|напряжени|перегрузк': [
+                "Стресс — это реакция организма на вызовы. Попробуйте технику 'Помпурри': назовите 3 цвета вокруг вас, 3 звука и сделайте 3 глубоких вдоха. Это поможет переключить внимание.",
+                "При стрессе помогает метод 'Микро-паузы': каждые 30 минут делайте 30-секундный перерыв — потянитесь, посмотрите в окно, сделайте глоток воды."
+            ],
+            'спасибо|благодар|хорош': [
+                "Всегда рад помочь! Как еще я могу вас поддержать?",
+                "Спасибо за обратную связь! Продолжаем работу?"
+            ],
+            'привет|здравств|добр|hi|hello': [
+                "Здравствуйте! Как ваше настроение сегодня?",
+                "Привет! О чем вы хотели бы поговорить?"
+            ],
+            'как это работает|как пользоваться|инструкция': [
+                "MindBot использует когнитивно-поведенческую терапию (CBT) и другие проверенные методики. Просто опишите свою ситуацию, и я предложу техники для ее решения. Вы также можете использовать дневник настроения для отслеживания прогресса.",
+                "Алгоритм работы: 1) Вы описываете ситуацию 2) Я анализирую и предлагаю техники 3) Вы применяете их и отслеживаете изменения в дневнике настроения. Премиум-функции дают доступ к расширенным методикам."
+            ],
+            'подписка|премиум|оплат|купить|тариф': [
+                "Премиум подписка дает полный доступ ко всем функциям MindBot без ограничений. Платите ежемесячно (990₽), отмена в любой момент. Годовая подписка (7,900₽) экономит 30%.",
+                "Премиум-функции включают неограниченные сессии, персональные программы терапии и подробный анализ вашего состояния. Первые 7 дней бесплатно для новых пользователей."
+            ],
+            'отношен|партнер|семья|друзья|любов': [
+                "Конфликты в отношениях — это нормально. Попробуйте технику 'Я-высказываний': говорите о своих чувствах, а не обвиняйте. Например: 'Я чувствую... когда... потому что...'",
+                "В отношениях важно уметь слушать. Попробуйте технику активного слушания: повторите слова партнера своими словами и уточните, правильно ли вы поняли."
+            ],
+            'сон|бессонниц|спать|усталос': [
+                "Проблемы со сном часто связаны со стрессом. Попробуйте вечерний ритуал: за час до сна выключите гаджеты, примите теплый душ, выпейте травяной чай.",
+                "Техника '4-7-8' для засыпания: вдох через нос на 4 счета, задержка на 7, выдох через рот на 8. Повторите 4 раза."
+            ],
+            'мотивац|лень|прокрастинац|лень|не хочу': [
+                "Мотивация — это как мускул, ее нужно тренировать. Начните с малого — поставьте таймер на 5 минут и делайте задачу только это время. Чаще всего вы продолжите.",
+                "Попробуйте метод 'Помидора': 25 минут работы, 5 минут отдыха. После 4 циклов — перерыв 15-30 минут. Это помогает сохранять концентрацию."
+            ]
+        };
+
+        // Проверяем контекст предыдущих сообщений
+        const lastUserMessage = chatHistory.length > 1 ? chatHistory[chatHistory.length - 2].text.toLowerCase() : '';
+        
+        // Если в предыдущем сообщении была тревога
+        if (lastUserMessage.includes('тревож') || lastUserMessage.includes('волн')) {
+            return "Вы упоминали о тревоге ранее. Как изменилось ваше состояние с тех пор?";
+        } 
+        // Если в предыдущем сообщении была грусть
+        else if (lastUserMessage.includes('груст') || lastUserMessage.includes('плохое настроение')) {
+            return "Вы говорили о грусти. Что помогает вам улучшить настроение в таких ситуациях?";
+        }
+        
+        // Поиск подходящего ответа в базе знаний
+        for (const [pattern, responses] of Object.entries(knowledgeBase)) {
+            if (new RegExp(pattern).test(lowerMsg)) {
+                return responses[Math.floor(Math.random() * responses.length)];
+            }
+        }
+        
+        // Общие ответы, если не найдено совпадений
+        const generalResponses = [
+            "Расскажите подробнее, что вас беспокоит?",
+            "Как это на вас влияет?",
+            "Что обычно помогает вам в таких ситуациях?",
+            "Давайте разберём это вместе. Что вы чувствуете, когда думаете об этом?",
+            "Попробуйте выразить это другими словами. Что для вас самое сложное в этой ситуации?"
+        ];
+        
+        return generalResponses[Math.floor(Math.random() * generalResponses.length)];
+    }
                 // Загрузка данных настроения из Firestore
                 db.collection('users').doc(user.uid).collection('moodData').get()
                     .then(snapshot => {
@@ -500,92 +712,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ========== Функции чата ==========
-    
-    function addMessageToChat(text, sender, timestamp = null) {
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message');
-        messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
-        
-        const timeStr = timestamp ? new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
-                                  new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        messageDiv.innerHTML = `
-            <p>${text}</p>
-            <span class="message-time">${timeStr}</span>
-        `;
-        
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    function addBotMessage(text) {
-        if (isTyping) return;
-        isTyping = true;
-        typingIndicator.classList.add('active');
-        
-        const words = text.split(' ');
-        let typedText = '';
-        let i = 0;
-        
-        const typingInterval = setInterval(() => {
-            if (i < words.length) {
-                typedText += words[i] + ' ';
-                const tempDiv = document.createElement('div');
-                tempDiv.classList.add('message', 'bot-message');
-                tempDiv.innerHTML = `
-                    <p>${typedText}</p>
-                    <span class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                `;
-                
-                const lastBotMessage = document.querySelector('.message.bot-message:last-child');
-                if (lastBotMessage && !lastBotMessage.innerHTML.includes('</span>')) {
-                    chatMessages.removeChild(lastBotMessage);
-                }
-                
-                chatMessages.appendChild(tempDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                i++;
-            } else {
-                clearInterval(typingInterval);
-                typingIndicator.classList.remove('active');
-                isTyping = false;
-                
-                chatHistory.push({
-                    text: text,
-                    sender: 'bot',
-                    timestamp: new Date().toISOString()
-                });
-                saveChatHistory();
-            }
-        }, 100);
-    }
-
-    function addUserMessage(text) {
-        if (!isPremium && messagesLeft <= 0) {
-            limitModal.style.display = 'flex';
-            return;
-        }
-        
-        addMessageToChat(text, 'user');
-        
-        if (!isPremium) {
-            messagesLeft--;
-            updateMessageLimit();
-            localStorage.setItem('mindbot_messages_left', messagesLeft);
-        }
-        
-        totalMessages++;
-        localStorage.setItem('mindbot_total_messages', totalMessages);
-        
-        chatHistory.push({
-            text: text,
-            sender: 'user',
-            timestamp: new Date().toISOString(),
-            mood: currentMood
-        });
-        saveChatHistory();
-        
         // Сохраняем настроение в историю
         if (currentMood) {
             const moodEntry = {
