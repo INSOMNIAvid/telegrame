@@ -54,7 +54,56 @@ button {
     margin: 0 auto;
     padding: 0 20px;
 }
+/* Кнопка переключения темы */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1001;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
 
+/* Темная тема */
+body.dark-theme {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+.dark-theme header {
+    background-color: #1e1e1e;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .logo {
+    color: #bb86fc;
+}
+
+.dark-theme nav a {
+    color: #e0e0e0;
+}
+
+.dark-theme nav a:hover {
+    color: #bb86fc;
+}
+
+/* И так далее для всех элементов... */
+.font-selector {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--medium-gray);
+    border-radius: var(--border-radius);
+    font-family: inherit;
+}
 /* Анимации */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
