@@ -1,4 +1,4 @@
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Конфигурация Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAryOAJtH9AxUBBzPTdNMyhapUvSzxAREs",
   authDomain: "edfghj-eea58.firebaseapp.com",
@@ -9,16 +9,19 @@ const firebaseConfig = {
   measurementId: "G-7KZCMLECJM"
 };
 
-// Hugging Face Inference API configuration
-const HF_API_KEY = "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"; // Замените на ваш API ключ
-const HF_API_URL = "https://api-inference.huggingface.ai/models/facebook/blenderbot-400M-distill";
-const HF_API_CHECK_INTERVAL = 30000; // Проверка доступности API каждые 30 секунд
-
+// Инициализация Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 const providerGoogle = new firebase.auth.GoogleAuthProvider();
 const providerFacebook = new firebase.auth.FacebookAuthProvider();
+
+// Конфигурация ИИ (Hugging Face Inference API)
+const AI_CONFIG = {
+  API_URL: "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill",
+  API_KEY: "YOUR_HUGGING_FACE_API_KEY", // Замените на реальный ключ
+  CONTEXT_LENGTH: 5 // Сколько последних сообщений учитывать для контекста
+};
 
 document.addEventListener('DOMContentLoaded', function() {
     // ========== Элементы интерфейса ==========
@@ -123,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let recognition;
     let isDarkTheme = localStorage.getItem('mindbot_dark_theme') === 'true';
     let moodChart = null;
-    let conversationContext = []; // Контекст для ИИ
+    let aiContext = []; // Контекст для ИИ
 
     // ========== Инициализация ==========
     initModals();
@@ -139,8 +142,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initVoiceRecognition();
     initThemeToggle();
     checkTrialPeriod();
-    checkHuggingFaceAPI(); // Первоначальная проверка API
-    startAPICheckInterval(); // Запускаем периодическую проверку API
 
     // ========== Функции инициализации ==========
     
@@ -158,18 +159,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (chatHistory.length > 0) {
             chatHistory.forEach(msg => {
                 addMessageToChat(msg.text, msg.sender, msg.timestamp);
-                // Восстанавливаем контекст для ИИ
+                // Добавляем в контекст ИИ
                 if (msg.sender === 'user') {
-                    conversationContext.push({ role: 'user', content: msg.text });
+                    aiContext.push({ role: 'user', content: msg.text });
                 } else {
-                    conversationContext.push({ role: 'assistant', content: msg.text });
+                    aiContext.push({ role: 'assistant', content: msg.text });
                 }
             });
         } else {
             setTimeout(() => {
                 const welcomeMessage = "Привет! Я MindBot — ваш виртуальный психолог. Я здесь, чтобы помочь вам разобраться в ваших чувствах и мыслях. О чём вы хотели бы поговорить?";
                 addBotMessage(welcomeMessage);
-                conversationContext.push({ role: 'assistant', content: welcomeMessage });
+                aiContext.push({ role: 'assistant', content: welcomeMessage });
             }, 500);
         }
     }
@@ -574,8 +575,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 saveChatHistory();
                 
-                // Добавляем ответ бота в контекст
-                conversationContext.push({ role: 'assistant', content: text });
+                // Добавляем в контекст ИИ
+                aiContext.push({ role: 'assistant', content: text });
+                
+                // Ограничиваем размер контекста
+                if (aiContext.length > AI_CONFIG.CONTEXT_LENGTH * 2) {
+                    aiContext = aiContext.slice(-AI_CONFIG.CONTEXT_LENGTH * 2);
+                }
             }
         }, 100);
     }
@@ -605,8 +611,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         saveChatHistory();
         
-        // Добавляем сообщение пользователя в контекст
-        conversationContext.push({ role: 'user', content: text });
+        // Добавляем в контекст ИИ
+        aiContext.push({ role: 'user', content: text });
         
         // Сохраняем настроение в историю
         if (currentMood) {
@@ -637,67 +643,68 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function generateBotResponse(userMessage) {
         try {
-            // Для премиум пользователей используем Hugging Face API
+            // Для премиум пользователей используем ИИ API
             if (isPremium) {
-                const response = await queryHuggingFaceAPI(userMessage);
-                addBotMessage(response);
+                const aiResponse = await queryAI(userMessage);
+                addBotMessage(aiResponse);
                 return;
             }
             
-            // Для бесплатных пользователей используем локальную базу знаний
+            // Для бесплатных пользователей - локальная база знаний
             const response = generateLocalResponse(userMessage);
             addBotMessage(response);
         } catch (error) {
             console.error("Ошибка генерации ответа:", error);
-            addBotMessage("Извините, возникла техническая ошибка. Пожалуйста, попробуйте еще раз.");
+            // Fallback на локальную базу знаний при ошибке
+            const fallbackResponse = generateLocalResponse(userMessage);
+            addBotMessage(fallbackResponse);
         }
     }
 
-    async function queryHuggingFaceAPI(userMessage) {
-        // Формируем контекст для ИИ
+    async function queryAI(userMessage) {
+        // Подготовка контекста для ИИ
         const messages = [
             {
                 role: "system",
-                content: "Ты профессиональный психолог MindBot. Используй когнитивно-поведенческую терапию (CBT) и другие проверенные методики. Будь эмпатичным, поддерживающим и профессиональным. Отвечай на русском языке."
+                content: "Ты профессиональный психолог-консультант, который использует когнитивно-поведенческую терапию. Будь эмпатичным, поддерживающим и профессиональным. Отвечай на русском языке."
             },
-            ...conversationContext.slice(-6) // Берем последние 6 сообщений для контекста
+            ...aiContext.slice(-AI_CONFIG.CONTEXT_LENGTH), // Берем последние N сообщений для контекста
+            {
+                role: "user",
+                content: userMessage
+            }
         ];
 
-        const response = await fetch(HF_API_URL, {
+        const response = await fetch(AI_CONFIG.API_URL, {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${HF_API_KEY}`,
+                "Authorization": `Bearer ${AI_CONFIG.API_KEY}`,
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-                inputs: {
-                    past_user_inputs: messages.filter(m => m.role === 'user').map(m => m.content),
-                    generated_responses: messages.filter(m => m.role === 'assistant').map(m => m.content),
-                    text: userMessage
-                },
-                parameters: {
-                    max_length: 200,
-                    temperature: 0.7,
-                    top_k: 50,
-                    top_p: 0.9,
-                    repetition_penalty: 1.2
-                }
-            })
+            body: JSON.stringify({ inputs: messages })
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`Ошибка API: ${response.status}`);
         }
 
         const result = await response.json();
-        return result.generated_text || "Извините, я не смог сгенерировать ответ. Пожалуйста, попробуйте еще раз.";
+        
+        // Обработка ответа от разных API (может отличаться в зависимости от модели)
+        if (result.generated_text) {
+            return result.generated_text;
+        } else if (result[0] && result[0].generated_text) {
+            return result[0].generated_text;
+        } else {
+            throw new Error("Неожиданный формат ответа от API");
+        }
     }
 
     function generateLocalResponse(userMessage) {
         const lowerMsg = userMessage.toLowerCase();
         let response = "";
         
-        // Улучшенная база знаний
+        // Локальная база знаний
         const knowledgeBase = {
             'тревож|волн|боюсь|страх|испуг': [
                 "Я понимаю, что тревога может быть очень тяжелым переживанием. Давайте попробуем технику '5-4-3-2-1': назовите 5 вещей, которые видите вокруг, 4 — которые можете потрогать, 3 — которые слышите, 2 — которые чувствуете запах, 1 — которую можете попробовать на вкус. Это поможет вам заземлиться.",
@@ -795,7 +802,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function clearChatHistory() {
         if (confirm("Очистить всю историю чата? Это действие нельзя отменить.")) {
             chatHistory = [];
-            conversationContext = [];
+            aiContext = [];
             saveChatHistory();
             chatMessages.innerHTML = '';
             initChat();
