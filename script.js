@@ -142,7 +142,34 @@ document.addEventListener('DOMContentLoaded', function() {
     initVoiceRecognition();
     initThemeToggle();
     checkTrialPeriod();
+// В разделе инициализации
+let isDarkTheme = localStorage.getItem('mindbot_dark_theme') === 'true';
+const themeToggle = document.getElementById('theme-toggle');
 
+function initThemeToggle() {
+    if (isDarkTheme) {
+        document.body.classList.add('dark-theme');
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+    }
+    
+    themeToggle.addEventListener('click', toggleTheme);
+}
+
+function toggleTheme() {
+    isDarkTheme = !isDarkTheme;
+    localStorage.setItem('mindbot_dark_theme', isDarkTheme);
+    
+    if (isDarkTheme) {
+        document.body.classList.add('dark-theme');
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+    } else {
+        document.body.classList.remove('dark-theme');
+        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+    }
+}
+
+// Вызов в init()
+initThemeToggle();
     // ========== Функции инициализации ==========
     
     function initModals() {
