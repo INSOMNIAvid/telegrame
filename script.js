@@ -19,7 +19,7 @@ const providerFacebook = new firebase.auth.FacebookAuthProvider();
 // Конфигурация ИИ (Hugging Face Inference API)
 const AI_CONFIG = {
   API_URL: "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill",
-  API_KEY: "YOUR_HUGGING_FACE_API_KEY", // Замените на реальный ключ
+  API_KEY: "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", // Замените на реальный ключ
   CONTEXT_LENGTH: 5 // Сколько последних сообщений учитывать для контекста
 };
 
